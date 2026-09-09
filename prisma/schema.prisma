@@ -32,8 +32,37 @@ model Product {
   description String
   dimension   String
   price       Decimal  @db.Decimal(10, 2)
+  stock       Int      @default(0)
   order       Int      @default(0)
+
+  movements StockMovement[]
 
   @@index([categoryId])
   @@map("products")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+
+  movements StockMovement[]
+
+  @@map("users")
+}
+
+model StockMovement {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  delta     Int
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([userId])
+  @@map("stock_movements")
 }

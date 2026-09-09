@@ -487,3 +487,214 @@ footer.foot {
   .category { animation: rise 0.4s ease both; }
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 }
+
+/* ---- Login ---- */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 340px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  padding: 28px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login-card h1 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.login-subtitle {
+  margin: -8px 0 6px;
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+}
+
+.login-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.login-card input {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 9px 10px;
+}
+
+.login-card button {
+  margin-top: 6px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 3px;
+  padding: 10px 12px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.login-error {
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--accent-ink);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  font-size: 0.82rem;
+}
+
+/* ---- Admin / inventario ---- */
+
+.admin-page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
+
+.admin-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.admin-header h1 {
+  margin: 0 0 4px;
+  font-size: 1.8rem;
+}
+
+.admin-user {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  font-family: var(--font-mono), monospace;
+}
+
+.logout-btn {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 8px 14px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.logout-btn:hover { border-color: var(--ink-muted); }
+
+.admin-category {
+  margin-top: 28px;
+}
+
+.admin-category h2 {
+  font-size: 1.1rem;
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.admin-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+}
+
+.admin-table-wrap thead th {
+  text-align: left;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.admin-table-wrap thead th.num, .admin-table-wrap td.num { text-align: right; }
+
+.admin-table-wrap tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.88rem;
+  vertical-align: middle;
+}
+.admin-table-wrap tbody tr:last-child td { border-bottom: none; }
+
+.stock-badge {
+  font-family: var(--font-mono), monospace;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.stock-badge.stock-zero {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.stock-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.stock-amount {
+  width: 56px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.85rem;
+  text-align: center;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 6px 4px;
+}
+
+.stock-btn {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.stock-btn.stock-in { background: var(--surface); color: var(--ink); }
+.stock-btn.stock-in:hover { border-color: var(--ink); }
+.stock-btn.stock-out { background: var(--surface); color: var(--accent); border-color: var(--accent); }
+.stock-btn.stock-out:hover { background: var(--accent-ink); }
