@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Catálogo Gráficas Caracas
 
-## Getting Started
+Catálogo de precios de Gráficas Caracas, C.A. — Next.js + Prisma + MySQL.
 
-First, run the development server:
+Los productos y categorías viven en una base de datos MySQL (no están hardcodeados en el
+HTML como en la versión original). El archivo original de una sola página quedó guardado
+como referencia en `reference/legacy-index.html`.
+
+## 1. Crear la base de datos en Plesk
+
+En Plesk: **Bases de datos → Añadir base de datos**. Anotá:
+
+- Host (normalmente `localhost` si la app corre en el mismo servidor)
+- Puerto (por defecto `3306`)
+- Nombre de la base de datos
+- Usuario y contraseña
+
+## 2. Configurar la conexión
+
+Editá `.env` en la raíz del proyecto y reemplazá el valor de ejemplo:
+
+```env
+DATABASE_URL="mysql://USUARIO:CONTRASEÑA@HOST:3306/NOMBRE_BASE_DE_DATOS"
+```
+
+## 3. Instalar dependencias, crear las tablas y cargar los productos
+
+```bash
+npm install
+npx prisma migrate dev --name init   # crea las tablas (categories, products)
+npx prisma db seed                    # carga las 14 categorías y 51 productos del catálogo original
+```
+
+`prisma/seed.ts` es idempotente (usa `upsert`) — podés volver a correr `npx prisma db seed`
+sin duplicar datos si cambian los archivos en `prisma/seed-data/catalog.json`.
+
+## 4. Correr en desarrollo
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrí [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 5. Build de producción
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Estructura relevante
 
-To learn more about Next.js, take a look at the following resources:
+- `prisma/schema.prisma` — modelos `Category` y `Product`.
+- `prisma/seed.ts` + `prisma/seed-data/catalog.json` — datos migrados del catálogo original.
+- `lib/prisma.ts` — cliente Prisma (usa el driver adapter de MariaDB, requerido en Prisma 7).
+- `lib/catalog.ts` — consulta las categorías y productos desde la base de datos.
+- `app/page.tsx` — página principal (Server Component, trae los datos de la DB).
+- `components/CatalogBrowser.tsx` — buscador y filtro por categoría (Client Component).
+- `public/images/categories/` — fotos de categorías extraídas del HTML original.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Editar productos y precios
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Por ahora no hay panel de administración — para agregar, editar o borrar productos hacelo
+directamente en la base de datos (por ejemplo con `npx prisma studio`, que abre una interfaz
+visual en el navegador) o pedime que actualice `prisma/seed-data/catalog.json` y vuelva a
+correr el seed.

@@ -1,0 +1,499 @@
+[
+  {
+    "order": 1,
+    "slug": "viniles",
+    "title": "Viniles",
+    "subtitle": "Premium alta gama",
+    "imageFile": "viniles.jpg",
+    "products": [
+      {
+        "order": 1,
+        "code": "SAV1,07B",
+        "description": "Vinil de impresión blanco brillante",
+        "dimension": "1.07 m × 50 mts",
+        "price": 85
+      },
+      {
+        "order": 2,
+        "code": "SAV1,37 B/M",
+        "description": "Vinil de impresión blanco brillante y mate, fondo blanco 140 grs, 100 micras",
+        "dimension": "1.37 m × 50 mts",
+        "price": 95
+      },
+      {
+        "order": 3,
+        "code": "SAV1,37MB",
+        "description": "Vinil de impresión blanco mate fondo",
+        "dimension": "1.37 m × 50 mts",
+        "price": 100
+      },
+      {
+        "order": 4,
+        "code": "SAV1,52M",
+        "description": "Vinil de impresión blanco mate fondo",
+        "dimension": "1.52 m × 50 mts",
+        "price": 100
+      }
+    ],
+    "dimensionLabel": "Ancho × Largo"
+  },
+  {
+    "order": 2,
+    "slug": "clear",
+    "title": "Clear transparente",
+    "subtitle": "Premium alta gama",
+    "imageFile": null,
+    "products": [
+      {
+        "order": 1,
+        "code": "UCL1,37B/M",
+        "description": "Vinil clear para laminar e imprimir",
+        "dimension": "1.37 m × 50 mts",
+        "price": 100
+      }
+    ],
+    "dimensionLabel": "Ancho × Largo"
+  },
+  {
+    "order": 3,
+    "slug": "rigidos",
+    "title": "Rígidos",
+    "subtitle": null,
+    "imageFile": "rigidos.jpg",
+    "products": [
+      {
+        "order": 1,
+        "code": "LAM-ACRILICOS-2",
+        "description": "Láminas de acrílico transparente 2mm",
+        "dimension": "1.22 m × 2.44 m",
+        "price": 45
+      },
+      {
+        "order": 2,
+        "code": "LAM-ACRILICOS-3TR",
+        "description": "Láminas de acrílico transparente 3mm",
+        "dimension": "1.22 m × 2.44 m",
+        "price": 60
+      },
+      {
+        "order": 3,
+        "code": "LAM-ACRILICOS5",
+        "description": "Láminas de acrílico transparente 5mm",
+        "dimension": "1.22 m × 2.44 m",
+        "price": 80
+      },
+      {
+        "order": 4,
+        "code": "LAM-ACRILICOS-3BL",
+        "description": "Láminas de acrílico negras 3mm",
+        "dimension": "1.22 m × 2.44 m",
+        "price": 70
+      },
+      {
+        "order": 5,
+        "code": "LAM-ACRILICOS-3NE",
+        "description": "Láminas de acrílico blanco 3mm",
+        "dimension": "1.22 m × 2.44 m",
+        "price": 70
+      },
+      {
+        "order": 6,
+        "code": "LAM-PVC-3",
+        "description": "Láminas de PVC blanco 3mm",
+        "dimension": "1.22 m × 2.44 m",
+        "price": 15
+      },
+      {
+        "order": 7,
+        "code": "LAM-PVC-5",
+        "description": "Láminas de PVC blanco 5mm",
+        "dimension": "1.22 m × 2.44 m",
+        "price": 20
+      }
+    ],
+    "dimensionLabel": "Ancho × Largo"
+  },
+  {
+    "order": 4,
+    "slug": "transfer",
+    "title": "Transfer",
+    "subtitle": null,
+    "imageFile": "transfer.jpg",
+    "products": [
+      {
+        "order": 1,
+        "code": "UTTPA061",
+        "description": "Transfer middle tack 92gsm",
+        "dimension": "0.61 m × 100 mts",
+        "price": 120
+      }
+    ],
+    "dimensionLabel": "Ancho × Largo"
+  },
+  {
+    "order": 5,
+    "slug": "banner",
+    "title": "Banner",
+    "subtitle": "13 oz",
+    "imageFile": "banner.jpg",
+    "products": [
+      {
+        "order": 1,
+        "code": "LFG55 BRILLANTE",
+        "description": "Banner 13 oz blanco brillante, fondo",
+        "dimension": "3.20 m × 50 mts",
+        "price": 195
+      },
+      {
+        "order": 2,
+        "code": "LFG55 B/MB",
+        "description": "Banner 13 oz blanco brillante y mate",
+        "dimension": "3.20 m × 50 mts",
+        "price": 200
+      }
+    ],
+    "dimensionLabel": "Ancho × Largo"
+  },
+  {
+    "order": 6,
+    "slug": "microperforado",
+    "title": "Microperforado",
+    "subtitle": null,
+    "imageFile": null,
+    "products": [
+      {
+        "order": 1,
+        "code": "OWV155",
+        "description": "Vinil microperforado para UV premium",
+        "dimension": "1.37 m × 50 mts",
+        "price": 150
+      }
+    ],
+    "dimensionLabel": "Ancho × Largo"
+  },
+  {
+    "order": 7,
+    "slug": "floor",
+    "title": "Floor Graphics",
+    "subtitle": null,
+    "imageFile": "floor.jpg",
+    "products": [
+      {
+        "order": 1,
+        "code": "CI-JTFGP100",
+        "description": "Vinil laminado floor graphics para piso",
+        "dimension": "1.27 m × 50 mts",
+        "price": 150
+      }
+    ],
+    "dimensionLabel": "Ancho × Largo"
+  },
+  {
+    "order": 8,
+    "slug": "porta-pendones",
+    "title": "Porta Pendones",
+    "subtitle": null,
+    "imageFile": null,
+    "products": [
+      {
+        "order": 1,
+        "code": "P-CARTEL",
+        "description": "Porta pendón palito chupeta",
+        "dimension": "Unidad",
+        "price": 1
+      },
+      {
+        "order": 2,
+        "code": "P-TRIPODE",
+        "description": "Porta pendón trípode doble cara",
+        "dimension": "2.20 mts",
+        "price": 10
+      },
+      {
+        "order": 3,
+        "code": "P-ROLLUP",
+        "description": "Porta pendón roll up",
+        "dimension": "0.80 m × 2 mts",
+        "price": 30
+      },
+      {
+        "order": 4,
+        "code": "P-ARAÑA-NA",
+        "description": "Porta pendón araña no ajustable",
+        "dimension": "0.80 m × 1.80 mts",
+        "price": 10
+      },
+      {
+        "order": 5,
+        "code": "P-ARAÑA-AJ",
+        "description": "Porta pendón araña ajustable",
+        "dimension": "0.80 m × 1.80 mts",
+        "price": 15
+      },
+      {
+        "order": 6,
+        "code": "STAND-DEG-CU",
+        "description": "Stand de degustación blanco cuadrado",
+        "dimension": "0.85 m",
+        "price": 70
+      },
+      {
+        "order": 7,
+        "code": "STAND-DEG-RE",
+        "description": "Stand de degustación plateado redondo",
+        "dimension": "0.85 m",
+        "price": 100
+      },
+      {
+        "order": 8,
+        "code": "STAND-BA-AJ",
+        "description": "Stand de banner ajustable pared",
+        "dimension": "2.30 m × 2.40 m",
+        "price": 90
+      },
+      {
+        "order": 9,
+        "code": "BACKING-ARA",
+        "description": "Backing tipo araña pop up",
+        "dimension": "2.30 m × 3.00 m",
+        "price": 150
+      },
+      {
+        "order": 10,
+        "code": "PARABAND",
+        "description": "Paraband doble cara (hablador)",
+        "dimension": "0.70 m × 1.00 m",
+        "price": 120
+      }
+    ],
+    "dimensionLabel": "Medida"
+  },
+  {
+    "order": 9,
+    "slug": "cajas-luces",
+    "title": "Cajas de Luces",
+    "subtitle": null,
+    "imageFile": null,
+    "products": [
+      {
+        "order": 1,
+        "code": "CAJ-GD",
+        "description": "Caja LED pared, estructura",
+        "dimension": "Unidad",
+        "price": 250
+      },
+      {
+        "order": 2,
+        "code": "CAJ-PIZARRA1",
+        "description": "Caja pizarra acrílica 0,60×0,90 con luz",
+        "dimension": "Unidad",
+        "price": 90
+      },
+      {
+        "order": 3,
+        "code": "CAJ-PIZARRA2",
+        "description": "Caja pizarra acrílica 0,60×1,20 con luz",
+        "dimension": "Unidad",
+        "price": 110
+      },
+      {
+        "order": 4,
+        "code": "CAJA FIJA",
+        "description": "Chupeta fija con luz 45 cm",
+        "dimension": "Unidad",
+        "price": 60
+      }
+    ],
+    "dimensionLabel": "Medida"
+  },
+  {
+    "order": 10,
+    "slug": "luces-led",
+    "title": "Luces LED",
+    "subtitle": null,
+    "imageFile": "luces-led.jpg",
+    "products": [
+      {
+        "order": 1,
+        "code": "TIRASLED",
+        "description": "Tiras LED strip 6mm (amarillo, rojo, azul, verde, blanco, cálido)",
+        "dimension": "Unidad",
+        "price": 15
+      },
+      {
+        "order": 2,
+        "code": "CABLELED",
+        "description": "Cable LED doble línea, rollo 300 mts",
+        "dimension": "100 mts",
+        "price": 80
+      }
+    ],
+    "dimensionLabel": "Medida"
+  },
+  {
+    "order": 11,
+    "slug": "paletas",
+    "title": "Paletas",
+    "subtitle": null,
+    "imageFile": null,
+    "products": [
+      {
+        "order": 1,
+        "code": "PAL-1",
+        "description": "Paleta rígida color azul y felpa un lado",
+        "dimension": "Unidad",
+        "price": 3
+      },
+      {
+        "order": 2,
+        "code": "PAL-KIT",
+        "description": "Kit de paletas (trae 4), son de silicona",
+        "dimension": "Unidad",
+        "price": 15
+      }
+    ],
+    "dimensionLabel": "Medida"
+  },
+  {
+    "order": 12,
+    "slug": "varios",
+    "title": "Varios",
+    "subtitle": null,
+    "imageFile": "varios.jpg",
+    "products": [
+      {
+        "order": 1,
+        "code": "1",
+        "description": "Doble faz transparente rojo, silicona",
+        "dimension": "50 mts",
+        "price": 30
+      },
+      {
+        "order": 2,
+        "code": "2",
+        "description": "Doble faz transparente amarillo, con malla",
+        "dimension": "30 mts",
+        "price": 31
+      },
+      {
+        "order": 3,
+        "code": "3",
+        "description": "Cinta métrica (metro)",
+        "dimension": "7.5 mts",
+        "price": 5
+      },
+      {
+        "order": 4,
+        "code": "4",
+        "description": "Exacto pequeño",
+        "dimension": "Unidad",
+        "price": 1
+      },
+      {
+        "order": 5,
+        "code": "5",
+        "description": "Exacto sin goma, grande",
+        "dimension": "Unidad",
+        "price": 10
+      },
+      {
+        "order": 6,
+        "code": "6",
+        "description": "Exacto con goma, grande",
+        "dimension": "Unidad",
+        "price": 12
+      },
+      {
+        "order": 7,
+        "code": "7",
+        "description": "Paquete de hojillas pequeñas (10 unidades)",
+        "dimension": "Unidad",
+        "price": 5
+      },
+      {
+        "order": 8,
+        "code": "8",
+        "description": "Paquete de hojillas grandes (10 unidades)",
+        "dimension": "Unidad",
+        "price": 6
+      },
+      {
+        "order": 9,
+        "code": "9",
+        "description": "Tiras para bolsa medianas (100 unidades)",
+        "dimension": "Unidad",
+        "price": 2
+      },
+      {
+        "order": 10,
+        "code": "10",
+        "description": "Tiras para bolsa grandes (100 unidades)",
+        "dimension": "Unidad",
+        "price": 5
+      }
+    ],
+    "dimensionLabel": "Medida"
+  },
+  {
+    "order": 13,
+    "slug": "tintas",
+    "title": "Tintas",
+    "subtitle": null,
+    "imageFile": "tintas.jpg",
+    "products": [
+      {
+        "order": 1,
+        "code": "TINTAS",
+        "description": "Tintas 4 colores CMYK para cabezal",
+        "dimension": "Unidad",
+        "price": 35
+      }
+    ],
+    "dimensionLabel": "Medida"
+  },
+  {
+    "order": 14,
+    "slug": "de-todo",
+    "title": "De Todo",
+    "subtitle": null,
+    "imageFile": null,
+    "products": [
+      {
+        "order": 1,
+        "code": "SELLO-OF",
+        "description": "Sellos de oficina 42×42mm y 47×118mm",
+        "dimension": "Unidad",
+        "price": 20
+      },
+      {
+        "order": 2,
+        "code": "SELLO-PER",
+        "description": "Sellos personales 38×14mm",
+        "dimension": "Unidad",
+        "price": 15
+      },
+      {
+        "order": 3,
+        "code": "LAPICEROS",
+        "description": "Bolsa de bolígrafos sencillos, azul y negro (100 unidades)",
+        "dimension": "Unidad",
+        "price": 15
+      },
+      {
+        "order": 4,
+        "code": "LAPICEROS",
+        "description": "Bolígrafos ejecutivos, negro y azul",
+        "dimension": "Unidad",
+        "price": 1
+      },
+      {
+        "order": 5,
+        "code": "POMOS",
+        "description": "Soportes separadores de acero inoxidable, 30mm",
+        "dimension": "Unidad",
+        "price": 0.5
+      }
+    ],
+    "dimensionLabel": "Medida"
+  }
+]

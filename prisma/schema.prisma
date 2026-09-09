@@ -1,0 +1,39 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Category {
+  id             Int    @id @default(autoincrement())
+  slug           String @unique
+  title          String
+  subtitle       String?
+  imagePath      String?
+  dimensionLabel String @default("Medida")
+  order          Int    @default(0)
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  code        String
+  description String
+  dimension   String
+  price       Decimal  @db.Decimal(10, 2)
+  order       Int      @default(0)
+
+  @@index([categoryId])
+  @@map("products")
+}

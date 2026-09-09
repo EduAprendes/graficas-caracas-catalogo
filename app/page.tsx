@@ -1,69 +1,92 @@
-import Image from "next/image";
+import { getCatalog } from "@/lib/catalog";
+import CatalogBrowser from "@/components/CatalogBrowser";
 
-export default function Home() {
+export const revalidate = 60;
+
+export default async function Home() {
+  const categories = await getCatalog();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="page">
+      <div className="cover">
+        <span className="crop tl"></span>
+        <span className="crop tr"></span>
+        <span className="crop bl"></span>
+        <span className="crop br"></span>
+
+        <p className="eyebrow">
+          <span className="regdots">
+            <span className="c"></span>
+            <span className="m"></span>
+            <span className="y"></span>
+            <span className="k"></span>
+          </span>
+          Lista de precios · vigente
+        </p>
+
+        <h1 className="title">
+          Gráficas <em>Caracas</em>, C.A.
+        </h1>
+        <p className="subtitle">
+          Viniles, acrílicos, banners y sustratos de impresión al mayor y al
+          detal — retiro en almacén o delivery en la Gran Caracas.
+        </p>
+
+        <div className="contact-bar">
+          <div className="contact-item">
+            <span className="contact-label">Ubicación</span>
+            <span className="contact-value">
+              Macaracuay, Almacén Principal, Av. Andrés Bello, Galpón
+            </span>
+          </div>
+          <div className="contact-item">
+            <span className="contact-label">Delivery</span>
+            <span className="contact-value">Gran Caracas, Distrito Capital</span>
+          </div>
+          <div className="contact-item">
+            <span className="contact-label">Teléfono</span>
+            <span className="contact-value">
+              <a href="tel:+584242884998">0424.288.4998</a>
+            </span>
+          </div>
+          <div className="contact-item">
+            <span className="contact-label">Correo</span>
+            <span className="contact-value">
+              <a href="mailto:carlagonzalez0404@gmail.com">
+                carlagonzalez0404@gmail.com
+              </a>
+            </span>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
+
+      <CatalogBrowser categories={categories} />
+
+      <div className="terms">
+        <h2>
+          <span className="regdots">
+            <span className="c"></span>
+            <span className="m"></span>
+            <span className="y"></span>
+            <span className="k"></span>
+          </span>
+          Condiciones de pago y promociones
+        </h2>
+        <dl>
+          <dt>Pagos en divisas</dt>
+          <dd>Promoción de −5% de descuento (no incluye IVA).</dd>
+          <dt>Pagos en bolívares</dt>
+          <dd>Se solicita la tasa Binance del día.</dd>
+          <dt>Descuentos por volumen</dt>
+          <dd>Aplicables por compras al mayor / por cantidad.</dd>
+          <dt>Garantía comercial</dt>
+          <dd>Mejoramos y competimos cualquier presupuesto.</dd>
+        </dl>
+      </div>
+
+      <footer className="foot">
+        Gráficas Caracas, C.A. — Precios sujetos a cambio sin previo aviso
+      </footer>
     </div>
   );
 }
