@@ -1,7 +1,7 @@
 import { getCatalog } from "@/lib/catalog";
 import CatalogBrowser from "@/components/CatalogBrowser";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const categories = await getCatalog();
