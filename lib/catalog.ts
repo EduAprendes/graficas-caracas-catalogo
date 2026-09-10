@@ -6,6 +6,7 @@ export type ProductView = {
   description: string;
   dimension: string;
   price: number;
+  imageUrl: string | null;
 };
 
 export type CategoryView = {
@@ -39,6 +40,7 @@ export async function getCatalog(): Promise<CategoryView[]> {
       description: product.description,
       dimension: product.dimension,
       price: Number(product.price),
+      imageUrl: product.imageUrl,
     })),
   }));
 }

@@ -6,6 +6,7 @@ export type InventoryProduct = {
   description: string;
   dimension: string;
   stock: number;
+  imageUrl: string | null;
 };
 
 export type InventoryCategory = {
@@ -31,6 +32,7 @@ export async function getInventory(): Promise<InventoryCategory[]> {
       description: product.description,
       dimension: product.dimension,
       stock: product.stock,
+      imageUrl: product.imageUrl,
     })),
   }));
 }

@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { getInventory } from "@/lib/inventory";
 import { adjustStockForm, logoutAction } from "./actions";
+import ProductImageUpload from "@/components/admin/ProductImageUpload";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export default async function AdminPage() {
             <table>
               <thead>
                 <tr>
+                  <th>Foto</th>
                   <th>Código</th>
                   <th>Descripción</th>
                   <th className="num">Stock</th>
@@ -38,6 +40,13 @@ export default async function AdminPage() {
               <tbody>
                 {category.products.map((product) => (
                   <tr key={product.id}>
+                    <td>
+                      <ProductImageUpload
+                        productId={product.id}
+                        productLabel={product.description}
+                        initialImageUrl={product.imageUrl}
+                      />
+                    </td>
                     <td>
                       <span className="code">{product.code}</span>
                     </td>

@@ -11,13 +11,13 @@ datasource db {
 }
 
 model Category {
-  id             Int    @id @default(autoincrement())
-  slug           String @unique
+  id             Int     @id @default(autoincrement())
+  slug           String  @unique
   title          String
   subtitle       String?
   imagePath      String?
-  dimensionLabel String @default("Medida")
-  order          Int    @default(0)
+  dimensionLabel String  @default("Medida")
+  order          Int     @default(0)
 
   products Product[]
 
@@ -25,15 +25,17 @@ model Category {
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
-  categoryId  Int
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  code        String
-  description String
-  dimension   String
-  price       Decimal  @db.Decimal(10, 2)
-  stock       Int      @default(0)
-  order       Int      @default(0)
+  id            Int      @id @default(autoincrement())
+  categoryId    Int
+  category      Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  code          String
+  description   String
+  dimension     String
+  price         Decimal  @db.Decimal(10, 2)
+  stock         Int      @default(0)
+  order         Int      @default(0)
+  imageUrl      String?
+  imagePublicId String?
 
   movements StockMovement[]
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { CategoryView } from "@/lib/catalog";
+import { useEffect, useMemo, useState } from "react";
+import type { CategoryView, ProductView } from "@/lib/catalog";
 
 function sinTildes(s: string) {
   return s.normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -14,6 +14,16 @@ function formatPrice(price: number) {
 export default function CatalogBrowser({ categories }: { categories: CategoryView[] }) {
   const [query, setQuery] = useState("");
   const [activeCat, setActiveCat] = useState("all");
+  const [previewProduct, setPreviewProduct] = useState<ProductView | null>(null);
+
+  useEffect(() => {
+    if (!previewProduct) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setPreviewProduct(null);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [previewProduct]);
 
   const q = sinTildes(query.trim().toLowerCase());
 
@@ -125,7 +135,20 @@ export default function CatalogBrowser({ categories }: { categories: CategoryVie
               </thead>
               <tbody>
                 {products.map((product) => (
-                  <tr key={product.id}>
+                  <tr
+                    key={product.id}
+                    className="clickable-row"
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Ver imagen de ${product.description}`}
+                    onClick={() => setPreviewProduct(product)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setPreviewProduct(product);
+                      }
+                    }}
+                  >
                     <td data-label="Código">
                       <span className="code prod-code">{product.code}</span>
                     </td>
@@ -150,6 +173,43 @@ export default function CatalogBrowser({ categories }: { categories: CategoryVie
       <p className={`no-results${visibleCount === 0 ? " visible" : ""}`}>
         Ningún producto coincide con la búsqueda.
       </p>
+
+      {previewProduct ? (
+        <div
+          className="product-modal-overlay"
+          onClick={() => setPreviewProduct(null)}
+        >
+          <div
+            className="product-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={previewProduct.description}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="product-modal-close"
+              onClick={() => setPreviewProduct(null)}
+              aria-label="Cerrar"
+            >
+              ×
+            </button>
+            {previewProduct.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={previewProduct.imageUrl}
+                alt={previewProduct.description}
+                className="product-modal-img"
+              />
+            ) : (
+              <div className="product-modal-empty">Todavía no hay una foto cargada para este producto.</div>
+            )}
+            <p className="product-modal-caption">
+              <span className="code">{previewProduct.code}</span> — {previewProduct.description}
+            </p>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }
