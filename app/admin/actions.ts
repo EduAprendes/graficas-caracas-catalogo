@@ -83,6 +83,49 @@ export async function removeProductImage(productId: number) {
   revalidatePath("/");
 }
 
+export async function setCategoryImage(
+  categoryId: number,
+  image: { url: string; publicId: string }
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("No autorizado");
+  }
+
+  const previous = await prisma.category.findUniqueOrThrow({ where: { id: categoryId } });
+
+  await prisma.category.update({
+    where: { id: categoryId },
+    data: { imagePath: image.url, imagePublicId: image.publicId },
+  });
+
+  if (previous.imagePublicId && previous.imagePublicId !== image.publicId) {
+    await deleteCloudinaryImage(previous.imagePublicId);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function removeCategoryImage(categoryId: number) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("No autorizado");
+  }
+
+  const previous = await prisma.category.findUniqueOrThrow({ where: { id: categoryId } });
+
+  await prisma.category.update({
+    where: { id: categoryId },
+    data: { imagePath: null, imagePublicId: null },
+  });
+
+  await deleteCloudinaryImage(previous.imagePublicId);
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
 export async function logoutAction() {
   await signOut({ redirectTo: "/login" });
 }

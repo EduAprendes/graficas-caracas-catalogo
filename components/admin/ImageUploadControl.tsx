@@ -1,16 +1,17 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { removeProductImage, setProductImage } from "@/app/admin/actions";
 
-export default function ProductImageUpload({
-  productId,
-  productLabel,
+export default function ImageUploadControl({
+  label,
   initialImageUrl,
+  onUpload,
+  onRemove,
 }: {
-  productId: number;
-  productLabel: string;
+  label: string;
   initialImageUrl: string | null;
+  onUpload: (image: { url: string; publicId: string }) => void | Promise<void>;
+  onRemove: () => void | Promise<void>;
 }) {
   const [imageUrl, setImageUrl] = useState(initialImageUrl);
   const [uploading, setUploading] = useState(false);
@@ -34,7 +35,7 @@ export default function ProductImageUpload({
 
       setImageUrl(data.url);
       startTransition(() => {
-        setProductImage(productId, { url: data.url, publicId: data.publicId });
+        onUpload({ url: data.url, publicId: data.publicId });
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al subir la imagen");
@@ -47,24 +48,24 @@ export default function ProductImageUpload({
     setImageUrl(null);
     setError(null);
     startTransition(() => {
-      removeProductImage(productId);
+      onRemove();
     });
   }
 
   const busy = uploading || isPending;
 
   return (
-    <div className="product-image-upload">
+    <div className="image-upload">
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={imageUrl} alt={productLabel} className="product-image-thumb" />
+        <img src={imageUrl} alt={label} className="image-upload-thumb" />
       ) : (
-        <div className="product-image-thumb product-image-empty">Sin foto</div>
+        <div className="image-upload-thumb image-upload-empty">Sin foto</div>
       )}
-      <div className="product-image-actions">
+      <div className="image-upload-actions">
         <button
           type="button"
-          className="product-image-btn"
+          className="image-upload-btn"
           onClick={() => inputRef.current?.click()}
           disabled={busy}
         >
@@ -73,7 +74,7 @@ export default function ProductImageUpload({
         {imageUrl ? (
           <button
             type="button"
-            className="product-image-btn product-image-btn-remove"
+            className="image-upload-btn image-upload-btn-remove"
             onClick={handleRemove}
             disabled={busy}
           >
@@ -88,7 +89,7 @@ export default function ProductImageUpload({
         hidden
         onChange={handleFileChange}
       />
-      {error ? <span className="product-image-error">{error}</span> : null}
+      {error ? <span className="image-upload-error">{error}</span> : null}
     </div>
   );
 }

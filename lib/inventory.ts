@@ -12,6 +12,7 @@ export type InventoryProduct = {
 export type InventoryCategory = {
   id: number;
   title: string;
+  imagePath: string | null;
   products: InventoryProduct[];
 };
 
@@ -26,6 +27,7 @@ export async function getInventory(): Promise<InventoryCategory[]> {
   return categories.map((category) => ({
     id: category.id,
     title: category.title,
+    imagePath: category.imagePath,
     products: category.products.map((product) => ({
       id: product.id,
       code: product.code,

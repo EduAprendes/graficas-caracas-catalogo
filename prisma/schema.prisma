@@ -16,6 +16,7 @@ model Category {
   title          String
   subtitle       String?
   imagePath      String?
+  imagePublicId  String?
   dimensionLabel String  @default("Medida")
   order          Int     @default(0)
 

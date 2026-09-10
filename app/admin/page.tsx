@@ -1,7 +1,14 @@
 import { auth } from "@/auth";
 import { getInventory } from "@/lib/inventory";
-import { adjustStockForm, logoutAction } from "./actions";
-import ProductImageUpload from "@/components/admin/ProductImageUpload";
+import {
+  adjustStockForm,
+  logoutAction,
+  removeCategoryImage,
+  removeProductImage,
+  setCategoryImage,
+  setProductImage,
+} from "./actions";
+import ImageUploadControl from "@/components/admin/ImageUploadControl";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +32,15 @@ export default async function AdminPage() {
 
       {categories.map((category) => (
         <section key={category.id} className="admin-category">
-          <h2>{category.title}</h2>
+          <div className="admin-category-head">
+            <ImageUploadControl
+              label={category.title}
+              initialImageUrl={category.imagePath}
+              onUpload={setCategoryImage.bind(null, category.id)}
+              onRemove={removeCategoryImage.bind(null, category.id)}
+            />
+            <h2>{category.title}</h2>
+          </div>
           <div className="admin-table-wrap">
             <table>
               <thead>
@@ -41,10 +56,11 @@ export default async function AdminPage() {
                 {category.products.map((product) => (
                   <tr key={product.id}>
                     <td>
-                      <ProductImageUpload
-                        productId={product.id}
-                        productLabel={product.description}
+                      <ImageUploadControl
+                        label={product.description}
                         initialImageUrl={product.imageUrl}
+                        onUpload={setProductImage.bind(null, product.id)}
+                        onRemove={removeProductImage.bind(null, product.id)}
                       />
                     </td>
                     <td>

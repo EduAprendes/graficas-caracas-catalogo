@@ -683,11 +683,18 @@ footer.foot {
   margin-top: 28px;
 }
 
-.admin-category h2 {
-  font-size: 1.1rem;
-  margin: 0 0 10px;
+.admin-category-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--line);
+}
+
+.admin-category-head h2 {
+  font-size: 1.1rem;
+  margin: 0;
 }
 
 .admin-table-wrap {
@@ -769,7 +776,7 @@ footer.foot {
 .stock-btn.stock-out { background: var(--surface); color: var(--accent); border-color: var(--accent); }
 .stock-btn.stock-out:hover { background: var(--accent-ink); }
 
-.product-image-upload {
+.image-upload {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -777,7 +784,7 @@ footer.foot {
   width: 76px;
 }
 
-.product-image-thumb {
+.image-upload-thumb {
   width: 64px;
   height: 64px;
   object-fit: cover;
@@ -786,7 +793,7 @@ footer.foot {
   border-radius: 3px;
 }
 
-.product-image-empty {
+.image-upload-empty {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -799,14 +806,14 @@ footer.foot {
   padding: 4px;
 }
 
-.product-image-actions {
+.image-upload-actions {
   display: flex;
   flex-direction: column;
   gap: 4px;
   width: 100%;
 }
 
-.product-image-btn {
+.image-upload-btn {
   font-family: var(--font-mono), monospace;
   font-size: 0.62rem;
   letter-spacing: 0.03em;
@@ -819,13 +826,13 @@ footer.foot {
   cursor: pointer;
   white-space: nowrap;
 }
-.product-image-btn:hover { border-color: var(--ink-muted); }
-.product-image-btn:disabled { opacity: 0.6; cursor: default; }
+.image-upload-btn:hover { border-color: var(--ink-muted); }
+.image-upload-btn:disabled { opacity: 0.6; cursor: default; }
 
-.product-image-btn-remove { color: var(--accent); border-color: var(--accent); }
-.product-image-btn-remove:hover { background: var(--accent-ink); }
+.image-upload-btn-remove { color: var(--accent); border-color: var(--accent); }
+.image-upload-btn-remove:hover { background: var(--accent-ink); }
 
-.product-image-error {
+.image-upload-error {
   font-size: 0.62rem;
   color: var(--accent);
   text-align: center;
