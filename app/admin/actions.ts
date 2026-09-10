@@ -4,6 +4,15 @@ import { revalidatePath } from "next/cache";
 import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteCloudinaryImage } from "@/lib/cloudinary";
+import { slugify } from "@/lib/slug";
+
+async function requireSession() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("No autorizado");
+  }
+  return session;
+}
 
 export async function adjustStock(productId: number, delta: number) {
   const session = await auth();
@@ -121,6 +130,128 @@ export async function removeCategoryImage(categoryId: number) {
   });
 
   await deleteCloudinaryImage(previous.imagePublicId);
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function createCategory(formData: FormData) {
+  await requireSession();
+
+  const title = String(formData.get("title") || "").trim();
+  if (!title) return;
+  const subtitle = String(formData.get("subtitle") || "").trim() || null;
+  const dimensionLabel = String(formData.get("dimensionLabel") || "").trim() || "Medida";
+  const order = Number(formData.get("order"));
+
+  const baseSlug = slugify(title) || "categoria";
+  let slug = baseSlug;
+  let suffix = 2;
+  while (await prisma.category.findUnique({ where: { slug } })) {
+    slug = `${baseSlug}-${suffix++}`;
+  }
+
+  await prisma.category.create({
+    data: {
+      slug,
+      title,
+      subtitle,
+      dimensionLabel,
+      order: Number.isFinite(order) ? Math.trunc(order) : 0,
+    },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function updateCategory(categoryId: number, formData: FormData) {
+  await requireSession();
+
+  const title = String(formData.get("title") || "").trim();
+  if (!title) return;
+  const subtitle = String(formData.get("subtitle") || "").trim() || null;
+  const dimensionLabel = String(formData.get("dimensionLabel") || "").trim() || "Medida";
+
+  await prisma.category.update({
+    where: { id: categoryId },
+    data: { title, subtitle, dimensionLabel },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function deleteCategory(categoryId: number) {
+  await requireSession();
+
+  const category = await prisma.category.findUniqueOrThrow({
+    where: { id: categoryId },
+    include: { products: true },
+  });
+
+  await prisma.category.delete({ where: { id: categoryId } });
+
+  await deleteCloudinaryImage(category.imagePublicId);
+  await Promise.all(category.products.map((p) => deleteCloudinaryImage(p.imagePublicId)));
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function createProduct(categoryId: number, formData: FormData) {
+  await requireSession();
+
+  const code = String(formData.get("code") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const dimension = String(formData.get("dimension") || "").trim();
+  const price = Number(formData.get("price"));
+  const stock = Number(formData.get("stock"));
+  const order = Number(formData.get("order"));
+
+  if (!code || !description || !Number.isFinite(price)) return;
+
+  await prisma.product.create({
+    data: {
+      categoryId,
+      code,
+      description,
+      dimension,
+      price,
+      stock: Number.isFinite(stock) ? Math.max(0, Math.trunc(stock)) : 0,
+      order: Number.isFinite(order) ? Math.trunc(order) : 0,
+    },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function updateProduct(productId: number, formData: FormData) {
+  await requireSession();
+
+  const code = String(formData.get("code") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const dimension = String(formData.get("dimension") || "").trim();
+  const price = Number(formData.get("price"));
+
+  if (!code || !description || !Number.isFinite(price)) return;
+
+  await prisma.product.update({
+    where: { id: productId },
+    data: { code, description, dimension, price },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function deleteProduct(productId: number) {
+  await requireSession();
+
+  const product = await prisma.product.findUniqueOrThrow({ where: { id: productId } });
+  await prisma.product.delete({ where: { id: productId } });
+  await deleteCloudinaryImage(product.imagePublicId);
 
   revalidatePath("/admin");
   revalidatePath("/");

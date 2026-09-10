@@ -1,14 +1,22 @@
 import { auth } from "@/auth";
 import { getInventory } from "@/lib/inventory";
 import {
-  adjustStockForm,
+  createCategory,
+  createProduct,
+  deleteCategory,
+  deleteProduct,
   logoutAction,
   removeCategoryImage,
   removeProductImage,
   setCategoryImage,
   setProductImage,
+  updateCategory,
+  updateProduct,
 } from "./actions";
-import ImageUploadControl from "@/components/admin/ImageUploadControl";
+import CategoryHead from "@/components/admin/CategoryHead";
+import NewCategoryForm from "@/components/admin/NewCategoryForm";
+import NewProductForm from "@/components/admin/NewProductForm";
+import ProductRow from "@/components/admin/ProductRow";
 
 export const dynamic = "force-dynamic";
 
@@ -30,17 +38,17 @@ export default async function AdminPage() {
         </form>
       </div>
 
+      <NewCategoryForm onCreate={createCategory} nextOrder={categories.length} />
+
       {categories.map((category) => (
         <section key={category.id} className="admin-category">
-          <div className="admin-category-head">
-            <ImageUploadControl
-              label={category.title}
-              initialImageUrl={category.imagePath}
-              onUpload={setCategoryImage.bind(null, category.id)}
-              onRemove={removeCategoryImage.bind(null, category.id)}
-            />
-            <h2>{category.title}</h2>
-          </div>
+          <CategoryHead
+            category={category}
+            onUploadImage={setCategoryImage.bind(null, category.id)}
+            onRemoveImage={removeCategoryImage.bind(null, category.id)}
+            onUpdate={updateCategory.bind(null, category.id)}
+            onDelete={deleteCategory.bind(null, category.id)}
+          />
           <div className="admin-table-wrap">
             <table>
               <thead>
@@ -50,51 +58,24 @@ export default async function AdminPage() {
                   <th>Descripción</th>
                   <th className="num">Stock</th>
                   <th className="num">Ajustar</th>
+                  <th className="num">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {category.products.map((product) => (
-                  <tr key={product.id}>
-                    <td>
-                      <ImageUploadControl
-                        label={product.description}
-                        initialImageUrl={product.imageUrl}
-                        onUpload={setProductImage.bind(null, product.id)}
-                        onRemove={removeProductImage.bind(null, product.id)}
-                      />
-                    </td>
-                    <td>
-                      <span className="code">{product.code}</span>
-                    </td>
-                    <td>{product.description}</td>
-                    <td className="num">
-                      <span
-                        className={`stock-badge${product.stock === 0 ? " stock-zero" : ""}`}
-                      >
-                        {product.stock}
-                      </span>
-                    </td>
-                    <td className="num">
-                      <form action={adjustStockForm} className="stock-form">
-                        <input type="hidden" name="productId" value={product.id} />
-                        <input
-                          type="number"
-                          name="amount"
-                          min={1}
-                          defaultValue={1}
-                          className="stock-amount"
-                          aria-label={`Cantidad a ajustar para ${product.description}`}
-                        />
-                        <button type="submit" name="direction" value="in" className="stock-btn stock-in">
-                          + Entrada
-                        </button>
-                        <button type="submit" name="direction" value="out" className="stock-btn stock-out">
-                          − Salida
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
+                  <ProductRow
+                    key={product.id}
+                    product={product}
+                    onUploadImage={setProductImage.bind(null, product.id)}
+                    onRemoveImage={removeProductImage.bind(null, product.id)}
+                    onUpdate={updateProduct.bind(null, product.id)}
+                    onDelete={deleteProduct.bind(null, product.id)}
+                  />
                 ))}
+                <NewProductForm
+                  onCreate={createProduct.bind(null, category.id)}
+                  nextOrder={category.products.length}
+                />
               </tbody>
             </table>
           </div>

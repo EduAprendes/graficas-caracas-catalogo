@@ -690,12 +690,16 @@ footer.foot {
   margin-bottom: 10px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
 }
 
 .admin-category-head h2 {
   font-size: 1.1rem;
   margin: 0;
+  flex: 1;
 }
+
+.admin-category-head .admin-form { flex: 1; }
 
 .admin-table-wrap {
   overflow-x: auto;
@@ -836,4 +840,107 @@ footer.foot {
   font-size: 0.62rem;
   color: var(--accent);
   text-align: center;
+}
+
+/* ---- Admin: crear/editar/borrar ---- */
+
+.admin-add-btn {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px dashed var(--line);
+  border-radius: 3px;
+  padding: 10px 14px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+.admin-add-btn:hover { border-color: var(--ink-muted); }
+
+.admin-add-category-btn {
+  margin-bottom: 20px;
+}
+
+.admin-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-new-category-form {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 14px;
+  margin-bottom: 20px;
+}
+
+.admin-edit-form {
+  padding: 6px 0;
+}
+
+.admin-input {
+  flex: 1 1 160px;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.85rem;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 7px 9px;
+  min-width: 0;
+}
+
+.admin-input-sm {
+  flex: 0 1 100px;
+}
+
+.admin-save-btn,
+.admin-cancel-btn,
+.admin-edit-btn,
+.admin-delete-btn {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  padding: 7px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.admin-save-btn:disabled,
+.admin-cancel-btn:disabled,
+.admin-edit-btn:disabled,
+.admin-delete-btn:disabled { opacity: 0.6; cursor: default; }
+
+.admin-save-btn {
+  background: var(--ink);
+  color: var(--bg);
+  border: 1px solid var(--ink);
+}
+
+.admin-cancel-btn,
+.admin-edit-btn {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.admin-cancel-btn:hover,
+.admin-edit-btn:hover { border-color: var(--ink-muted); }
+
+.admin-delete-btn {
+  background: var(--surface);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+.admin-delete-btn:hover { background: var(--accent-ink); }
+
+.admin-row-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
