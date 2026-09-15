@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import ImageUploadControl from "@/components/admin/ImageUploadControl";
 import { adjustStockForm } from "@/app/admin/actions";
 
@@ -108,7 +109,9 @@ export default function ProductRow({
         />
       </td>
       <td>
-        <span className="code">{product.code}</span>
+        <Link href={`/admin/productos/${product.id}`} className="code code-link">
+          {product.code}
+        </Link>
       </td>
       <td>{product.description}</td>
       <td className="num">

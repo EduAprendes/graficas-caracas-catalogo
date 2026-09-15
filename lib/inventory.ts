@@ -44,3 +44,30 @@ export async function getInventory(): Promise<InventoryCategory[]> {
     })),
   }));
 }
+
+export type ProductOption = {
+  id: number;
+  code: string;
+  description: string;
+  dimension: string;
+  price: number;
+  stock: number;
+  categoryTitle: string;
+};
+
+export async function getProductOptions(): Promise<ProductOption[]> {
+  const products = await prisma.product.findMany({
+    orderBy: [{ category: { order: "asc" } }, { order: "asc" }],
+    include: { category: true },
+  });
+
+  return products.map((product) => ({
+    id: product.id,
+    code: product.code,
+    description: product.description,
+    dimension: product.dimension,
+    price: Number(product.price),
+    stock: product.stock,
+    categoryTitle: product.category.title,
+  }));
+}

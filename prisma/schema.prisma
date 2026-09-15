@@ -38,7 +38,9 @@ model Product {
   imageUrl      String?
   imagePublicId String?
 
-  movements StockMovement[]
+  movements          StockMovement[]
+  salesOrderItems    SalesOrderItem[]
+  purchaseOrderItems PurchaseOrderItem[]
 
   @@index([categoryId])
   @@map("products")
@@ -51,7 +53,9 @@ model User {
   name         String
   createdAt    DateTime @default(now())
 
-  movements StockMovement[]
+  movements      StockMovement[]
+  salesOrders    SalesOrder[]
+  purchaseOrders PurchaseOrder[]
 
   @@map("users")
 }
@@ -63,9 +67,93 @@ model StockMovement {
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
   delta     Int
+  reason    String   @default("AJUSTE")
   createdAt DateTime @default(now())
+
+  salesOrderItemId    Int?
+  salesOrderItem      SalesOrderItem?    @relation(fields: [salesOrderItemId], references: [id])
+  purchaseOrderItemId Int?
+  purchaseOrderItem   PurchaseOrderItem? @relation(fields: [purchaseOrderItemId], references: [id])
 
   @@index([productId])
   @@index([userId])
+  @@index([salesOrderItemId])
+  @@index([purchaseOrderItemId])
   @@map("stock_movements")
+}
+
+/// Orden de venta (reemplaza la hoja impresa: cliente, fecha/hora, plotter y líneas de trabajo)
+model SalesOrder {
+  id           Int      @id @default(autoincrement())
+  customerName String
+  plotter      String?
+  notes        String?
+  status       String   @default("CONFIRMADA")
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+
+  items SalesOrderItem[]
+
+  @@index([userId])
+  @@map("sales_orders")
+}
+
+model SalesOrderItem {
+  id       Int        @id @default(autoincrement())
+  orderId  Int
+  order    SalesOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  position Int        @default(0)
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  material    String?
+  tipo        String?
+  reverso     String?
+  acabado     String?
+  ancho       Decimal? @db.Decimal(10, 2)
+  alto        Decimal? @db.Decimal(10, 2)
+  m2          Decimal? @db.Decimal(10, 2)
+  description String
+  quantity    Int
+
+  movements StockMovement[]
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("sales_order_items")
+}
+
+/// Orden de compra / reposición de inventario
+model PurchaseOrder {
+  id           Int       @id @default(autoincrement())
+  supplierName String
+  notes        String?
+  status       String    @default("PENDIENTE")
+  userId       Int
+  user         User      @relation(fields: [userId], references: [id])
+  createdAt    DateTime  @default(now())
+  receivedAt   DateTime?
+
+  items PurchaseOrderItem[]
+
+  @@index([userId])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id        Int           @id @default(autoincrement())
+  orderId   Int
+  order     PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product       @relation(fields: [productId], references: [id])
+  quantity  Int
+  cost      Decimal?      @db.Decimal(10, 2)
+
+  movements StockMovement[]
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("purchase_order_items")
 }

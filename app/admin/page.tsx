@@ -13,6 +13,7 @@ import {
   updateCategory,
   updateProduct,
 } from "./actions";
+import AdminNav from "@/components/admin/AdminNav";
 import CategoryHead from "@/components/admin/CategoryHead";
 import NewCategoryForm from "@/components/admin/NewCategoryForm";
 import NewProductForm from "@/components/admin/NewProductForm";
@@ -37,6 +38,8 @@ export default async function AdminPage() {
           </button>
         </form>
       </div>
+
+      <AdminNav current="/admin" />
 
       <NewCategoryForm onCreate={createCategory} nextOrder={categories.length} />
 
