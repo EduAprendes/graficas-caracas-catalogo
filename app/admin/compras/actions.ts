@@ -6,6 +6,7 @@ import {
   cancelPurchaseOrder as cancelPurchaseOrderData,
   createPurchaseOrder as createPurchaseOrderData,
   receivePurchaseOrder as receivePurchaseOrderData,
+  updatePurchaseOrder as updatePurchaseOrderData,
   type PurchaseOrderItemInput,
 } from "@/lib/orders";
 
@@ -36,6 +37,29 @@ export async function createPurchaseOrderAction(input: {
   }
 }
 
+export async function updatePurchaseOrderAction(
+  orderId: number,
+  input: { supplierName: string; notes: string; items: PurchaseOrderItemInput[] }
+): Promise<{ id: number } | { error: string }> {
+  try {
+    const userId = await requireUserId();
+    await updatePurchaseOrderData(orderId, userId, {
+      supplierName: input.supplierName,
+      notes: input.notes || null,
+      items: input.items,
+    });
+
+    revalidatePath(`/admin/compras/${orderId}`);
+    revalidatePath("/admin/compras");
+    revalidatePath("/admin");
+    revalidatePath("/");
+
+    return { id: orderId };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "No se pudo actualizar la orden" };
+  }
+}
+
 export async function receivePurchaseOrderAction(orderId: number) {
   const userId = await requireUserId();
   await receivePurchaseOrderData(orderId, userId);
@@ -47,9 +71,11 @@ export async function receivePurchaseOrderAction(orderId: number) {
 }
 
 export async function cancelPurchaseOrderAction(orderId: number) {
-  await requireUserId();
-  await cancelPurchaseOrderData(orderId);
+  const userId = await requireUserId();
+  await cancelPurchaseOrderData(orderId, userId);
 
   revalidatePath(`/admin/compras/${orderId}`);
   revalidatePath("/admin/compras");
+  revalidatePath("/admin");
+  revalidatePath("/");
 }

@@ -26,7 +26,7 @@ export default function NewProductForm({
   if (!open) {
     return (
       <tr>
-        <td colSpan={6}>
+        <td colSpan={8}>
           <button type="button" className="admin-add-btn" onClick={() => setOpen(true)}>
             + Nuevo producto
           </button>
@@ -37,7 +37,7 @@ export default function NewProductForm({
 
   return (
     <tr>
-      <td colSpan={6}>
+      <td colSpan={8}>
         <form className="admin-form" onSubmit={handleSubmit}>
           <input name="code" placeholder="Código" required className="admin-input admin-input-sm" />
           <input name="description" placeholder="Descripción" required className="admin-input" />
@@ -49,6 +49,14 @@ export default function NewProductForm({
             min="0"
             placeholder="Precio"
             required
+            className="admin-input admin-input-sm"
+          />
+          <input
+            name="suggestedPrice"
+            type="number"
+            step="0.01"
+            min="0"
+            placeholder="Precio sugerido"
             className="admin-input admin-input-sm"
           />
           <input

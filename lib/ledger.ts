@@ -8,6 +8,7 @@ export type LedgerEntry = {
   balance: number;
   userName: string;
   reference: string | null;
+  referenceHref: string | null;
 };
 
 export type ProductLedger = {
@@ -27,6 +28,8 @@ const REASON_LABELS: Record<string, string> = {
   VENTA: "Venta",
   COMPRA: "Compra",
   ANULACION_VENTA: "Anulación de venta",
+  AJUSTE_COMPRA: "Ajuste por edición de compra",
+  ANULACION_COMPRA: "Anulación de compra",
 };
 
 export function reasonLabel(reason: string): string {
@@ -55,10 +58,13 @@ export async function getProductLedger(productId: number): Promise<ProductLedger
     balance += movement.delta;
 
     let reference: string | null = null;
+    let referenceHref: string | null = null;
     if (movement.salesOrderItem) {
       reference = `Venta #${movement.salesOrderItem.order.id} — ${movement.salesOrderItem.order.customerName}`;
+      referenceHref = `/admin/pedidos/${movement.salesOrderItem.order.id}`;
     } else if (movement.purchaseOrderItem) {
       reference = `Compra #${movement.purchaseOrderItem.order.id} — ${movement.purchaseOrderItem.order.supplierName}`;
+      referenceHref = `/admin/compras/${movement.purchaseOrderItem.order.id}`;
     }
 
     return {
@@ -69,6 +75,7 @@ export async function getProductLedger(productId: number): Promise<ProductLedger
       balance,
       userName: movement.user.name,
       reference,
+      referenceHref,
     };
   });
 

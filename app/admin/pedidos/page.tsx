@@ -7,6 +7,11 @@ import { logoutAction } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
 
+const PAYMENT_TYPE_LABELS: Record<string, string> = {
+  CONTADO: "Contado",
+  CREDITO: "Crédito",
+};
+
 export default async function SalesOrdersPage() {
   const session = await auth();
   const orders = await getSalesOrders();
@@ -43,6 +48,9 @@ export default async function SalesOrdersPage() {
               <th>Plotter</th>
               <th className="num">Líneas</th>
               <th className="num">Cant.</th>
+              <th className="num">Total</th>
+              <th>Pago</th>
+              <th className="num">Saldo</th>
               <th>Estado</th>
               <th>Usuario</th>
               <th></th>
@@ -51,7 +59,7 @@ export default async function SalesOrdersPage() {
           <tbody>
             {orders.length === 0 ? (
               <tr>
-                <td colSpan={9} className="ledger-empty">
+                <td colSpan={12} className="ledger-empty">
                   Todavía no hay órdenes de venta. Creá la primera con &quot;+ Nueva orden de
                   venta&quot;.
                 </td>
@@ -59,18 +67,27 @@ export default async function SalesOrdersPage() {
             ) : (
               orders.map((order) => (
                 <tr key={order.id}>
-                  <td>#{order.id}</td>
-                  <td>{formatDateTime(order.createdAt)}</td>
-                  <td>{order.customerName}</td>
-                  <td>{order.plotter ?? "—"}</td>
-                  <td className="num">{order.itemCount}</td>
-                  <td className="num">{order.totalQuantity}</td>
-                  <td>
+                  <td data-label="N°">#{order.id}</td>
+                  <td data-label="Fecha">{formatDateTime(order.createdAt)}</td>
+                  <td data-label="Cliente">{order.customerName}</td>
+                  <td data-label="Plotter">{order.plotter ?? "—"}</td>
+                  <td className="num" data-label="Líneas">{order.itemCount}</td>
+                  <td className="num" data-label="Cant.">{order.totalQuantity}</td>
+                  <td className="num" data-label="Total">{order.totalAmount.toFixed(2)}</td>
+                  <td data-label="Pago">{PAYMENT_TYPE_LABELS[order.paymentType] ?? order.paymentType}</td>
+                  <td className="num" data-label="Saldo">
+                    {order.balance > 0 ? (
+                      <span className="stock-badge stock-zero">{order.balance.toFixed(2)}</span>
+                    ) : (
+                      "0.00"
+                    )}
+                  </td>
+                  <td data-label="Estado">
                     <span className={`status-badge status-${order.status.toLowerCase()}`}>
                       {order.status}
                     </span>
                   </td>
-                  <td>{order.userName}</td>
+                  <td data-label="Usuario">{order.userName}</td>
                   <td>
                     <Link href={`/admin/pedidos/${order.id}`} className="admin-edit-btn">
                       Ver

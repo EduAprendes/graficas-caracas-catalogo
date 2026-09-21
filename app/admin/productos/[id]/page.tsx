@@ -81,14 +81,25 @@ export default async function ProductLedgerPage({
             ) : (
               entries.map((entry) => (
                 <tr key={entry.id}>
-                  <td>{formatDateTime(entry.createdAt)}</td>
-                  <td>{reasonLabel(entry.reason)}</td>
-                  <td className={`num ledger-delta${entry.delta < 0 ? " ledger-delta-out" : " ledger-delta-in"}`}>
+                  <td data-label="Fecha">{formatDateTime(entry.createdAt)}</td>
+                  <td data-label="Movimiento">{reasonLabel(entry.reason)}</td>
+                  <td
+                    className={`num ledger-delta${entry.delta < 0 ? " ledger-delta-out" : " ledger-delta-in"}`}
+                    data-label="Cantidad"
+                  >
                     {entry.delta > 0 ? `+${entry.delta}` : entry.delta}
                   </td>
-                  <td className="num">{entry.balance}</td>
-                  <td>{entry.reference ?? "—"}</td>
-                  <td>{entry.userName}</td>
+                  <td className="num" data-label="Saldo">{entry.balance}</td>
+                  <td data-label="Referencia">
+                    {entry.reference && entry.referenceHref ? (
+                      <Link href={entry.referenceHref} className="code-link">
+                        {entry.reference}
+                      </Link>
+                    ) : (
+                      (entry.reference ?? "—")
+                    )}
+                  </td>
+                  <td data-label="Usuario">{entry.userName}</td>
                 </tr>
               ))
             )}

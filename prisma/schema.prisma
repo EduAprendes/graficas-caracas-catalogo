@@ -26,17 +26,18 @@ model Category {
 }
 
 model Product {
-  id            Int      @id @default(autoincrement())
-  categoryId    Int
-  category      Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  code          String
-  description   String
-  dimension     String
-  price         Decimal  @db.Decimal(10, 2)
-  stock         Int      @default(0)
-  order         Int      @default(0)
-  imageUrl      String?
-  imagePublicId String?
+  id             Int      @id @default(autoincrement())
+  categoryId     Int
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  code           String
+  description    String
+  dimension      String
+  price          Decimal  @db.Decimal(10, 2)
+  suggestedPrice Decimal? @db.Decimal(10, 2)
+  stock          Int      @default(0)
+  order          Int      @default(0)
+  imageUrl       String?
+  imagePublicId  String?
 
   movements          StockMovement[]
   salesOrderItems    SalesOrderItem[]
@@ -53,11 +54,25 @@ model User {
   name         String
   createdAt    DateTime @default(now())
 
-  movements      StockMovement[]
-  salesOrders    SalesOrder[]
-  purchaseOrders PurchaseOrder[]
+  movements          StockMovement[]
+  salesOrders        SalesOrder[]
+  purchaseOrders     PurchaseOrder[]
+  salesOrderPayments SalesOrderPayment[]
 
   @@map("users")
+}
+
+/// Cliente al que se le puede vender de contado o a crédito
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  salesOrders SalesOrder[]
+
+  @@map("customers")
 }
 
 model StockMovement {
@@ -84,19 +99,39 @@ model StockMovement {
 
 /// Orden de venta (reemplaza la hoja impresa: cliente, fecha/hora, plotter y líneas de trabajo)
 model SalesOrder {
-  id           Int      @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   customerName String
+  customerId   Int?
+  customer     Customer? @relation(fields: [customerId], references: [id])
   plotter      String?
   notes        String?
-  status       String   @default("CONFIRMADA")
+  status       String    @default("CONFIRMADA")
+  paymentType  String    @default("CONTADO")
   userId       Int
-  user         User     @relation(fields: [userId], references: [id])
-  createdAt    DateTime @default(now())
+  user         User      @relation(fields: [userId], references: [id])
+  createdAt    DateTime  @default(now())
 
-  items SalesOrderItem[]
+  items    SalesOrderItem[]
+  payments SalesOrderPayment[]
 
   @@index([userId])
+  @@index([customerId])
   @@map("sales_orders")
+}
+
+/// Abono / pago recibido contra una orden de venta a crédito
+model SalesOrderPayment {
+  id        Int        @id @default(autoincrement())
+  orderId   Int
+  order     SalesOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount    Decimal    @db.Decimal(10, 2)
+  notes     String?
+  userId    Int
+  user      User       @relation(fields: [userId], references: [id])
+  createdAt DateTime   @default(now())
+
+  @@index([orderId])
+  @@map("sales_order_payments")
 }
 
 model SalesOrderItem {
@@ -117,6 +152,7 @@ model SalesOrderItem {
   m2          Decimal? @db.Decimal(10, 2)
   description String
   quantity    Int
+  unitPrice   Decimal? @db.Decimal(10, 2)
 
   movements StockMovement[]
 
@@ -143,13 +179,14 @@ model PurchaseOrder {
 }
 
 model PurchaseOrderItem {
-  id        Int           @id @default(autoincrement())
-  orderId   Int
-  order     PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId Int
-  product   Product       @relation(fields: [productId], references: [id])
-  quantity  Int
-  cost      Decimal?      @db.Decimal(10, 2)
+  id             Int           @id @default(autoincrement())
+  orderId        Int
+  order          PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId      Int
+  product        Product       @relation(fields: [productId], references: [id])
+  quantity       Int
+  cost           Decimal?      @db.Decimal(10, 2)
+  suggestedPrice Decimal?      @db.Decimal(10, 2)
 
   movements StockMovement[]
 

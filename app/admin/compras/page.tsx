@@ -59,18 +59,18 @@ export default async function PurchaseOrdersPage() {
             ) : (
               orders.map((order) => (
                 <tr key={order.id}>
-                  <td>#{order.id}</td>
-                  <td>{formatDateTime(order.createdAt)}</td>
-                  <td>{order.supplierName}</td>
-                  <td className="num">{order.itemCount}</td>
-                  <td className="num">{order.totalQuantity}</td>
-                  <td>
+                  <td data-label="N°">#{order.id}</td>
+                  <td data-label="Fecha">{formatDateTime(order.createdAt)}</td>
+                  <td data-label="Proveedor">{order.supplierName}</td>
+                  <td className="num" data-label="Líneas">{order.itemCount}</td>
+                  <td className="num" data-label="Cant.">{order.totalQuantity}</td>
+                  <td data-label="Estado">
                     <span className={`status-badge status-${order.status.toLowerCase()}`}>
                       {order.status}
                     </span>
                   </td>
-                  <td>{order.receivedAt ? formatDateTime(order.receivedAt) : "—"}</td>
-                  <td>{order.userName}</td>
+                  <td data-label="Recibida">{order.receivedAt ? formatDateTime(order.receivedAt) : "—"}</td>
+                  <td data-label="Usuario">{order.userName}</td>
                   <td>
                     <Link href={`/admin/compras/${order.id}`} className="admin-edit-btn">
                       Ver

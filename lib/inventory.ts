@@ -6,6 +6,7 @@ export type InventoryProduct = {
   description: string;
   dimension: string;
   price: number;
+  suggestedPrice: number | null;
   stock: number;
   imageUrl: string | null;
 };
@@ -17,6 +18,7 @@ export type InventoryCategory = {
   dimensionLabel: string;
   imagePath: string | null;
   products: InventoryProduct[];
+  inventoryValue: number;
 };
 
 export async function getInventory(): Promise<InventoryCategory[]> {
@@ -27,22 +29,31 @@ export async function getInventory(): Promise<InventoryCategory[]> {
     },
   });
 
-  return categories.map((category) => ({
-    id: category.id,
-    title: category.title,
-    subtitle: category.subtitle,
-    dimensionLabel: category.dimensionLabel,
-    imagePath: category.imagePath,
-    products: category.products.map((product) => ({
+  return categories.map((category) => {
+    const products = category.products.map((product) => ({
       id: product.id,
       code: product.code,
       description: product.description,
       dimension: product.dimension,
       price: Number(product.price),
+      suggestedPrice: product.suggestedPrice != null ? Number(product.suggestedPrice) : null,
       stock: product.stock,
       imageUrl: product.imageUrl,
-    })),
-  }));
+    }));
+
+    return {
+      id: category.id,
+      title: category.title,
+      subtitle: category.subtitle,
+      dimensionLabel: category.dimensionLabel,
+      imagePath: category.imagePath,
+      products,
+      inventoryValue: products.reduce(
+        (sum, product) => sum + product.stock * (product.suggestedPrice ?? 0),
+        0
+      ),
+    };
+  });
 }
 
 export type ProductOption = {
@@ -51,6 +62,7 @@ export type ProductOption = {
   description: string;
   dimension: string;
   price: number;
+  suggestedPrice: number | null;
   stock: number;
   categoryTitle: string;
 };
@@ -67,6 +79,7 @@ export async function getProductOptions(): Promise<ProductOption[]> {
     description: product.description,
     dimension: product.dimension,
     price: Number(product.price),
+    suggestedPrice: product.suggestedPrice != null ? Number(product.suggestedPrice) : null,
     stock: product.stock,
     categoryTitle: product.category.title,
   }));

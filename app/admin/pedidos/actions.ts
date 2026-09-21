@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import {
+  addSalesOrderPayment as addSalesOrderPaymentData,
   cancelSalesOrder as cancelSalesOrderData,
   createSalesOrder as createSalesOrderData,
   type SalesOrderItemInput,
 } from "@/lib/orders";
+import { createCustomer as createCustomerData } from "@/lib/customers";
 
 async function requireUserId() {
   const session = await auth();
@@ -15,21 +17,34 @@ async function requireUserId() {
 }
 
 export async function createSalesOrderAction(input: {
-  customerName: string;
+  customerId: number | null;
+  newCustomerName: string;
+  paymentType: "CONTADO" | "CREDITO";
   plotter: string;
   notes: string;
   items: SalesOrderItemInput[];
 }): Promise<{ id: number } | { error: string }> {
   try {
     const userId = await requireUserId();
+
+    let customerId = input.customerId;
+    if (!customerId) {
+      const name = input.newCustomerName.trim();
+      if (!name) return { error: "Elegí un cliente o escribí el nombre de uno nuevo" };
+      const customer = await createCustomerData({ name, phone: null, notes: null });
+      customerId = customer.id;
+    }
+
     const order = await createSalesOrderData(userId, {
-      customerName: input.customerName,
+      customerId,
+      paymentType: input.paymentType,
       plotter: input.plotter || null,
       notes: input.notes || null,
       items: input.items,
     });
 
     revalidatePath("/admin/pedidos");
+    revalidatePath("/admin/clientes");
     revalidatePath("/admin");
     revalidatePath("/");
 
@@ -39,12 +54,35 @@ export async function createSalesOrderAction(input: {
   }
 }
 
+export async function addSalesOrderPaymentAction(
+  orderId: number,
+  input: { amount: number; notes: string }
+): Promise<{ ok: true } | { error: string }> {
+  try {
+    const userId = await requireUserId();
+    await addSalesOrderPaymentData(orderId, userId, {
+      amount: input.amount,
+      notes: input.notes || null,
+    });
+
+    revalidatePath(`/admin/pedidos/${orderId}`);
+    revalidatePath("/admin/pedidos");
+    revalidatePath("/admin/clientes");
+    revalidatePath("/admin");
+
+    return { ok: true };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "No se pudo registrar el abono" };
+  }
+}
+
 export async function cancelSalesOrderAction(orderId: number) {
   const userId = await requireUserId();
   await cancelSalesOrderData(orderId, userId);
 
   revalidatePath(`/admin/pedidos/${orderId}`);
   revalidatePath("/admin/pedidos");
+  revalidatePath("/admin/clientes");
   revalidatePath("/admin");
   revalidatePath("/");
 }

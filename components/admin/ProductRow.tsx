@@ -11,6 +11,7 @@ export type ProductRowData = {
   description: string;
   dimension: string;
   price: number;
+  suggestedPrice: number | null;
   stock: number;
   imageUrl: string | null;
 };
@@ -54,7 +55,7 @@ export default function ProductRow({
   if (editing) {
     return (
       <tr>
-        <td colSpan={6}>
+        <td colSpan={8}>
           <form className="admin-form admin-edit-form" onSubmit={handleSave}>
             <input
               name="code"
@@ -86,6 +87,15 @@ export default function ProductRow({
               required
               className="admin-input admin-input-sm"
             />
+            <input
+              name="suggestedPrice"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={product.suggestedPrice ?? ""}
+              placeholder="Precio sugerido"
+              className="admin-input admin-input-sm"
+            />
             <button type="submit" className="admin-save-btn" disabled={isPending}>
               {isPending ? "Guardando…" : "Guardar"}
             </button>
@@ -100,7 +110,7 @@ export default function ProductRow({
 
   return (
     <tr>
-      <td>
+      <td data-label="Foto">
         <ImageUploadControl
           label={product.description}
           initialImageUrl={product.imageUrl}
@@ -108,18 +118,26 @@ export default function ProductRow({
           onRemove={onRemoveImage}
         />
       </td>
-      <td>
+      <td data-label="Código">
         <Link href={`/admin/productos/${product.id}`} className="code code-link">
           {product.code}
         </Link>
       </td>
-      <td>{product.description}</td>
-      <td className="num">
+      <td data-label="Descripción">{product.description}</td>
+      <td className="num" data-label="Stock">
         <span className={`stock-badge${product.stock === 0 ? " stock-zero" : ""}`}>
           {product.stock}
         </span>
       </td>
-      <td className="num">
+      <td className="num" data-label="Precio sug.">
+        {product.suggestedPrice != null ? product.suggestedPrice.toFixed(2) : "—"}
+      </td>
+      <td className="num" data-label="Valor">
+        {product.suggestedPrice != null
+          ? (product.stock * product.suggestedPrice).toFixed(2)
+          : "—"}
+      </td>
+      <td className="num" data-label="Ajustar">
         <form action={adjustStockForm} className="stock-form">
           <input type="hidden" name="productId" value={product.id} />
           <input
@@ -138,7 +156,7 @@ export default function ProductRow({
           </button>
         </form>
       </td>
-      <td className="num">
+      <td className="num" data-label="Acciones">
         <div className="admin-row-actions">
           <button type="button" className="admin-edit-btn" onClick={() => setEditing(true)}>
             Editar

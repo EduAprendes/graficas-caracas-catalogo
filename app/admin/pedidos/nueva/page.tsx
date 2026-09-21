@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { getProductOptions } from "@/lib/inventory";
+import { getCustomerOptions } from "@/lib/customers";
 import AdminNav from "@/components/admin/AdminNav";
 import SalesOrderForm from "@/components/admin/SalesOrderForm";
 import { logoutAction } from "@/app/admin/actions";
@@ -10,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function NewSalesOrderPage() {
   const session = await auth();
-  const products = await getProductOptions();
+  const [products, customers] = await Promise.all([getProductOptions(), getCustomerOptions()]);
 
   return (
     <div className="admin-page">
@@ -32,7 +33,7 @@ export default async function NewSalesOrderPage() {
         ← Volver a órdenes de venta
       </Link>
 
-      <SalesOrderForm products={products} onCreate={createSalesOrderAction} />
+      <SalesOrderForm products={products} customers={customers} onCreate={createSalesOrderAction} />
     </div>
   );
 }

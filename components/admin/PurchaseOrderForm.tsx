@@ -8,34 +8,81 @@ type Row = {
   productId: number | "";
   quantity: string;
   cost: string;
+  suggestedPrice: string;
 };
 
 function emptyRow(): Row {
-  return { productId: "", quantity: "1", cost: "" };
+  return { productId: "", quantity: "1", cost: "", suggestedPrice: "" };
 }
 
 export type PurchaseOrderPayload = {
   supplierName: string;
   notes: string;
-  items: { productId: number; quantity: number; cost: number | null }[];
+  items: {
+    productId: number;
+    quantity: number;
+    cost: number | null;
+    suggestedPrice: number | null;
+  }[];
+};
+
+export type PurchaseOrderInitialData = {
+  supplierName: string;
+  notes: string;
+  items: {
+    productId: number;
+    quantity: number;
+    cost: number | null;
+    suggestedPrice: number | null;
+  }[];
 };
 
 export default function PurchaseOrderForm({
   products,
   onCreate,
+  initialData,
+  submitLabel = "Crear orden de compra",
+  pendingLabel = "Guardando…",
 }: {
   products: ProductOption[];
   onCreate: (data: PurchaseOrderPayload) => Promise<{ id: number } | { error: string }>;
+  initialData?: PurchaseOrderInitialData;
+  submitLabel?: string;
+  pendingLabel?: string;
 }) {
   const router = useRouter();
-  const [supplierName, setSupplierName] = useState("");
-  const [notes, setNotes] = useState("");
-  const [rows, setRows] = useState<Row[]>([emptyRow()]);
+  const [supplierName, setSupplierName] = useState(initialData?.supplierName ?? "");
+  const [notes, setNotes] = useState(initialData?.notes ?? "");
+  const [rows, setRows] = useState<Row[]>(
+    initialData && initialData.items.length > 0
+      ? initialData.items.map((item) => ({
+          productId: item.productId,
+          quantity: String(item.quantity),
+          cost: item.cost != null ? String(item.cost) : "",
+          suggestedPrice: item.suggestedPrice != null ? String(item.suggestedPrice) : "",
+        }))
+      : [emptyRow()]
+  );
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function updateRow(index: number, patch: Partial<Row>) {
     setRows((prev) => prev.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  }
+
+  function handleProductSelect(index: number, value: string) {
+    if (!value) {
+      updateRow(index, { productId: "" });
+      return;
+    }
+    const product = products.find((p) => p.id === Number(value));
+    updateRow(index, {
+      productId: product ? product.id : "",
+      suggestedPrice:
+        product && !rows[index].suggestedPrice && product.suggestedPrice != null
+          ? String(product.suggestedPrice)
+          : rows[index].suggestedPrice,
+    });
   }
 
   function addRow() {
@@ -56,6 +103,7 @@ export default function PurchaseOrderForm({
         productId: Number(row.productId),
         quantity: Number(row.quantity),
         cost: row.cost ? Number(row.cost) : null,
+        suggestedPrice: row.suggestedPrice ? Number(row.suggestedPrice) : null,
       }));
 
     startTransition(async () => {
@@ -92,70 +140,72 @@ export default function PurchaseOrderForm({
         </label>
       </div>
 
-      <div className="admin-table-wrap">
-        <table className="order-items-table">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th className="num">Cantidad</th>
-              <th className="num">Costo unitario</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, index) => (
-              <tr key={index}>
-                <td>
-                  <select
-                    className="admin-input"
-                    value={row.productId}
-                    onChange={(e) =>
-                      updateRow(index, { productId: e.target.value ? Number(e.target.value) : "" })
-                    }
-                    required
-                  >
-                    <option value="">— Elegir producto —</option>
-                    {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.code} · {product.description} (stock {product.stock})
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="num">
-                  <input
-                    type="number"
-                    min={1}
-                    className="admin-input admin-input-sm order-input-cant"
-                    value={row.quantity}
-                    onChange={(e) => updateRow(index, { quantity: e.target.value })}
-                    required
-                  />
-                </td>
-                <td className="num">
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="admin-input admin-input-sm order-input-num"
-                    value={row.cost}
-                    onChange={(e) => updateRow(index, { cost: e.target.value })}
-                  />
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    className="admin-delete-btn"
-                    onClick={() => removeRow(index)}
-                    disabled={rows.length === 1}
-                  >
-                    Quitar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="order-items-list">
+        {rows.map((row, index) => (
+          <div className="order-item-card" key={index}>
+            <div className="order-item-fields">
+              <label className="order-item-field order-item-field-wide">
+                Producto
+                <select
+                  className="admin-input"
+                  value={row.productId}
+                  onChange={(e) => handleProductSelect(index, e.target.value)}
+                  required
+                >
+                  <option value="">— Elegir producto —</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.code} · {product.description} (stock {product.stock})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="order-item-field">
+                Cantidad
+                <input
+                  type="number"
+                  min={1}
+                  className="admin-input"
+                  value={row.quantity}
+                  onChange={(e) => updateRow(index, { quantity: e.target.value })}
+                  required
+                />
+              </label>
+              <label className="order-item-field">
+                Costo unitario
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="admin-input"
+                  value={row.cost}
+                  onChange={(e) => updateRow(index, { cost: e.target.value })}
+                />
+              </label>
+              <label className="order-item-field">
+                Precio sugerido
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="admin-input"
+                  value={row.suggestedPrice}
+                  onChange={(e) => updateRow(index, { suggestedPrice: e.target.value })}
+                />
+              </label>
+            </div>
+            <div className="order-item-actions">
+              <button
+                type="button"
+                className="admin-delete-btn"
+                onClick={() => removeRow(index)}
+                disabled={rows.length === 1}
+              >
+                Quitar
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       <button type="button" className="admin-add-btn" onClick={addRow}>
@@ -166,7 +216,7 @@ export default function PurchaseOrderForm({
 
       <div className="order-form-actions">
         <button type="submit" className="admin-save-btn" disabled={isPending}>
-          {isPending ? "Guardando…" : "Crear orden de compra"}
+          {isPending ? pendingLabel : submitLabel}
         </button>
       </div>
     </form>

@@ -206,10 +206,13 @@ export async function createProduct(categoryId: number, formData: FormData) {
   const description = String(formData.get("description") || "").trim();
   const dimension = String(formData.get("dimension") || "").trim();
   const price = Number(formData.get("price"));
+  const suggestedPriceRaw = String(formData.get("suggestedPrice") || "").trim();
+  const suggestedPrice = suggestedPriceRaw ? Number(suggestedPriceRaw) : null;
   const stock = Number(formData.get("stock"));
   const order = Number(formData.get("order"));
 
   if (!code || !description || !Number.isFinite(price)) return;
+  if (suggestedPrice !== null && !Number.isFinite(suggestedPrice)) return;
 
   await prisma.product.create({
     data: {
@@ -218,6 +221,7 @@ export async function createProduct(categoryId: number, formData: FormData) {
       description,
       dimension,
       price,
+      suggestedPrice,
       stock: Number.isFinite(stock) ? Math.max(0, Math.trunc(stock)) : 0,
       order: Number.isFinite(order) ? Math.trunc(order) : 0,
     },
@@ -234,12 +238,15 @@ export async function updateProduct(productId: number, formData: FormData) {
   const description = String(formData.get("description") || "").trim();
   const dimension = String(formData.get("dimension") || "").trim();
   const price = Number(formData.get("price"));
+  const suggestedPriceRaw = String(formData.get("suggestedPrice") || "").trim();
+  const suggestedPrice = suggestedPriceRaw ? Number(suggestedPriceRaw) : null;
 
   if (!code || !description || !Number.isFinite(price)) return;
+  if (suggestedPrice !== null && !Number.isFinite(suggestedPrice)) return;
 
   await prisma.product.update({
     where: { id: productId },
-    data: { code, description, dimension, price },
+    data: { code, description, dimension, price, suggestedPrice },
   });
 
   revalidatePath("/admin");

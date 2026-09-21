@@ -683,14 +683,119 @@ footer.foot {
   margin-top: 28px;
 }
 
+.admin-inventory-total {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  margin: 4px 0 16px;
+}
+.admin-inventory-total strong { color: var(--ink); }
+
+.admin-category-total {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  margin: -4px 0 10px;
+}
+.admin-category-total strong { color: var(--ink); }
+
+.admin-summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin: 4px 0 16px;
+}
+
+.admin-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+}
+
+.admin-summary-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.admin-summary-value {
+  font-family: var(--font-mono), monospace;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.admin-notice {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  margin-bottom: 14px;
+}
+
 .admin-category-head {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-category-toggle-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   margin-bottom: 10px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--line);
-  flex-wrap: wrap;
+}
+
+.admin-category-toggle-head {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Acordeón de categorías sin JS: un checkbox oculto (accesible, foco por
+   teclado) más un <label> que lo activa. En escritorio el toggle se
+   oculta y el contenido siempre se ve; en celular arranca colapsado y
+   el checkbox controla si se muestra (ver media query más abajo). */
+.admin-category-toggle-checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.admin-category-toggle {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: var(--surface);
+  color: var(--ink-muted);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.admin-category-toggle::before { content: "▾"; font-size: 0.9rem; }
+.admin-category-toggle:hover { border-color: var(--ink-muted); color: var(--ink); }
+.admin-category-toggle-checkbox:focus-visible ~ .admin-category-toggle-row .admin-category-toggle {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .admin-category-head h2 {
@@ -1115,24 +1220,58 @@ footer.foot {
   flex: 2 1 260px;
 }
 
-.order-items-table {
-  min-width: 900px;
+.order-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.order-input-cant {
-  width: 56px;
+.order-item-card {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface-2);
+  padding: 12px;
+}
+
+.order-item-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.order-item-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.order-item-field .admin-input {
+  width: 100%;
   flex: none;
 }
 
-.order-input-num {
-  width: 72px;
-  flex: none;
+.order-item-field-wide {
+  grid-column: span 2;
 }
 
 .order-m2 {
   font-family: var(--font-mono), monospace;
-  color: var(--ink-muted);
+  color: var(--ink);
+  font-size: 0.88rem;
+  padding-top: 7px;
   white-space: nowrap;
+}
+
+.order-item-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
 }
 
 .order-form-actions {
@@ -1217,4 +1356,76 @@ footer.foot {
   .admin-page { max-width: none; padding: 0; margin: 0; }
   .order-ticket { border: none; padding: 0; }
   .admin-table-wrap { border: none; overflow: visible; }
+}
+
+/* ---- Admin: optimizado para celular ---- */
+
+@media screen and (max-width: 700px) {
+  .admin-page { padding: 16px 12px 60px; }
+
+  .admin-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .admin-header h1 { font-size: 1.35rem; }
+
+  .admin-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .admin-nav::-webkit-scrollbar { display: none; }
+  .admin-nav-link { flex-shrink: 0; white-space: nowrap; }
+
+  .ledger-head, .order-ticket-head { flex-direction: column; align-items: stretch; }
+  .ledger-stock { align-items: flex-start; }
+  .order-ticket-meta { text-align: left; }
+
+  /* Tablas del admin: en vez de scroll horizontal, cada fila pasa a
+     ser una tarjeta con "etiqueta: valor" apilados — se puede usar
+     con cualquier cantidad de columnas sin rediseñar cada tabla. */
+  .admin-table-wrap table { min-width: 0; }
+  .admin-table-wrap thead { display: none; }
+  .admin-table-wrap tbody tr {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .admin-table-wrap tbody tr:last-child { margin-bottom: 0; }
+  .admin-table-wrap tbody td {
+    display: block;
+    width: auto;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--line);
+    text-align: left !important;
+  }
+  .admin-table-wrap tbody tr td:last-child { border-bottom: none; }
+  .admin-table-wrap tbody td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 3px;
+  }
+  .admin-table-wrap .stock-form,
+  .admin-table-wrap .admin-row-actions {
+    justify-content: flex-start;
+  }
+
+  /* Categorías colapsables: en celular arrancan cerradas para no
+     obligar a hacer scroll por todo el catálogo de productos. */
+  .admin-category-toggle { display: inline-flex; }
+  .admin-category-body { display: none; }
+  .admin-category-toggle-checkbox:checked ~ .admin-category-body { display: block; }
+  .admin-category-toggle-checkbox:checked ~ .admin-category-toggle-row .admin-category-toggle {
+    transform: rotate(180deg);
+  }
 }
