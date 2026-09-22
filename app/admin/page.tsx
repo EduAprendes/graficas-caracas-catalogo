@@ -17,6 +17,7 @@ import {
 import AdminNav from "@/components/admin/AdminNav";
 import CategoryHead from "@/components/admin/CategoryHead";
 import CategorySection from "@/components/admin/CategorySection";
+import InfoTooltip from "@/components/admin/InfoTooltip";
 import NewCategoryForm from "@/components/admin/NewCategoryForm";
 import NewProductForm from "@/components/admin/NewProductForm";
 import ProductRow from "@/components/admin/ProductRow";
@@ -45,11 +46,9 @@ export default async function AdminPage() {
 
       <div className="admin-summary-row">
         <div className="admin-summary-card">
-          <span
-            className="admin-summary-label"
-            title="Suma de stock actual × precio sugerido de cada producto. Se actualiza al momento; no es el total de ninguna orden de compra en particular."
-          >
+          <span className="admin-summary-label">
             Por vender
+            <InfoTooltip text="Suma de stock actual × precio de catálogo (el que ve el cliente) de cada producto. Se actualiza al momento; no es el total de ninguna orden en particular." />
           </span>
           <span className="admin-summary-value">{summary.inventoryToSellValue.toFixed(2)}</span>
         </div>
@@ -61,14 +60,16 @@ export default async function AdminPage() {
           <span className="admin-summary-label">Total vendido</span>
           <span className="admin-summary-value">{summary.totalSold.toFixed(2)}</span>
         </div>
+        <div className="admin-summary-card">
+          <span className="admin-summary-label">
+            Valor total de inventario
+            <InfoTooltip text="Suma de stock actual × precio sugerido (uso interno, no el de catálogo) de cada producto." />
+          </span>
+          <span className="admin-summary-value">
+            {categories.reduce((sum, category) => sum + category.inventoryValue, 0).toFixed(2)}
+          </span>
+        </div>
       </div>
-
-      <p className="admin-inventory-total">
-        Valor total de inventario (precio sugerido):{" "}
-        <strong>
-          {categories.reduce((sum, category) => sum + category.inventoryValue, 0).toFixed(2)}
-        </strong>
-      </p>
 
       <NewCategoryForm onCreate={createCategory} nextOrder={categories.length} />
 
@@ -97,9 +98,18 @@ export default async function AdminPage() {
                   <th>Código</th>
                   <th>Descripción</th>
                   <th className="num">Stock</th>
-                  <th className="num">Precio</th>
-                  <th className="num">Precio sug.</th>
-                  <th className="num">Valor</th>
+                  <th className="num">
+                    Precio
+                    <InfoTooltip text="Precio de catálogo: el que ve el cliente en la página pública del sitio." />
+                  </th>
+                  <th className="num">
+                    Precio sug.
+                    <InfoTooltip text="Precio sugerido: solo interno, nunca se muestra al público. Se usa para calcular la columna Valor y el Valor total de inventario." />
+                  </th>
+                  <th className="num">
+                    Valor
+                    <InfoTooltip text="Stock actual × precio sugerido de este producto (no usa el precio de catálogo)." />
+                  </th>
                   <th className="num">Acciones</th>
                 </tr>
               </thead>
