@@ -895,29 +895,18 @@ footer.foot {
 
 .image-upload-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: center;
   gap: 4px;
-  width: 100%;
 }
 
-.image-upload-btn {
+.image-upload-status {
   font-family: var(--font-mono), monospace;
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  border-radius: 3px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  padding: 4px 6px;
-  cursor: pointer;
-  white-space: nowrap;
+  color: var(--ink-muted);
 }
-.image-upload-btn:hover { border-color: var(--ink-muted); }
-.image-upload-btn:disabled { opacity: 0.6; cursor: default; }
-
-.image-upload-btn-remove { color: var(--accent); border-color: var(--accent); }
-.image-upload-btn-remove:hover { background: var(--accent-ink); }
 
 .image-upload-error {
   font-size: 0.62rem;
