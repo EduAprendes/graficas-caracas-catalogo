@@ -45,7 +45,12 @@ export default async function AdminPage() {
 
       <div className="admin-summary-row">
         <div className="admin-summary-card">
-          <span className="admin-summary-label">Por vender</span>
+          <span
+            className="admin-summary-label"
+            title="Suma de stock actual × precio sugerido de cada producto. Se actualiza al momento; no es el total de ninguna orden de compra en particular."
+          >
+            Por vender
+          </span>
           <span className="admin-summary-value">{summary.inventoryToSellValue.toFixed(2)}</span>
         </div>
         <div className="admin-summary-card">
@@ -92,6 +97,7 @@ export default async function AdminPage() {
                   <th>Código</th>
                   <th>Descripción</th>
                   <th className="num">Stock</th>
+                  <th className="num">Precio</th>
                   <th className="num">Precio sug.</th>
                   <th className="num">Valor</th>
                   <th className="num">Acciones</th>

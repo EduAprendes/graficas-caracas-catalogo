@@ -54,47 +54,57 @@ export default function ProductRow({
   if (editing) {
     return (
       <tr>
-        <td colSpan={7}>
+        <td colSpan={8}>
           <form className="admin-form admin-edit-form" onSubmit={handleSave}>
-            <input
-              name="code"
-              defaultValue={product.code}
-              placeholder="Código"
-              required
-              className="admin-input admin-input-sm"
-            />
-            <input
-              name="description"
-              defaultValue={product.description}
-              placeholder="Descripción"
-              required
-              className="admin-input"
-            />
-            <input
-              name="dimension"
-              defaultValue={product.dimension}
-              placeholder="Medida"
-              className="admin-input admin-input-sm"
-            />
-            <input
-              name="price"
-              type="number"
-              step="0.01"
-              min="0"
-              defaultValue={product.price}
-              placeholder="Precio"
-              required
-              className="admin-input admin-input-sm"
-            />
-            <input
-              name="suggestedPrice"
-              type="number"
-              step="0.01"
-              min="0"
-              defaultValue={product.suggestedPrice ?? ""}
-              placeholder="Precio sugerido"
-              className="admin-input admin-input-sm"
-            />
+            <label className="admin-field admin-field-sm">
+              Código
+              <input
+                name="code"
+                defaultValue={product.code}
+                required
+                className="admin-input admin-input-sm"
+              />
+            </label>
+            <label className="admin-field">
+              Descripción
+              <input
+                name="description"
+                defaultValue={product.description}
+                required
+                className="admin-input"
+              />
+            </label>
+            <label className="admin-field admin-field-sm">
+              Medida
+              <input
+                name="dimension"
+                defaultValue={product.dimension}
+                className="admin-input admin-input-sm"
+              />
+            </label>
+            <label className="admin-field admin-field-sm">
+              Precio
+              <input
+                name="price"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={product.price}
+                required
+                className="admin-input admin-input-sm"
+              />
+            </label>
+            <label className="admin-field admin-field-sm">
+              Precio sugerido
+              <input
+                name="suggestedPrice"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={product.suggestedPrice ?? ""}
+                className="admin-input admin-input-sm"
+              />
+            </label>
             <button type="submit" className="admin-save-btn" disabled={isPending}>
               {isPending ? "Guardando…" : "Guardar"}
             </button>
@@ -128,6 +138,7 @@ export default function ProductRow({
           {product.stock}
         </span>
       </td>
+      <td className="num" data-label="Precio">{product.price.toFixed(2)}</td>
       <td className="num" data-label="Precio sug.">
         {product.suggestedPrice != null ? product.suggestedPrice.toFixed(2) : "—"}
       </td>

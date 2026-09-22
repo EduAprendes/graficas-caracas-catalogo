@@ -727,6 +727,12 @@ footer.foot {
   color: var(--ink-muted);
 }
 
+.admin-summary-label[title] {
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
 .admin-summary-value {
   font-family: var(--font-mono), monospace;
   font-size: 1.3rem;
@@ -967,6 +973,27 @@ footer.foot {
 }
 
 .admin-input-sm {
+  flex: 0 1 100px;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  flex: 1 1 160px;
+}
+
+.admin-field .admin-input {
+  width: 100%;
+  flex: none;
+}
+
+.admin-field-sm {
   flex: 0 1 100px;
 }
 
