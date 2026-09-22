@@ -88,16 +88,40 @@ export default function CustomerRow({
       </td>
       <td className="num" data-label="Acciones">
         <div className="admin-row-actions">
-          <button type="button" className="admin-edit-btn" onClick={() => setEditing(true)}>
-            Editar
+          <button
+            type="button"
+            className="admin-icon-btn"
+            onClick={() => setEditing(true)}
+            aria-label={`Editar ${customer.name}`}
+            title="Editar"
+          >
+            <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden="true">
+              <path
+                d="M13.6 2.9a1.6 1.6 0 0 1 2.3 0l1.2 1.2a1.6 1.6 0 0 1 0 2.3L7.4 16.1l-3.6.7.7-3.6L13.6 2.9Z"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
           <button
             type="button"
-            className="admin-delete-btn"
+            className="admin-icon-btn admin-icon-btn-delete"
             onClick={handleDelete}
             disabled={isPending}
+            aria-label={`Borrar ${customer.name}`}
+            title="Borrar"
           >
-            Borrar
+            <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden="true">
+              <path
+                d="M4.5 5.5h11m-8.5 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1.5m-7.5 0 .6 9.4a1 1 0 0 0 1 .9h5.8a1 1 0 0 0 1-.9l.6-9.4"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </div>
       </td>
