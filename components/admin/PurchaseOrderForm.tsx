@@ -193,6 +193,14 @@ export default function PurchaseOrderForm({
                   onChange={(e) => updateRow(index, { suggestedPrice: e.target.value })}
                 />
               </label>
+              <div className="order-item-field">
+                Subtotal
+                <span className="order-m2">
+                  {row.cost
+                    ? (Number(row.cost) * Number(row.quantity || 0)).toFixed(2)
+                    : "—"}
+                </span>
+              </div>
             </div>
             <div className="order-item-actions">
               <button
@@ -211,6 +219,18 @@ export default function PurchaseOrderForm({
       <button type="button" className="admin-add-btn" onClick={addRow}>
         + Línea
       </button>
+
+      <p className="admin-inventory-total">
+        Total de la orden:{" "}
+        <strong>
+          {rows
+            .reduce(
+              (sum, row) => sum + (row.cost ? Number(row.cost) * Number(row.quantity || 0) : 0),
+              0
+            )
+            .toFixed(2)}
+        </strong>
+      </p>
 
       {error ? <p className="login-error">{error}</p> : null}
 

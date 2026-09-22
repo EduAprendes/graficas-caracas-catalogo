@@ -25,6 +25,10 @@ export default async function PurchaseOrderDetailPage({
   if (!order) notFound();
 
   const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalCost = order.items.reduce(
+    (sum, item) => sum + (item.cost != null ? item.cost * item.quantity : 0),
+    0
+  );
 
   return (
     <div className="admin-page">
@@ -95,6 +99,7 @@ export default async function PurchaseOrderDetailPage({
                 <th className="num">Cantidad</th>
                 <th className="num">Costo unitario</th>
                 <th className="num">Precio sugerido</th>
+                <th className="num">Subtotal</th>
               </tr>
             </thead>
             <tbody>
@@ -110,13 +115,16 @@ export default async function PurchaseOrderDetailPage({
                   <td className="num" data-label="Precio sugerido">
                     {item.suggestedPrice != null ? item.suggestedPrice.toFixed(2) : "—"}
                   </td>
+                  <td className="num" data-label="Subtotal">
+                    {item.cost != null ? (item.cost * item.quantity).toFixed(2) : "—"}
+                  </td>
                 </tr>
               ))}
               <tr className="order-print-total">
                 <td data-label="Producto">Total de piezas</td>
                 <td className="num" data-label="Cantidad">{totalQuantity}</td>
-                <td></td>
-                <td></td>
+                <td colSpan={2}></td>
+                <td className="num" data-label="Subtotal">{totalCost.toFixed(2)}</td>
               </tr>
             </tbody>
           </table>
