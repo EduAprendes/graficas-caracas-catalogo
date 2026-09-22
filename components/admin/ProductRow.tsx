@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import ImageUploadControl from "@/components/admin/ImageUploadControl";
-import { adjustStockForm } from "@/app/admin/actions";
 
 export type ProductRowData = {
   id: number;
@@ -55,7 +54,7 @@ export default function ProductRow({
   if (editing) {
     return (
       <tr>
-        <td colSpan={8}>
+        <td colSpan={7}>
           <form className="admin-form admin-edit-form" onSubmit={handleSave}>
             <input
               name="code"
@@ -137,37 +136,42 @@ export default function ProductRow({
           ? (product.stock * product.suggestedPrice).toFixed(2)
           : "—"}
       </td>
-      <td className="num" data-label="Ajustar">
-        <form action={adjustStockForm} className="stock-form">
-          <input type="hidden" name="productId" value={product.id} />
-          <input
-            type="number"
-            name="amount"
-            min={1}
-            defaultValue={1}
-            className="stock-amount"
-            aria-label={`Cantidad a ajustar para ${product.description}`}
-          />
-          <button type="submit" name="direction" value="in" className="stock-btn stock-in">
-            + Entrada
-          </button>
-          <button type="submit" name="direction" value="out" className="stock-btn stock-out">
-            − Salida
-          </button>
-        </form>
-      </td>
       <td className="num" data-label="Acciones">
         <div className="admin-row-actions">
-          <button type="button" className="admin-edit-btn" onClick={() => setEditing(true)}>
-            Editar
+          <button
+            type="button"
+            className="admin-icon-btn"
+            onClick={() => setEditing(true)}
+            aria-label={`Editar ${product.description}`}
+            title="Editar"
+          >
+            <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden="true">
+              <path
+                d="M13.6 2.9a1.6 1.6 0 0 1 2.3 0l1.2 1.2a1.6 1.6 0 0 1 0 2.3L7.4 16.1l-3.6.7.7-3.6L13.6 2.9Z"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
           <button
             type="button"
-            className="admin-delete-btn"
+            className="admin-icon-btn admin-icon-btn-delete"
             onClick={handleDelete}
             disabled={isPending}
+            aria-label={`Borrar ${product.description}`}
+            title="Borrar"
           >
-            Borrar
+            <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden="true">
+              <path
+                d="M4.5 5.5h11m-8.5 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1.5m-7.5 0 .6 9.4a1 1 0 0 0 1 .9h5.8a1 1 0 0 0 1-.9l.6-9.4"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </div>
       </td>

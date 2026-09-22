@@ -644,6 +644,10 @@ footer.foot {
   padding: 28px 20px 80px;
 }
 
+.admin-page-wide {
+  max-width: 1200px;
+}
+
 .admin-header {
   display: flex;
   align-items: flex-end;
@@ -832,6 +836,12 @@ footer.foot {
 
 .admin-table-wrap thead th.num, .admin-table-wrap td.num { text-align: right; }
 
+.orders-table-wrap thead th,
+.orders-table-wrap tbody td {
+  padding: 8px 10px;
+  font-size: 0.82rem;
+}
+
 .admin-table-wrap tbody td {
   padding: 10px 14px;
   border-bottom: 1px solid var(--line);
@@ -852,38 +862,6 @@ footer.foot {
   color: var(--accent);
   border-color: var(--accent);
 }
-
-.stock-form {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  justify-content: flex-end;
-}
-
-.stock-amount {
-  width: 56px;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.85rem;
-  text-align: center;
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  border-radius: 3px;
-  padding: 6px 4px;
-}
-
-.stock-btn {
-  font-family: var(--font-mono), monospace;
-  font-size: 0.72rem;
-  border-radius: 3px;
-  border: 1px solid var(--line);
-  padding: 6px 8px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.stock-btn.stock-in { background: var(--surface); color: var(--ink); }
-.stock-btn.stock-in:hover { border-color: var(--ink); }
-.stock-btn.stock-out { background: var(--surface); color: var(--accent); border-color: var(--accent); }
-.stock-btn.stock-out:hover { background: var(--accent-ink); }
 
 .image-upload {
   display: flex;
@@ -1043,8 +1021,29 @@ footer.foot {
 }
 .admin-delete-btn:hover { background: var(--accent-ink); }
 
+.admin-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+.admin-icon-btn:hover { color: var(--ink); border-color: var(--ink-muted); }
+.admin-icon-btn:disabled { opacity: 0.5; cursor: default; }
+
+.admin-icon-btn-delete:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .admin-row-actions {
   display: flex;
+  align-items: center;
   gap: 6px;
   justify-content: flex-end;
   flex-wrap: wrap;
@@ -1213,11 +1212,16 @@ footer.foot {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-muted);
-  flex: 1 1 200px;
+  flex: 0 1 220px;
+}
+
+.order-form-header label .admin-input {
+  width: 100%;
+  flex: none;
 }
 
 .order-form-notes {
-  flex: 2 1 260px;
+  flex: 0 1 320px;
 }
 
 .order-items-list {
@@ -1415,7 +1419,6 @@ footer.foot {
     color: var(--ink-muted);
     margin-bottom: 3px;
   }
-  .admin-table-wrap .stock-form,
   .admin-table-wrap .admin-row-actions {
     justify-content: flex-start;
   }
@@ -1427,5 +1430,39 @@ footer.foot {
   .admin-category-toggle-checkbox:checked ~ .admin-category-body { display: block; }
   .admin-category-toggle-checkbox:checked ~ .admin-category-toggle-row .admin-category-toggle {
     transform: rotate(180deg);
+  }
+}
+
+/* Tablas de órdenes (venta/compra): tienen muchas columnas y no
+   entran sin scroll horizontal en pantallas intermedias (tablet),
+   así que pasan a tarjetas antes que el resto de las tablas. */
+@media screen and (max-width: 1024px) {
+  .orders-table-wrap table { min-width: 0; }
+  .orders-table-wrap thead { display: none; }
+  .orders-table-wrap tbody tr {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .orders-table-wrap tbody tr:last-child { margin-bottom: 0; }
+  .orders-table-wrap tbody td {
+    display: block;
+    width: auto;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--line);
+    text-align: left !important;
+  }
+  .orders-table-wrap tbody tr td:last-child { border-bottom: none; }
+  .orders-table-wrap tbody td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 3px;
   }
 }

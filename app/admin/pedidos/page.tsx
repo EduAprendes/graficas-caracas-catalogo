@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { getSalesOrders } from "@/lib/orders";
-import { formatDateTime } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
 import { logoutAction } from "@/app/admin/actions";
 
@@ -17,7 +17,7 @@ export default async function SalesOrdersPage() {
   const orders = await getSalesOrders();
 
   return (
-    <div className="admin-page">
+    <div className="admin-page admin-page-wide">
       <div className="admin-header">
         <div>
           <h1>Órdenes de venta</h1>
@@ -38,7 +38,7 @@ export default async function SalesOrdersPage() {
         </Link>
       </div>
 
-      <div className="admin-table-wrap">
+      <div className="admin-table-wrap orders-table-wrap">
         <table>
           <thead>
             <tr>
@@ -68,7 +68,7 @@ export default async function SalesOrdersPage() {
               orders.map((order) => (
                 <tr key={order.id}>
                   <td data-label="N°">#{order.id}</td>
-                  <td data-label="Fecha">{formatDateTime(order.createdAt)}</td>
+                  <td data-label="Fecha">{formatDate(order.createdAt)}</td>
                   <td data-label="Cliente">{order.customerName}</td>
                   <td data-label="Plotter">{order.plotter ?? "—"}</td>
                   <td className="num" data-label="Líneas">{order.itemCount}</td>

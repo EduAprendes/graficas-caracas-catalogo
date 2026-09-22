@@ -94,7 +94,6 @@ export default async function AdminPage() {
                   <th className="num">Stock</th>
                   <th className="num">Precio sug.</th>
                   <th className="num">Valor</th>
-                  <th className="num">Ajustar</th>
                   <th className="num">Acciones</th>
                 </tr>
               </thead>

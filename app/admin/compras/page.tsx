@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { getPurchaseOrders } from "@/lib/orders";
-import { formatDateTime } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
 import { logoutAction } from "@/app/admin/actions";
 
@@ -12,7 +12,7 @@ export default async function PurchaseOrdersPage() {
   const orders = await getPurchaseOrders();
 
   return (
-    <div className="admin-page">
+    <div className="admin-page admin-page-wide">
       <div className="admin-header">
         <div>
           <h1>Órdenes de compra</h1>
@@ -33,7 +33,7 @@ export default async function PurchaseOrdersPage() {
         </Link>
       </div>
 
-      <div className="admin-table-wrap">
+      <div className="admin-table-wrap orders-table-wrap">
         <table>
           <thead>
             <tr>
@@ -60,7 +60,7 @@ export default async function PurchaseOrdersPage() {
               orders.map((order) => (
                 <tr key={order.id}>
                   <td data-label="N°">#{order.id}</td>
-                  <td data-label="Fecha">{formatDateTime(order.createdAt)}</td>
+                  <td data-label="Fecha">{formatDate(order.createdAt)}</td>
                   <td data-label="Proveedor">{order.supplierName}</td>
                   <td className="num" data-label="Líneas">{order.itemCount}</td>
                   <td className="num" data-label="Cant.">{order.totalQuantity}</td>
@@ -69,7 +69,7 @@ export default async function PurchaseOrdersPage() {
                       {order.status}
                     </span>
                   </td>
-                  <td data-label="Recibida">{order.receivedAt ? formatDateTime(order.receivedAt) : "—"}</td>
+                  <td data-label="Recibida">{order.receivedAt ? formatDate(order.receivedAt) : "—"}</td>
                   <td data-label="Usuario">{order.userName}</td>
                   <td>
                     <Link href={`/admin/compras/${order.id}`} className="admin-edit-btn">
