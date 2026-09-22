@@ -1042,27 +1042,32 @@ footer.foot {
 
 .admin-nav {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 20px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--line);
   flex-wrap: wrap;
 }
 
 .admin-nav-link {
   font-family: var(--font-mono), monospace;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-muted);
-  padding: 8px 12px;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  line-height: 1.2;
 }
-.admin-nav-link:hover { color: var(--ink); }
+.admin-nav-link:hover { color: var(--ink); border-color: var(--ink-muted); }
 
 .admin-nav-link-active {
-  color: var(--ink);
-  border-bottom-color: var(--accent);
+  color: var(--bg);
+  background: var(--ink);
+  border-color: var(--ink);
 }
 
 .admin-back-link {
@@ -1366,6 +1371,7 @@ footer.foot {
   .admin-nav {
     flex-wrap: nowrap;
     overflow-x: auto;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
