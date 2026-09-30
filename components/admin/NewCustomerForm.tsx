@@ -37,6 +37,7 @@ export default function NewCustomerForm({
     <form className="admin-form admin-new-category-form" onSubmit={handleSubmit}>
       <input name="name" placeholder="Nombre de contacto" required className="admin-input" />
       <input name="company" placeholder="Nombre de empresa (opcional)" className="admin-input" />
+      <input name="taxId" placeholder="RIF o C.I. (opcional)" className="admin-input admin-input-sm" />
       <input name="phone" placeholder="Teléfono (opcional)" className="admin-input admin-input-sm" />
       <input name="email" type="email" placeholder="Correo electrónico (opcional)" className="admin-input" />
       <input name="address" placeholder="Dirección (opcional)" className="admin-input" />

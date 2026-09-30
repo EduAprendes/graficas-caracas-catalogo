@@ -9,6 +9,7 @@ import {
   type SalesOrderItemInput,
 } from "@/lib/orders";
 import { sendSalesOrderEmail, type OrderEmailStatus } from "@/lib/order-email";
+import { saveDeliveryFields, type DeliveryInput } from "@/lib/delivery";
 import { createCustomer as createCustomerData, type CustomerOption } from "@/lib/customers";
 
 async function requireAdminId() {
@@ -19,6 +20,7 @@ async function requireAdminId() {
 export async function createCustomerForOrderAction(input: {
   name: string;
   company: string;
+  taxId: string;
   phone: string;
   email: string;
   address: string;
@@ -30,6 +32,7 @@ export async function createCustomerForOrderAction(input: {
     const customer = await createCustomerData({
       name: input.name,
       company: input.company || null,
+      taxId: input.taxId || null,
       phone: input.phone || null,
       email: input.email || null,
       address: input.address || null,
@@ -129,4 +132,19 @@ export async function cancelSalesOrderAction(orderId: number) {
 export async function resendSalesOrderEmailAction(orderId: number): Promise<OrderEmailStatus> {
   await requireAdminId();
   return sendSalesOrderEmail(orderId);
+}
+
+export async function saveDeliveryDataAction(
+  orderId: number,
+  input: DeliveryInput
+): Promise<{ ok: true } | { error: string }> {
+  try {
+    await requireAdminId();
+    await saveDeliveryFields(orderId, input);
+    revalidatePath(`/admin/pedidos/${orderId}`);
+    revalidatePath(`/admin/pedidos/${orderId}/entrega`);
+    return { ok: true };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "No se pudieron guardar los datos" };
+  }
 }

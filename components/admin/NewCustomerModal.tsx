@@ -6,6 +6,7 @@ import type { CustomerOption } from "@/lib/customers";
 export type NewCustomerInput = {
   name: string;
   company: string;
+  taxId: string;
   phone: string;
   email: string;
   address: string;
@@ -23,6 +24,7 @@ export default function NewCustomerModal({
   const [values, setValues] = useState<NewCustomerInput>({
     name: "",
     company: "",
+    taxId: "",
     phone: "",
     email: "",
     address: "",
@@ -88,6 +90,15 @@ export default function NewCustomerModal({
               value={values.company}
               onChange={(e) => set("company", e.target.value)}
               placeholder="Opcional"
+            />
+          </label>
+          <label>
+            RIF o C.I.
+            <input
+              className="admin-input"
+              value={values.taxId}
+              onChange={(e) => set("taxId", e.target.value)}
+              placeholder="Opcional (necesario para la orden de entrega)"
             />
           </label>
           <label>

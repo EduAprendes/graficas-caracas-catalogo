@@ -16,6 +16,7 @@ export type CustomerListItem = {
   id: number;
   name: string;
   company: string | null;
+  taxId: string | null;
   phone: string | null;
   email: string | null;
   address: string | null;
@@ -43,6 +44,7 @@ export async function getCustomers(): Promise<CustomerListItem[]> {
       id: customer.id,
       name: customer.name,
       company: customer.company,
+      taxId: customer.taxId,
       phone: customer.phone,
       email: customer.email,
       address: customer.address,
@@ -69,6 +71,7 @@ export type CustomerDetail = {
   id: number;
   name: string;
   company: string | null;
+  taxId: string | null;
   phone: string | null;
   email: string | null;
   address: string | null;
@@ -117,6 +120,7 @@ export async function getCustomer(id: number): Promise<CustomerDetail | null> {
     id: customer.id,
     name: customer.name,
     company: customer.company,
+    taxId: customer.taxId,
     phone: customer.phone,
     email: customer.email,
     address: customer.address,
@@ -151,6 +155,7 @@ export async function getCustomerOptions(): Promise<CustomerOption[]> {
 export type CustomerInput = {
   name: string;
   company: string | null;
+  taxId?: string | null;
   phone: string | null;
   email: string | null;
   address: string | null;
@@ -164,6 +169,7 @@ function cleanCustomerInput(input: CustomerInput) {
   return {
     name,
     company: input.company?.trim() || null,
+    taxId: input.taxId?.trim().toUpperCase() || null,
     phone: input.phone?.trim() || null,
     email: input.email?.trim() || null,
     address: input.address?.trim() || null,

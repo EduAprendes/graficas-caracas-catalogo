@@ -72,6 +72,8 @@ model Customer {
   /// Nombre de contacto
   name            String
   company         String?
+  /// RIF o cédula, para la orden de entrega y la factura
+  taxId           String?
   phone           String?
   email           String?
   address         String?
@@ -155,6 +157,13 @@ model SalesOrder {
   commissionPercent     Decimal?  @db.Decimal(5, 2)
   /// Cuándo se mandó el recordatorio de cobranza (crédito con saldo); null = aún no
   collectionEmailSentAt DateTime?
+  /// Orden de entrega (documento interno para el transportista)
+  driverName            String?
+  driverIdNumber        String?
+  vehiclePlate          String?
+  /// N° de control que asigna la imprenta digital autorizada (se registra a mano)
+  deliveryControlNumber String?
+  deliveryPrinterInfo   String?
   deliveryAddress       String?
   notes                 String?
   status                String    @default("CONFIRMADA")

@@ -7,6 +7,7 @@ export type CustomerRowData = {
   id: number;
   name: string;
   company: string | null;
+  taxId: string | null;
   phone: string | null;
   email: string | null;
   address: string | null;
@@ -64,6 +65,7 @@ export default function CustomerRow({
           <form className="admin-form admin-edit-form" onSubmit={handleSave}>
             <input name="name" defaultValue={customer.name} placeholder="Nombre de contacto" required className="admin-input" />
             <input name="company" defaultValue={customer.company ?? ""} placeholder="Empresa" className="admin-input" />
+            <input name="taxId" defaultValue={customer.taxId ?? ""} placeholder="RIF o C.I." className="admin-input admin-input-sm" />
             <input
               name="phone"
               defaultValue={customer.phone ?? ""}

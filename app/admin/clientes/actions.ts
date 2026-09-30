@@ -14,6 +14,7 @@ function readCustomerForm(formData: FormData) {
   return {
     name: String(formData.get("name") || "").trim(),
     company: field("company"),
+    taxId: field("taxId"),
     phone: field("phone"),
     email: field("email"),
     address: field("address"),

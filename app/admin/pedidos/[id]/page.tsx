@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getSalesOrder } from "@/lib/orders";
 import { getAccessUser } from "@/lib/access";
+import { getDeliveryFields } from "@/lib/delivery";
+import DeliveryOrderForm from "@/components/admin/DeliveryOrderForm";
 import { formatDateTime } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
 import PrintButton from "@/components/admin/PrintButton";
@@ -15,6 +17,7 @@ import ResendOrderEmailButton, {
 import {
   addSalesOrderPaymentAction,
   cancelSalesOrderAction,
+  saveDeliveryDataAction,
   resendSalesOrderEmailAction,
 } from "../actions";
 
@@ -53,6 +56,9 @@ export default async function SalesOrderDetailPage({
   if (!order) notFound();
   // Una vendedora solo puede abrir sus propias órdenes.
   if (isSeller && order.sellerId !== access?.sellerId) notFound();
+
+  const showDelivery = !isSeller && order.deliveryType === "DESPACHADO";
+  const deliveryFields = showDelivery ? await getDeliveryFields(order.id) : null;
 
   const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -248,6 +254,14 @@ export default async function SalesOrderDetailPage({
             />
           ) : null}
         </section>
+      ) : null}
+
+      {showDelivery && deliveryFields ? (
+        <DeliveryOrderForm
+          orderId={order.id}
+          initial={deliveryFields}
+          onSave={saveDeliveryDataAction.bind(null, order.id)}
+        />
       ) : null}
 
       <div className="order-form-actions no-print">
