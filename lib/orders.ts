@@ -93,6 +93,7 @@ export type SalesOrderDetail = {
   id: number;
   customerId: number | null;
   customerName: string;
+  collectionEmailSentAt: Date | null;
   deliveryAddress: string | null;
   notes: string | null;
   status: string;
@@ -130,6 +131,7 @@ export async function getSalesOrder(id: number): Promise<SalesOrderDetail | null
     id: order.id,
     customerId: order.customerId,
     customerName: order.customerName,
+    collectionEmailSentAt: order.collectionEmailSentAt,
     deliveryAddress: order.deliveryAddress,
     notes: order.notes,
     status: order.status,

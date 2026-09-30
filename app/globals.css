@@ -1654,3 +1654,29 @@ footer.foot {
 .statement-summary { margin-top: 14px; }
 .statement-note { font-size: 0.85rem; color: var(--ink-muted); margin: 14px 0 0; }
 .seller-range-form { margin: 0 0 14px; align-items: flex-end; }
+
+/* ---- Promociones (correo masivo) ---- */
+.promo-message {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.promo-message .admin-input {
+  width: 100%;
+  flex: none;
+  resize: vertical;
+  font-family: var(--font-sans), sans-serif;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.promo-test {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 520px;
+}

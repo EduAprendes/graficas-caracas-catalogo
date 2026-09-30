@@ -6,7 +6,7 @@ type EmailStatus = "sent" | "no_email" | "not_configured" | "failed";
 
 export const EMAIL_STATUS_MESSAGES: Record<EmailStatus, string> = {
   sent: "Copia enviada al correo del cliente.",
-  no_email: "El cliente no tiene correo registrado; no se envió la copia.",
+  no_email: "El cliente no tiene correo registrado; no se envió la copia al cliente.",
   not_configured: "El envío de correos no está configurado en el servidor (variables SMTP).",
   failed: "No se pudo enviar el correo. La orden quedó creada; probá reenviarla.",
 };

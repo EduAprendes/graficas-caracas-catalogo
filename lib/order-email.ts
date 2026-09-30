@@ -26,8 +26,13 @@ function formatDateTime(date: Date): string {
   return new Intl.DateTimeFormat("es-VE", { dateStyle: "short", timeStyle: "short" }).format(date);
 }
 
-// Copia para el cliente: no incluye vendedor ni comisión (datos internos).
-function buildOrderEmail(order: SalesOrderDetail) {
+// La copia del cliente no incluye vendedor ni comisión (datos internos); la copia
+// interna del administrador sí.
+function buildOrderEmail(order: SalesOrderDetail, internal = false) {
+  const sellerLine = order.sellerName
+    ? `${order.sellerName} (${order.commissionPercent ?? 0}% · comisión ${money(order.commissionAmount)})`
+    : "Tienda (sin comisión)";
+  const recipientNote = internal ? ` — cliente: ${order.customerName}` : "";
   const hasDiscount = order.items.some((item) => item.discountPercent > 0);
 
   const rowsHtml = order.items
@@ -51,11 +56,16 @@ function buildOrderEmail(order: SalesOrderDetail) {
     <div style="background:#fff;border:1px solid #d9d7cb;padding:24px">
       <p style="margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#777">Gráficas Caracas</p>
       <h1 style="margin:4px 0 16px;font-size:22px">Orden de venta #${order.id}</h1>
-      <p style="margin:0 0 12px;font-size:14px">Hola ${escapeHtml(order.customerName)}, gracias por tu compra. Esta es la copia de tu orden.</p>
+      <p style="margin:0 0 12px;font-size:14px">${
+        internal
+          ? `Copia interna de la orden de <strong>${escapeHtml(order.customerName)}</strong>.`
+          : `Hola ${escapeHtml(order.customerName)}, gracias por tu compra. Esta es la copia de tu orden.`
+      }</p>
       <table style="font-size:14px;margin-bottom:16px" cellpadding="0" cellspacing="0">
         <tr><td style="padding:2px 12px 2px 0;color:#777">Fecha</td><td>${formatDateTime(order.createdAt)}</td></tr>
         <tr><td style="padding:2px 12px 2px 0;color:#777">Forma de pago</td><td>${payment}</td></tr>
         <tr><td style="padding:2px 12px 2px 0;color:#777">Entrega</td><td>${delivery}</td></tr>
+        ${internal ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Vendedor</td><td>${escapeHtml(sellerLine)}</td></tr>` : ""}
         ${order.deliveryAddress ? `<tr><td style="padding:2px 12px 2px 0;color:#777">Dirección</td><td>${escapeHtml(order.deliveryAddress)}</td></tr>` : ""}
       </table>
       <table style="width:100%;border-collapse:collapse;font-size:14px" cellpadding="0" cellspacing="0">
@@ -85,11 +95,14 @@ function buildOrderEmail(order: SalesOrderDetail) {
   );
   const text = [
     `Gráficas Caracas — Orden de venta #${order.id}`,
-    `Hola ${order.customerName}, gracias por tu compra. Esta es la copia de tu orden.`,
+    internal
+      ? `Copia interna de la orden de ${order.customerName}.`
+      : `Hola ${order.customerName}, gracias por tu compra. Esta es la copia de tu orden.`,
     "",
     `Fecha: ${formatDateTime(order.createdAt)}`,
     `Forma de pago: ${payment}`,
     `Entrega: ${delivery}`,
+    ...(internal ? [`Vendedor: ${sellerLine}`] : []),
     ...(order.deliveryAddress ? [`Dirección: ${order.deliveryAddress}`] : []),
     "",
     ...lines,
@@ -101,7 +114,13 @@ function buildOrderEmail(order: SalesOrderDetail) {
     ...(order.notes ? ["", `Notas: ${order.notes}`] : []),
   ].join("\n");
 
-  return { subject: `Orden de venta #${order.id} — Gráficas Caracas`, html, text };
+  return {
+    subject: internal
+      ? `[Copia interna] Orden de venta #${order.id}${recipientNote}`
+      : `Orden de venta #${order.id} — Gráficas Caracas`,
+    html,
+    text,
+  };
 }
 
 // Nunca lanza: un fallo de correo no debe romper ni deshacer la orden ya creada.
@@ -117,8 +136,23 @@ export async function sendSalesOrderEmail(orderId: number): Promise<OrderEmailSt
         })
       : null;
     const to = customer?.email?.trim();
+    if (!isMailConfigured()) return to ? "not_configured" : "no_email";
+
+    // Copia interna para el administrador (MAIL_ADMIN_COPY, separados por coma). Se manda
+    // aparte para incluir vendedor y comisión, y no depende de que el cliente tenga correo.
+    const adminTo = (process.env.MAIL_ADMIN_COPY || "")
+      .split(",")
+      .map((address) => address.trim())
+      .filter(Boolean);
+    if (adminTo.length > 0) {
+      try {
+        await sendMail({ to: adminTo.join(", "), ...buildOrderEmail(order, true) });
+      } catch (err) {
+        console.error(`No se pudo enviar la copia interna de la orden #${orderId}:`, err);
+      }
+    }
+
     if (!to) return "no_email";
-    if (!isMailConfigured()) return "not_configured";
 
     await sendMail({ to, ...buildOrderEmail(order) });
     return "sent";

@@ -57,23 +57,26 @@ model User {
   salesOrders        SalesOrder[]
   purchaseOrders     PurchaseOrder[]
   salesOrderPayments SalesOrderPayment[]
+  campaigns          Campaign[]
 
   @@map("users")
 }
 
 /// Cliente al que se le puede vender de contado o a crédito
 model Customer {
-  id          Int       @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   /// Nombre de contacto
-  name        String
-  company     String?
-  phone       String?
-  email       String?
-  address     String?
-  notes       String?
+  name            String
+  company         String?
+  phone           String?
+  email           String?
+  address         String?
+  notes           String?
   /// Baja lógica: los clientes no se borran, solo se cancelan
-  cancelledAt DateTime?
-  createdAt   DateTime  @default(now())
+  cancelledAt     DateTime?
+  /// true si pidió no recibir promociones por correo (enlace de baja)
+  marketingOptOut Boolean   @default(false)
+  createdAt       DateTime  @default(now())
 
   salesOrders SalesOrder[]
 
@@ -93,6 +96,24 @@ model Seller {
   salesOrders SalesOrder[]
 
   @@map("sellers")
+}
+
+/// Promoción enviada por correo a clientes (historial de envíos masivos)
+model Campaign {
+  id         Int      @id @default(autoincrement())
+  subject    String
+  highlight  String?
+  body       String   @db.Text
+  audience   String
+  recipients Int
+  sent       Int
+  failed     Int
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@map("campaigns")
 }
 
 model StockMovement {
@@ -119,23 +140,25 @@ model StockMovement {
 
 /// Orden de venta (reemplaza la hoja impresa: cliente, fecha/hora y líneas de trabajo)
 model SalesOrder {
-  id                Int       @id @default(autoincrement())
-  customerName      String
-  customerId        Int?
-  customer          Customer? @relation(fields: [customerId], references: [id])
-  sellerId          Int?
-  seller            Seller?   @relation(fields: [sellerId], references: [id])
+  id                    Int       @id @default(autoincrement())
+  customerName          String
+  customerId            Int?
+  customer              Customer? @relation(fields: [customerId], references: [id])
+  sellerId              Int?
+  seller                Seller?   @relation(fields: [sellerId], references: [id])
   /// % de comisión congelado al crear la orden (no cambia si luego se edita el vendedor)
-  commissionPercent Decimal?  @db.Decimal(5, 2)
-  deliveryAddress   String?
-  notes             String?
-  status            String    @default("CONFIRMADA")
-  paymentType       String    @default("CONTADO")
+  commissionPercent     Decimal?  @db.Decimal(5, 2)
+  /// Cuándo se mandó el recordatorio de cobranza (crédito con saldo); null = aún no
+  collectionEmailSentAt DateTime?
+  deliveryAddress       String?
+  notes                 String?
+  status                String    @default("CONFIRMADA")
+  paymentType           String    @default("CONTADO")
   /// TIENDA = recogido en tienda, DESPACHADO = lo llevamos al cliente en transporte propio
-  deliveryType      String    @default("TIENDA")
-  userId            Int
-  user              User      @relation(fields: [userId], references: [id])
-  createdAt         DateTime  @default(now())
+  deliveryType          String    @default("TIENDA")
+  userId                Int
+  user                  User      @relation(fields: [userId], references: [id])
+  createdAt             DateTime  @default(now())
 
   items    SalesOrderItem[]
   payments SalesOrderPayment[]

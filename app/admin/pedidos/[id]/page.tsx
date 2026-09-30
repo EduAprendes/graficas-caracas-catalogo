@@ -119,6 +119,14 @@ export default async function SalesOrderDetailPage({
             <strong>Entrega</strong>{" "}
             {DELIVERY_TYPE_LABELS[order.deliveryType] ?? order.deliveryType}
           </p>
+          {order.paymentType === "CREDITO" ? (
+            <p>
+              <strong>Recordatorio de cobranza</strong>{" "}
+              {order.collectionEmailSentAt
+                ? `enviado el ${formatDateTime(order.collectionEmailSentAt)}`
+                : "pendiente (se envía automáticamente al cumplirse el plazo si queda saldo)"}
+            </p>
+          ) : null}
           <p>
             <strong>Vendedor</strong>{" "}
             {order.sellerName

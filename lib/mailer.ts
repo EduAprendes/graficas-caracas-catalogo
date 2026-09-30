@@ -20,6 +20,9 @@ function getTransporter(): nodemailer.Transporter {
       port,
       secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === "true" : port === 465,
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      // Conexiones reutilizadas: los envíos masivos no abren un socket por correo.
+      pool: true,
+      maxConnections: 3,
       // Que un SMTP caído no deje colgada la creación de la orden.
       connectionTimeout: 10_000,
       greetingTimeout: 10_000,
@@ -35,6 +38,7 @@ export async function sendMail(input: {
   html: string;
   text: string;
   replyTo?: string;
+  headers?: Record<string, string>;
 }) {
   await getTransporter().sendMail({
     from: process.env.MAIL_FROM,
@@ -43,5 +47,6 @@ export async function sendMail(input: {
     html: input.html,
     text: input.text,
     replyTo: input.replyTo || process.env.MAIL_REPLY_TO || undefined,
+    headers: input.headers,
   });
 }
