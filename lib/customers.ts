@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { lineTotal } from "@/lib/pricing";
+import { summarizeCustomerOrders } from "@/lib/accounts";
 
-function orderTotal(items: { unitPrice: unknown; quantity: number }[]): number {
-  return items.reduce((sum, item) => {
-    const unitPrice = item.unitPrice != null ? Number(item.unitPrice) : null;
-    return sum + (unitPrice != null ? unitPrice * item.quantity : 0);
-  }, 0);
+function orderTotal(
+  items: { unitPrice: unknown; quantity: number; discountPercent?: unknown }[]
+): number {
+  return items.reduce((sum, item) => sum + lineTotal(item), 0);
 }
 
 function orderPaid(payments: { amount: unknown }[]): number {
@@ -14,10 +15,15 @@ function orderPaid(payments: { amount: unknown }[]): number {
 export type CustomerListItem = {
   id: number;
   name: string;
+  company: string | null;
   phone: string | null;
+  email: string | null;
+  address: string | null;
+  cancelled: boolean;
   orderCount: number;
   totalSold: number;
   creditOutstanding: number;
+  creditBalance: number; // saldo a favor del cliente (pagó de más)
 };
 
 export async function getCustomers(): Promise<CustomerListItem[]> {
@@ -29,25 +35,22 @@ export async function getCustomers(): Promise<CustomerListItem[]> {
   });
 
   return customers.map((customer) => {
-    let totalSold = 0;
-    let creditOutstanding = 0;
-
-    for (const order of customer.salesOrders) {
-      if (order.status !== "CONFIRMADA") continue;
-      const total = orderTotal(order.items);
-      totalSold += total;
-      if (order.paymentType === "CREDITO") {
-        creditOutstanding += Math.max(0, total - orderPaid(order.payments));
-      }
-    }
+    const totals = summarizeCustomerOrders(
+      customer.salesOrders.filter((order) => order.status === "CONFIRMADA")
+    );
 
     return {
       id: customer.id,
       name: customer.name,
+      company: customer.company,
       phone: customer.phone,
+      email: customer.email,
+      address: customer.address,
+      cancelled: customer.cancelledAt != null,
       orderCount: customer.salesOrders.length,
-      totalSold,
-      creditOutstanding,
+      totalSold: totals.totalSold,
+      creditOutstanding: totals.receivable,
+      creditBalance: totals.favorBalance,
     };
   });
 }
@@ -65,12 +68,17 @@ export type CustomerOrderSummary = {
 export type CustomerDetail = {
   id: number;
   name: string;
+  company: string | null;
   phone: string | null;
+  email: string | null;
+  address: string | null;
   notes: string | null;
+  cancelled: boolean;
   createdAt: Date;
   orders: CustomerOrderSummary[];
   totalSold: number;
   creditOutstanding: number;
+  creditBalance: number; // saldo a favor del cliente (pagó de más)
 };
 
 export async function getCustomer(id: number): Promise<CustomerDetail | null> {
@@ -85,18 +93,14 @@ export async function getCustomer(id: number): Promise<CustomerDetail | null> {
   });
   if (!customer) return null;
 
-  let totalSold = 0;
-  let creditOutstanding = 0;
+  const totals = summarizeCustomerOrders(
+    customer.salesOrders.filter((order) => order.status === "CONFIRMADA")
+  );
 
   const orders = customer.salesOrders.map((order) => {
     const total = orderTotal(order.items);
     const paid = order.paymentType === "CREDITO" ? orderPaid(order.payments) : total;
     const balance = order.paymentType === "CREDITO" ? Math.max(0, total - paid) : 0;
-
-    if (order.status === "CONFIRMADA") {
-      totalSold += total;
-      creditOutstanding += balance;
-    }
 
     return {
       id: order.id,
@@ -112,62 +116,75 @@ export async function getCustomer(id: number): Promise<CustomerDetail | null> {
   return {
     id: customer.id,
     name: customer.name,
+    company: customer.company,
     phone: customer.phone,
+    email: customer.email,
+    address: customer.address,
     notes: customer.notes,
+    cancelled: customer.cancelledAt != null,
     createdAt: customer.createdAt,
     orders,
-    totalSold,
-    creditOutstanding,
+    totalSold: totals.totalSold,
+    creditOutstanding: totals.receivable,
+    creditBalance: totals.favorBalance,
   };
 }
 
 export type CustomerOption = {
   id: number;
   name: string;
+  company: string | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
 };
 
 export async function getCustomerOptions(): Promise<CustomerOption[]> {
   const customers = await prisma.customer.findMany({
+    where: { cancelledAt: null },
     orderBy: { name: "asc" },
-    select: { id: true, name: true },
+    select: { id: true, name: true, company: true, phone: true, email: true, address: true },
   });
   return customers;
 }
 
-export async function createCustomer(input: {
+export type CustomerInput = {
   name: string;
+  company: string | null;
   phone: string | null;
+  email: string | null;
+  address: string | null;
   notes: string | null;
-}) {
-  const name = input.name.trim();
-  if (!name) throw new Error("Falta el nombre del cliente");
+};
 
-  return prisma.customer.create({
-    data: {
-      name,
-      phone: input.phone?.trim() || null,
-      notes: input.notes?.trim() || null,
-    },
-  });
+function cleanCustomerInput(input: CustomerInput) {
+  const name = input.name.trim();
+  if (!name) throw new Error("Falta el nombre de contacto del cliente");
+
+  return {
+    name,
+    company: input.company?.trim() || null,
+    phone: input.phone?.trim() || null,
+    email: input.email?.trim() || null,
+    address: input.address?.trim() || null,
+    notes: input.notes?.trim() || null,
+  };
 }
 
-export async function updateCustomer(
-  id: number,
-  input: { name: string; phone: string | null; notes: string | null }
-) {
-  const name = input.name.trim();
-  if (!name) throw new Error("Falta el nombre del cliente");
-
-  return prisma.customer.update({
-    where: { id },
-    data: {
-      name,
-      phone: input.phone?.trim() || null,
-      notes: input.notes?.trim() || null,
-    },
-  });
+export async function createCustomer(input: CustomerInput) {
+  return prisma.customer.create({ data: cleanCustomerInput(input) });
 }
 
-export async function deleteCustomer(id: number) {
-  await prisma.customer.delete({ where: { id } });
+export async function updateCustomer(id: number, input: CustomerInput) {
+  return prisma.customer.update({ where: { id }, data: cleanCustomerInput(input) });
+}
+
+// Baja lógica: el cliente conserva su historial de órdenes, solo deja de
+// aparecer al armar órdenes nuevas.
+export async function cancelCustomer(id: number) {
+  await prisma.customer.update({ where: { id }, data: { cancelledAt: new Date() } });
+}
+
+export async function reactivateCustomer(id: number) {
+  await prisma.customer.update({ where: { id }, data: { cancelledAt: null } });
 }

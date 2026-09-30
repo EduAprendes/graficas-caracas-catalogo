@@ -98,7 +98,6 @@ export default async function PurchaseOrderDetailPage({
                 <th>Producto</th>
                 <th className="num">Cantidad</th>
                 <th className="num">Costo unitario</th>
-                <th className="num">Precio sugerido</th>
                 <th className="num">Subtotal</th>
               </tr>
             </thead>
@@ -112,9 +111,6 @@ export default async function PurchaseOrderDetailPage({
                   <td className="num" data-label="Costo unitario">
                     {item.cost != null ? item.cost.toFixed(2) : "—"}
                   </td>
-                  <td className="num" data-label="Precio sugerido">
-                    {item.suggestedPrice != null ? item.suggestedPrice.toFixed(2) : "—"}
-                  </td>
                   <td className="num" data-label="Subtotal">
                     {item.cost != null ? (item.cost * item.quantity).toFixed(2) : "—"}
                   </td>
@@ -123,7 +119,7 @@ export default async function PurchaseOrderDetailPage({
               <tr className="order-print-total">
                 <td data-label="Producto">Total de piezas</td>
                 <td className="num" data-label="Cantidad">{totalQuantity}</td>
-                <td colSpan={2}></td>
+                <td></td>
                 <td className="num" data-label="Subtotal">{totalCost.toFixed(2)}</td>
               </tr>
             </tbody>

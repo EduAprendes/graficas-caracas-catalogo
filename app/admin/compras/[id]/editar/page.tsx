@@ -65,7 +65,6 @@ export default async function EditPurchaseOrderPage({
             productId: item.productId,
             quantity: item.quantity,
             cost: item.cost,
-            suggestedPrice: item.suggestedPrice,
           })),
         }}
       />

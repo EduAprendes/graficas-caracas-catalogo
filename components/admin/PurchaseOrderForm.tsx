@@ -8,11 +8,10 @@ type Row = {
   productId: number | "";
   quantity: string;
   cost: string;
-  suggestedPrice: string;
 };
 
 function emptyRow(): Row {
-  return { productId: "", quantity: "1", cost: "", suggestedPrice: "" };
+  return { productId: "", quantity: "1", cost: "" };
 }
 
 export type PurchaseOrderPayload = {
@@ -22,7 +21,6 @@ export type PurchaseOrderPayload = {
     productId: number;
     quantity: number;
     cost: number | null;
-    suggestedPrice: number | null;
   }[];
 };
 
@@ -33,7 +31,6 @@ export type PurchaseOrderInitialData = {
     productId: number;
     quantity: number;
     cost: number | null;
-    suggestedPrice: number | null;
   }[];
 };
 
@@ -59,7 +56,6 @@ export default function PurchaseOrderForm({
           productId: item.productId,
           quantity: String(item.quantity),
           cost: item.cost != null ? String(item.cost) : "",
-          suggestedPrice: item.suggestedPrice != null ? String(item.suggestedPrice) : "",
         }))
       : [emptyRow()]
   );
@@ -71,18 +67,7 @@ export default function PurchaseOrderForm({
   }
 
   function handleProductSelect(index: number, value: string) {
-    if (!value) {
-      updateRow(index, { productId: "" });
-      return;
-    }
-    const product = products.find((p) => p.id === Number(value));
-    updateRow(index, {
-      productId: product ? product.id : "",
-      suggestedPrice:
-        product && !rows[index].suggestedPrice && product.suggestedPrice != null
-          ? String(product.suggestedPrice)
-          : rows[index].suggestedPrice,
-    });
+    updateRow(index, { productId: value ? Number(value) : "" });
   }
 
   function addRow() {
@@ -103,7 +88,6 @@ export default function PurchaseOrderForm({
         productId: Number(row.productId),
         quantity: Number(row.quantity),
         cost: row.cost ? Number(row.cost) : null,
-        suggestedPrice: row.suggestedPrice ? Number(row.suggestedPrice) : null,
       }));
 
     startTransition(async () => {
@@ -180,17 +164,6 @@ export default function PurchaseOrderForm({
                   className="admin-input"
                   value={row.cost}
                   onChange={(e) => updateRow(index, { cost: e.target.value })}
-                />
-              </label>
-              <label className="order-item-field">
-                Precio sugerido
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className="admin-input"
-                  value={row.suggestedPrice}
-                  onChange={(e) => updateRow(index, { suggestedPrice: e.target.value })}
                 />
               </label>
               <div className="order-item-field">

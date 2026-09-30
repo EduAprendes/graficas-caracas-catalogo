@@ -63,7 +63,7 @@ export default async function AdminPage() {
         <div className="admin-summary-card">
           <span className="admin-summary-label">
             Valor total de inventario
-            <InfoTooltip text="Suma de stock actual × precio sugerido (uso interno, no el de catálogo) de cada producto." />
+            <InfoTooltip text="Suma de stock actual × precio de cada producto." />
           </span>
           <span className="admin-summary-value">
             {categories.reduce((sum, category) => sum + category.inventoryValue, 0).toFixed(2)}
@@ -100,15 +100,11 @@ export default async function AdminPage() {
                   <th className="num">Stock</th>
                   <th className="num">
                     Precio
-                    <InfoTooltip text="Precio de catálogo: el que ve el cliente en la página pública del sitio." />
-                  </th>
-                  <th className="num">
-                    Precio sug.
-                    <InfoTooltip text="Precio sugerido: solo interno, nunca se muestra al público. Se usa para calcular la columna Valor y el Valor total de inventario." />
+                    <InfoTooltip text="Precio de catálogo: el que ve el cliente en la página pública. En las órdenes de venta se puede aplicar un descuento por línea." />
                   </th>
                   <th className="num">
                     Valor
-                    <InfoTooltip text="Stock actual × precio sugerido de este producto (no usa el precio de catálogo)." />
+                    <InfoTooltip text="Stock actual × precio de este producto." />
                   </th>
                   <th className="num">Acciones</th>
                 </tr>

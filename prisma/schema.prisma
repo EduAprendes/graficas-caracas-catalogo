@@ -26,18 +26,17 @@ model Category {
 }
 
 model Product {
-  id             Int      @id @default(autoincrement())
-  categoryId     Int
-  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  code           String
-  description    String
-  dimension      String
-  price          Decimal  @db.Decimal(10, 2)
-  suggestedPrice Decimal? @db.Decimal(10, 2)
-  stock          Int      @default(0)
-  order          Int      @default(0)
-  imageUrl       String?
-  imagePublicId  String?
+  id            Int      @id @default(autoincrement())
+  categoryId    Int
+  category      Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  code          String
+  description   String
+  dimension     String
+  price         Decimal  @db.Decimal(10, 2)
+  stock         Int      @default(0)
+  order         Int      @default(0)
+  imageUrl      String?
+  imagePublicId String?
 
   movements          StockMovement[]
   salesOrderItems    SalesOrderItem[]
@@ -64,15 +63,36 @@ model User {
 
 /// Cliente al que se le puede vender de contado o a crédito
 model Customer {
-  id        Int      @id @default(autoincrement())
-  name      String
-  phone     String?
-  notes     String?
-  createdAt DateTime @default(now())
+  id          Int       @id @default(autoincrement())
+  /// Nombre de contacto
+  name        String
+  company     String?
+  phone       String?
+  email       String?
+  address     String?
+  notes       String?
+  /// Baja lógica: los clientes no se borran, solo se cancelan
+  cancelledAt DateTime?
+  createdAt   DateTime  @default(now())
 
   salesOrders SalesOrder[]
 
   @@map("customers")
+}
+
+/// Vendedor con comisión. Una orden sin vendedor es venta de tienda (sin comisión).
+model Seller {
+  id                Int       @id @default(autoincrement())
+  name              String
+  phone             String?
+  commissionPercent Decimal   @default(0) @db.Decimal(5, 2)
+  /// Baja lógica: los vendedores no se borran, solo se cancelan
+  cancelledAt       DateTime?
+  createdAt         DateTime  @default(now())
+
+  salesOrders SalesOrder[]
+
+  @@map("sellers")
 }
 
 model StockMovement {
@@ -97,25 +117,32 @@ model StockMovement {
   @@map("stock_movements")
 }
 
-/// Orden de venta (reemplaza la hoja impresa: cliente, fecha/hora, plotter y líneas de trabajo)
+/// Orden de venta (reemplaza la hoja impresa: cliente, fecha/hora y líneas de trabajo)
 model SalesOrder {
-  id           Int       @id @default(autoincrement())
-  customerName String
-  customerId   Int?
-  customer     Customer? @relation(fields: [customerId], references: [id])
-  plotter      String?
-  notes        String?
-  status       String    @default("CONFIRMADA")
-  paymentType  String    @default("CONTADO")
-  userId       Int
-  user         User      @relation(fields: [userId], references: [id])
-  createdAt    DateTime  @default(now())
+  id                Int       @id @default(autoincrement())
+  customerName      String
+  customerId        Int?
+  customer          Customer? @relation(fields: [customerId], references: [id])
+  sellerId          Int?
+  seller            Seller?   @relation(fields: [sellerId], references: [id])
+  /// % de comisión congelado al crear la orden (no cambia si luego se edita el vendedor)
+  commissionPercent Decimal?  @db.Decimal(5, 2)
+  deliveryAddress   String?
+  notes             String?
+  status            String    @default("CONFIRMADA")
+  paymentType       String    @default("CONTADO")
+  /// TIENDA = recogido en tienda, DESPACHADO = lo llevamos al cliente en transporte propio
+  deliveryType      String    @default("TIENDA")
+  userId            Int
+  user              User      @relation(fields: [userId], references: [id])
+  createdAt         DateTime  @default(now())
 
   items    SalesOrderItem[]
   payments SalesOrderPayment[]
 
   @@index([userId])
   @@index([customerId])
+  @@index([sellerId])
   @@map("sales_orders")
 }
 
@@ -143,16 +170,11 @@ model SalesOrderItem {
   productId Int
   product   Product @relation(fields: [productId], references: [id])
 
-  material    String?
-  tipo        String?
-  reverso     String?
-  acabado     String?
-  ancho       Decimal? @db.Decimal(10, 2)
-  alto        Decimal? @db.Decimal(10, 2)
-  m2          Decimal? @db.Decimal(10, 2)
-  description String
-  quantity    Int
-  unitPrice   Decimal? @db.Decimal(10, 2)
+  description     String
+  quantity        Int
+  unitPrice       Decimal? @db.Decimal(10, 2)
+  /// Descuento en porcentaje (0-100) aplicado a esta línea
+  discountPercent Decimal  @default(0) @db.Decimal(5, 2)
 
   movements StockMovement[]
 
@@ -179,14 +201,13 @@ model PurchaseOrder {
 }
 
 model PurchaseOrderItem {
-  id             Int           @id @default(autoincrement())
-  orderId        Int
-  order          PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId      Int
-  product        Product       @relation(fields: [productId], references: [id])
-  quantity       Int
-  cost           Decimal?      @db.Decimal(10, 2)
-  suggestedPrice Decimal?      @db.Decimal(10, 2)
+  id        Int           @id @default(autoincrement())
+  orderId   Int
+  order     PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product       @relation(fields: [productId], references: [id])
+  quantity  Int
+  cost      Decimal?      @db.Decimal(10, 2)
 
   movements StockMovement[]
 

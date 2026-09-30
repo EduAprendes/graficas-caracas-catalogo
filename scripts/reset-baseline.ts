@@ -56,12 +56,11 @@ async function confirm(message: string): Promise<boolean> {
 }
 
 // No hay costo de compra real guardado en ningún lado antes del reset, así
-// que se inventa uno provisorio por debajo del precio de catálogo y del
-// precio sugerido (para que quede margen de ganancia), editable a mano
-// después desde "Editar" en la orden.
-function estimateCost(price: number, suggestedPrice: number | null): number {
-  const reference = suggestedPrice != null ? Math.min(price, suggestedPrice) : price;
-  return Math.round(reference * 0.6 * 100) / 100;
+// que se inventa uno provisorio por debajo del precio de catálogo
+// (para que quede margen de ganancia), editable a mano después desde
+// "Editar" en la orden.
+function estimateCost(price: number): number {
+  return Math.round(price * 0.6 * 100) / 100;
 }
 
 async function main() {
@@ -116,24 +115,10 @@ async function main() {
         await tx.customer.deleteMany({});
 
         const products = await tx.product.findMany({
-          select: { id: true, price: true, suggestedPrice: true },
+          select: { id: true, price: true },
         });
 
         await tx.product.updateMany({ data: { stock: 1 } });
-
-        // Si un producto nunca tuvo precio sugerido, se usa su precio de
-        // catálogo como valor provisorio (queda guardado en el producto,
-        // no solo en la orden) para que "Por vender" no lo ignore.
-        const resolvedPrices = new Map<number, { price: number; suggestedPrice: number }>();
-        for (const product of products) {
-          const price = Number(product.price);
-          const suggestedPrice =
-            product.suggestedPrice != null ? Number(product.suggestedPrice) : price;
-          resolvedPrices.set(product.id, { price, suggestedPrice });
-          if (product.suggestedPrice == null) {
-            await tx.product.update({ where: { id: product.id }, data: { suggestedPrice } });
-          }
-        }
 
         const order = await tx.purchaseOrder.create({
           data: {
@@ -143,15 +128,11 @@ async function main() {
             receivedAt: new Date(),
             userId: user.id,
             items: {
-              create: products.map((product) => {
-                const { price, suggestedPrice } = resolvedPrices.get(product.id)!;
-                return {
-                  productId: product.id,
-                  quantity: 1,
-                  cost: estimateCost(price, suggestedPrice),
-                  suggestedPrice,
-                };
-              }),
+              create: products.map((product) => ({
+                productId: product.id,
+                quantity: 1,
+                cost: estimateCost(Number(product.price)),
+              })),
             },
           },
           include: { items: true },

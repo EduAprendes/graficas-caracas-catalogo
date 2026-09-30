@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 
-export default function NewCustomerForm({
+export default function NewSellerForm({
   onCreate,
 }: {
   onCreate: (formData: FormData) => void | Promise<void>;
@@ -28,20 +28,28 @@ export default function NewCustomerForm({
         className="admin-add-btn admin-add-category-btn"
         onClick={() => setOpen(true)}
       >
-        + Nuevo cliente
+        + Nuevo vendedor
       </button>
     );
   }
 
   return (
     <form className="admin-form admin-new-category-form" onSubmit={handleSubmit}>
-      <input name="name" placeholder="Nombre de contacto" required className="admin-input" />
-      <input name="company" placeholder="Nombre de empresa (opcional)" className="admin-input" />
+      <input name="name" placeholder="Nombre del vendedor" required className="admin-input" />
       <input name="phone" placeholder="Teléfono (opcional)" className="admin-input admin-input-sm" />
-      <input name="email" type="email" placeholder="Correo electrónico (opcional)" className="admin-input" />
-      <input name="address" placeholder="Dirección (opcional)" className="admin-input" />
+      <input
+        name="commissionPercent"
+        type="number"
+        step="0.01"
+        min="0"
+        max="100"
+        defaultValue={5}
+        placeholder="Comisión %"
+        required
+        className="admin-input admin-input-sm"
+      />
       <button type="submit" className="admin-save-btn" disabled={isPending}>
-        {isPending ? "Creando…" : "Crear cliente"}
+        {isPending ? "Creando…" : "Crear vendedor"}
       </button>
       <button type="button" className="admin-cancel-btn" onClick={() => setOpen(false)}>
         Cancelar

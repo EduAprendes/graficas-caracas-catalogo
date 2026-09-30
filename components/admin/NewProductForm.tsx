@@ -52,14 +52,6 @@ export default function NewProductForm({
             className="admin-input admin-input-sm"
           />
           <input
-            name="suggestedPrice"
-            type="number"
-            step="0.01"
-            min="0"
-            placeholder="Precio sugerido"
-            className="admin-input admin-input-sm"
-          />
-          <input
             name="stock"
             type="number"
             min="0"

@@ -10,7 +10,6 @@ export type ProductRowData = {
   description: string;
   dimension: string;
   price: number;
-  suggestedPrice: number | null;
   stock: number;
   imageUrl: string | null;
 };
@@ -94,17 +93,6 @@ export default function ProductRow({
                 className="admin-input admin-input-sm"
               />
             </label>
-            <label className="admin-field admin-field-sm">
-              Precio sugerido
-              <input
-                name="suggestedPrice"
-                type="number"
-                step="0.01"
-                min="0"
-                defaultValue={product.suggestedPrice ?? ""}
-                className="admin-input admin-input-sm"
-              />
-            </label>
             <button type="submit" className="admin-save-btn" disabled={isPending}>
               {isPending ? "Guardando…" : "Guardar"}
             </button>
@@ -139,14 +127,7 @@ export default function ProductRow({
         </span>
       </td>
       <td className="num" data-label="Precio">{product.price.toFixed(2)}</td>
-      <td className="num" data-label="Precio sug.">
-        {product.suggestedPrice != null ? product.suggestedPrice.toFixed(2) : "—"}
-      </td>
-      <td className="num" data-label="Valor">
-        {product.suggestedPrice != null
-          ? (product.stock * product.suggestedPrice).toFixed(2)
-          : "—"}
-      </td>
+      <td className="num" data-label="Valor">{(product.stock * product.price).toFixed(2)}</td>
       <td className="num" data-label="Acciones">
         <div className="admin-row-actions">
           <button

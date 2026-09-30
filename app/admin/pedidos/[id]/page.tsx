@@ -8,9 +8,21 @@ import PrintButton from "@/components/admin/PrintButton";
 import ConfirmActionButton from "@/components/admin/ConfirmActionButton";
 import AddPaymentForm from "@/components/admin/AddPaymentForm";
 import { logoutAction } from "@/app/admin/actions";
-import { addSalesOrderPaymentAction, cancelSalesOrderAction } from "../actions";
+import ResendOrderEmailButton, {
+  EMAIL_STATUS_MESSAGES,
+} from "@/components/admin/ResendOrderEmailButton";
+import {
+  addSalesOrderPaymentAction,
+  cancelSalesOrderAction,
+  resendSalesOrderEmailAction,
+} from "../actions";
 
 export const dynamic = "force-dynamic";
+
+const DELIVERY_TYPE_LABELS: Record<string, string> = {
+  TIENDA: "Recogido en tienda",
+  DESPACHADO: "Despachado",
+};
 
 const PAYMENT_TYPE_LABELS: Record<string, string> = {
   CONTADO: "Contado",
@@ -19,10 +31,17 @@ const PAYMENT_TYPE_LABELS: Record<string, string> = {
 
 export default async function SalesOrderDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ correo?: string }>;
 }) {
   const { id } = await params;
+  const { correo } = await searchParams;
+  const emailNotice =
+    correo && correo in EMAIL_STATUS_MESSAGES
+      ? { text: EMAIL_STATUS_MESSAGES[correo as keyof typeof EMAIL_STATUS_MESSAGES], ok: correo === "sent" }
+      : null;
   const orderId = Number(id);
   if (!Number.isInteger(orderId)) notFound();
 
@@ -52,6 +71,12 @@ export default async function SalesOrderDetailPage({
           ← Volver a órdenes de venta
         </Link>
       </div>
+
+      {emailNotice ? (
+        <p className={`no-print ${emailNotice.ok ? "statement-note" : "login-error"}`}>
+          {emailNotice.text}
+        </p>
+      ) : null}
 
       <section className="order-ticket">
         <header className="order-ticket-head">
@@ -91,7 +116,17 @@ export default async function SalesOrderDetailPage({
             {PAYMENT_TYPE_LABELS[order.paymentType] ?? order.paymentType}
           </p>
           <p>
-            <strong>Plotter</strong> {order.plotter || "—"}
+            <strong>Entrega</strong>{" "}
+            {DELIVERY_TYPE_LABELS[order.deliveryType] ?? order.deliveryType}
+          </p>
+          <p>
+            <strong>Vendedor</strong>{" "}
+            {order.sellerName
+              ? `${order.sellerName} (${order.commissionPercent ?? 0}% · comisión ${order.commissionAmount.toFixed(2)})`
+              : "Tienda"}
+          </p>
+          <p>
+            <strong>Dirección</strong> {order.deliveryAddress || "—"}
           </p>
           <p>
             <strong>Atendió</strong> {order.userName}
@@ -109,15 +144,9 @@ export default async function SalesOrderDetailPage({
             <thead>
               <tr>
                 <th className="num">Cant</th>
-                <th>Material</th>
-                <th>Tipo</th>
-                <th>Reverso</th>
-                <th>Acabado</th>
-                <th className="num">Ancho</th>
-                <th className="num">Alto</th>
-                <th className="num">M²</th>
                 <th>Descripción</th>
                 <th className="num">Precio unit.</th>
+                <th className="num">Desc.</th>
                 <th className="num">Subtotal</th>
               </tr>
             </thead>
@@ -125,13 +154,6 @@ export default async function SalesOrderDetailPage({
               {order.items.map((item) => (
                 <tr key={item.id}>
                   <td className="num" data-label="Cant">{item.quantity}</td>
-                  <td data-label="Material">{item.material ?? "—"}</td>
-                  <td data-label="Tipo">{item.tipo ?? "—"}</td>
-                  <td data-label="Reverso">{item.reverso ?? "—"}</td>
-                  <td data-label="Acabado">{item.acabado ?? "—"}</td>
-                  <td className="num" data-label="Ancho">{item.ancho ?? "—"}</td>
-                  <td className="num" data-label="Alto">{item.alto ?? "—"}</td>
-                  <td className="num" data-label="M²">{item.m2 ?? "—"}</td>
                   <td data-label="Descripción">
                     {item.description}
                     <span className="order-print-code"> ({item.productCode})</span>
@@ -139,14 +161,17 @@ export default async function SalesOrderDetailPage({
                   <td className="num" data-label="Precio unit.">
                     {item.unitPrice != null ? item.unitPrice.toFixed(2) : "—"}
                   </td>
+                  <td className="num" data-label="Desc.">
+                    {item.discountPercent > 0 ? item.discountPercent + "%" : "—"}
+                  </td>
                   <td className="num" data-label="Subtotal">
-                    {item.unitPrice != null ? (item.unitPrice * item.quantity).toFixed(2) : "—"}
+                    {item.unitPrice != null ? item.lineTotal.toFixed(2) : "—"}
                   </td>
                 </tr>
               ))}
               <tr className="order-print-total">
                 <td className="num" data-label="Cant">{totalQuantity}</td>
-                <td colSpan={9}>Total de piezas</td>
+                <td colSpan={3}>Total de piezas</td>
                 <td className="num" data-label="Subtotal">{order.total.toFixed(2)}</td>
               </tr>
             </tbody>
@@ -204,13 +229,17 @@ export default async function SalesOrderDetailPage({
           )}
 
           {order.status === "CONFIRMADA" && order.balance > 0 ? (
-            <AddPaymentForm onAddPayment={addSalesOrderPaymentAction.bind(null, order.id)} />
+            <AddPaymentForm
+              onAddPayment={addSalesOrderPaymentAction.bind(null, order.id)}
+              maxAmount={order.balance}
+            />
           ) : null}
         </section>
       ) : null}
 
       <div className="order-form-actions no-print">
         <PrintButton />
+        <ResendOrderEmailButton onResend={resendSalesOrderEmailAction.bind(null, order.id)} />
         {order.status === "CONFIRMADA" ? (
           <ConfirmActionButton
             label="Anular orden"

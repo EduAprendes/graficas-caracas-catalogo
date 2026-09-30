@@ -1,12 +1,16 @@
 import { prisma } from "@/lib/prisma";
+import { getReceivables } from "@/lib/accounts";
+import { lineTotal } from "@/lib/pricing";
+import { commissionAmount } from "@/lib/sellers";
 
 // ---------- Órdenes de venta ----------
 
-function itemsTotal(items: { unitPrice: unknown; quantity: number }[]): number {
-  return items.reduce((sum, item) => {
-    const unitPrice = item.unitPrice != null ? Number(item.unitPrice) : null;
-    return sum + (unitPrice != null ? unitPrice * item.quantity : 0);
-  }, 0);
+export { lineTotal };
+
+function itemsTotal(
+  items: { unitPrice: unknown; quantity: number; discountPercent?: unknown }[]
+): number {
+  return items.reduce((sum, item) => sum + lineTotal(item), 0);
 }
 
 function paymentsTotal(payments: { amount: unknown }[]): number {
@@ -16,9 +20,13 @@ function paymentsTotal(payments: { amount: unknown }[]): number {
 export type SalesOrderListItem = {
   id: number;
   customerName: string;
-  plotter: string | null;
+  deliveryAddress: string | null;
   status: string;
   paymentType: string;
+  deliveryType: string;
+  sellerName: string | null;
+  commissionPercent: number | null;
+  commissionAmount: number;
   createdAt: Date;
   userName: string;
   itemCount: number;
@@ -31,7 +39,7 @@ export type SalesOrderListItem = {
 export async function getSalesOrders(): Promise<SalesOrderListItem[]> {
   const orders = await prisma.salesOrder.findMany({
     orderBy: { id: "desc" },
-    include: { user: true, items: true, payments: true },
+    include: { user: true, seller: true, items: true, payments: true },
   });
 
   return orders.map((order) => {
@@ -42,9 +50,16 @@ export async function getSalesOrders(): Promise<SalesOrderListItem[]> {
     return {
       id: order.id,
       customerName: order.customerName,
-      plotter: order.plotter,
+      deliveryAddress: order.deliveryAddress,
       status: order.status,
       paymentType: order.paymentType,
+      deliveryType: order.deliveryType,
+      sellerName: order.seller?.name ?? null,
+      commissionPercent: order.commissionPercent != null ? Number(order.commissionPercent) : null,
+      commissionAmount: commissionAmount(
+        total,
+        order.commissionPercent != null ? Number(order.commissionPercent) : null
+      ),
       createdAt: order.createdAt,
       userName: order.user.name,
       itemCount: order.items.length,
@@ -59,16 +74,11 @@ export async function getSalesOrders(): Promise<SalesOrderListItem[]> {
 export type SalesOrderItemDetail = {
   id: number;
   productCode: string;
-  material: string | null;
-  tipo: string | null;
-  reverso: string | null;
-  acabado: string | null;
-  ancho: number | null;
-  alto: number | null;
-  m2: number | null;
   description: string;
   quantity: number;
   unitPrice: number | null;
+  discountPercent: number;
+  lineTotal: number;
 };
 
 export type SalesOrderPaymentDetail = {
@@ -83,10 +93,14 @@ export type SalesOrderDetail = {
   id: number;
   customerId: number | null;
   customerName: string;
-  plotter: string | null;
+  deliveryAddress: string | null;
   notes: string | null;
   status: string;
   paymentType: string;
+  deliveryType: string;
+  sellerName: string | null;
+  commissionPercent: number | null;
+  commissionAmount: number;
   createdAt: Date;
   userName: string;
   items: SalesOrderItemDetail[];
@@ -101,6 +115,7 @@ export async function getSalesOrder(id: number): Promise<SalesOrderDetail | null
     where: { id },
     include: {
       user: true,
+      seller: true,
       items: { include: { product: true }, orderBy: { position: "asc" } },
       payments: { include: { user: true }, orderBy: { id: "asc" } },
     },
@@ -115,25 +130,27 @@ export async function getSalesOrder(id: number): Promise<SalesOrderDetail | null
     id: order.id,
     customerId: order.customerId,
     customerName: order.customerName,
-    plotter: order.plotter,
+    deliveryAddress: order.deliveryAddress,
     notes: order.notes,
     status: order.status,
     paymentType: order.paymentType,
+    deliveryType: order.deliveryType,
+    sellerName: order.seller?.name ?? null,
+    commissionPercent: order.commissionPercent != null ? Number(order.commissionPercent) : null,
+    commissionAmount: commissionAmount(
+      total,
+      order.commissionPercent != null ? Number(order.commissionPercent) : null
+    ),
     createdAt: order.createdAt,
     userName: order.user.name,
     items: order.items.map((item) => ({
       id: item.id,
       productCode: item.product.code,
-      material: item.material,
-      tipo: item.tipo,
-      reverso: item.reverso,
-      acabado: item.acabado,
-      ancho: item.ancho != null ? Number(item.ancho) : null,
-      alto: item.alto != null ? Number(item.alto) : null,
-      m2: item.m2 != null ? Number(item.m2) : null,
       description: item.description,
       quantity: item.quantity,
       unitPrice: item.unitPrice != null ? Number(item.unitPrice) : null,
+      discountPercent: Number(item.discountPercent),
+      lineTotal: lineTotal(item),
     })),
     payments: order.payments.map((payment) => ({
       id: payment.id,
@@ -150,15 +167,10 @@ export async function getSalesOrder(id: number): Promise<SalesOrderDetail | null
 
 export type SalesOrderItemInput = {
   productId: number;
-  material: string | null;
-  tipo: string | null;
-  reverso: string | null;
-  acabado: string | null;
-  ancho: number | null;
-  alto: number | null;
   description: string;
   quantity: number;
   unitPrice: number | null;
+  discountPercent?: number | null;
 };
 
 export async function createSalesOrder(
@@ -166,19 +178,33 @@ export async function createSalesOrder(
   input: {
     customerId: number;
     paymentType: "CONTADO" | "CREDITO";
-    plotter: string | null;
+    deliveryType: "TIENDA" | "DESPACHADO";
+    sellerId: number | null;
+    deliveryAddress: string | null;
     notes: string | null;
     items: SalesOrderItemInput[];
   }
 ) {
   const customer = await prisma.customer.findUnique({ where: { id: input.customerId } });
   if (!customer) throw new Error("Cliente inválido");
+  if (customer.cancelledAt) throw new Error("Este cliente está cancelado; reactivalo para crearle órdenes");
+
+  // Sin vendedor = venta de tienda: sin comisión. El % se congela en la orden.
+  let seller: Awaited<ReturnType<typeof prisma.seller.findUnique>> = null;
+  if (input.sellerId != null) {
+    seller = await prisma.seller.findUnique({ where: { id: input.sellerId } });
+    if (!seller) throw new Error("Vendedor inválido");
+    if (seller.cancelledAt) {
+      throw new Error("Este vendedor está cancelado; reactivalo para asignarle órdenes");
+    }
+  }
 
   const items = input.items
     .map((item) => ({
       ...item,
       description: item.description.trim(),
       quantity: Math.trunc(item.quantity),
+      discountPercent: item.discountPercent ?? 0,
     }))
     .filter(
       (item) =>
@@ -189,37 +215,59 @@ export async function createSalesOrder(
         item.quantity > 0
     );
 
+  if (items.some((item) => !Number.isFinite(item.discountPercent) || item.discountPercent < 0 || item.discountPercent > 100)) {
+    throw new Error("El descuento debe estar entre 0 y 100%");
+  }
+
   if (items.length === 0) {
     throw new Error("La orden necesita al menos una línea con producto, descripción y cantidad");
   }
 
   const order = await prisma.$transaction(async (tx) => {
+    const requestedByProduct = new Map<number, number>();
+    for (const item of items) {
+      requestedByProduct.set(
+        item.productId,
+        (requestedByProduct.get(item.productId) ?? 0) + item.quantity
+      );
+    }
+
+    const products = await tx.product.findMany({
+      where: { id: { in: [...requestedByProduct.keys()] } },
+    });
+    const productsById = new Map(products.map((product) => [product.id, product]));
+
+    const shortages: string[] = [];
+    for (const [productId, requested] of requestedByProduct) {
+      const product = productsById.get(productId);
+      if (product && product.stock < requested) {
+        shortages.push(`${product.code} (pedís ${requested}, hay ${product.stock} en stock)`);
+      }
+    }
+    if (shortages.length > 0) {
+      throw new Error(`No hay stock suficiente: ${shortages.join(", ")}`);
+    }
+
     const created = await tx.salesOrder.create({
       data: {
         customerId: customer.id,
         customerName: customer.name,
         paymentType: input.paymentType,
-        plotter: input.plotter?.trim() || null,
+        deliveryType: input.deliveryType === "DESPACHADO" ? "DESPACHADO" : "TIENDA",
+        sellerId: seller ? seller.id : null,
+        commissionPercent: seller ? Number(seller.commissionPercent) : null,
+        deliveryAddress: input.deliveryAddress?.trim() || null,
         notes: input.notes?.trim() || null,
         userId,
         items: {
           create: items.map((item, index) => {
-            const ancho = item.ancho ?? null;
-            const alto = item.alto ?? null;
-            const m2 = ancho != null && alto != null ? Math.round(ancho * alto * 100) / 100 : null;
             return {
               position: index,
               productId: item.productId,
-              material: item.material?.trim() || null,
-              tipo: item.tipo?.trim() || null,
-              reverso: item.reverso?.trim() || null,
-              acabado: item.acabado?.trim() || null,
-              ancho,
-              alto,
-              m2,
               description: item.description,
               quantity: item.quantity,
               unitPrice: item.unitPrice ?? null,
+              discountPercent: item.discountPercent,
             };
           }),
         },
@@ -229,16 +277,14 @@ export async function createSalesOrder(
 
     for (const orderItem of created.items) {
       const product = await tx.product.findUniqueOrThrow({ where: { id: orderItem.productId } });
-      const newStock = Math.max(0, product.stock - orderItem.quantity);
-      const appliedDelta = newStock - product.stock;
-      if (appliedDelta === 0) continue;
+      const newStock = product.stock - orderItem.quantity;
 
       await tx.product.update({ where: { id: orderItem.productId }, data: { stock: newStock } });
       await tx.stockMovement.create({
         data: {
           productId: orderItem.productId,
           userId,
-          delta: appliedDelta,
+          delta: -orderItem.quantity,
           reason: "VENTA",
           salesOrderItemId: orderItem.id,
         },
@@ -302,8 +348,14 @@ export async function addSalesOrderPayment(
 
     const total = itemsTotal(order.items);
     const paidSoFar = paymentsTotal(order.payments);
-    if (paidSoFar >= total) {
+    const remaining = Math.round((total - paidSoFar) * 100) / 100;
+    if (remaining <= 0) {
       throw new Error("Esta orden ya está saldada");
+    }
+    if (input.amount > remaining + 0.001) {
+      throw new Error(
+        `El abono (${input.amount.toFixed(2)}) supera lo que resta por pagar (${remaining.toFixed(2)})`
+      );
     }
 
     await tx.salesOrderPayment.create({
@@ -324,12 +376,13 @@ export type SalesSummary = {
 };
 
 export async function getSalesSummary(): Promise<SalesSummary> {
-  const [products, orders] = await Promise.all([
+  const [products, orders, receivables] = await Promise.all([
     prisma.product.findMany({ select: { stock: true, price: true } }),
     prisma.salesOrder.findMany({
       where: { status: "CONFIRMADA" },
-      include: { items: true, payments: true },
+      include: { items: true },
     }),
+    getReceivables(),
   ]);
 
   const inventoryToSellValue = products.reduce(
@@ -337,17 +390,10 @@ export async function getSalesSummary(): Promise<SalesSummary> {
     0
   );
 
-  let creditOutstanding = 0;
-  let totalSold = 0;
-  for (const order of orders) {
-    const total = itemsTotal(order.items);
-    totalSold += total;
-    if (order.paymentType === "CREDITO") {
-      creditOutstanding += Math.max(0, total - paymentsTotal(order.payments));
-    }
-  }
+  const totalSold = orders.reduce((sum, order) => sum + itemsTotal(order.items), 0);
 
-  return { inventoryToSellValue, creditOutstanding, totalSold };
+  // Mismo criterio que "Cuentas por cobrar": saldo neto por cliente (descuenta abonos de más).
+  return { inventoryToSellValue, creditOutstanding: receivables.totalBalance, totalSold };
 }
 
 // ---------- Órdenes de compra / reposición ----------
@@ -388,7 +434,6 @@ export type PurchaseOrderItemDetail = {
   productDescription: string;
   quantity: number;
   cost: number | null;
-  suggestedPrice: number | null;
 };
 
 export type PurchaseOrderDetail = {
@@ -427,7 +472,6 @@ export async function getPurchaseOrder(id: number): Promise<PurchaseOrderDetail 
       productDescription: item.product.description,
       quantity: item.quantity,
       cost: item.cost != null ? Number(item.cost) : null,
-      suggestedPrice: item.suggestedPrice != null ? Number(item.suggestedPrice) : null,
     })),
   };
 }
@@ -436,7 +480,6 @@ export type PurchaseOrderItemInput = {
   productId: number;
   quantity: number;
   cost: number | null;
-  suggestedPrice: number | null;
 };
 
 export async function createPurchaseOrder(
@@ -470,7 +513,6 @@ export async function createPurchaseOrder(
           productId: item.productId,
           quantity: item.quantity,
           cost: item.cost ?? null,
-          suggestedPrice: item.suggestedPrice ?? null,
         })),
       },
     },
@@ -540,15 +582,6 @@ export async function updatePurchaseOrder(
           },
         });
       }
-
-      for (const item of items) {
-        if (item.suggestedPrice != null) {
-          await tx.product.update({
-            where: { id: item.productId },
-            data: { suggestedPrice: item.suggestedPrice },
-          });
-        }
-      }
     }
 
     await tx.purchaseOrderItem.deleteMany({ where: { orderId } });
@@ -563,8 +596,7 @@ export async function updatePurchaseOrder(
             productId: item.productId,
             quantity: item.quantity,
             cost: item.cost ?? null,
-            suggestedPrice: item.suggestedPrice ?? null,
-          })),
+            })),
         },
       },
     });
@@ -585,10 +617,7 @@ export async function receivePurchaseOrder(orderId: number, userId: number) {
 
       await tx.product.update({
         where: { id: item.productId },
-        data: {
-          stock: newStock,
-          ...(item.suggestedPrice != null ? { suggestedPrice: item.suggestedPrice } : {}),
-        },
+        data: { stock: newStock },
       });
       await tx.stockMovement.create({
         data: {

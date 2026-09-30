@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { getCustomers } from "@/lib/customers";
-import { createCustomer, deleteCustomer, updateCustomer } from "./actions";
+import { createCustomer, cancelCustomer, reactivateCustomer, updateCustomer } from "./actions";
 import { logoutAction } from "@/app/admin/actions";
 import AdminNav from "@/components/admin/AdminNav";
 import NewCustomerForm from "@/components/admin/NewCustomerForm";
@@ -34,8 +34,11 @@ export default async function CustomersPage() {
         <table>
           <thead>
             <tr>
-              <th>Nombre</th>
+              <th>Contacto</th>
+              <th>Empresa</th>
               <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Dirección</th>
               <th className="num">Órdenes</th>
               <th className="num">Total vendido</th>
               <th className="num">Saldo por cobrar</th>
@@ -45,7 +48,7 @@ export default async function CustomersPage() {
           <tbody>
             {customers.length === 0 ? (
               <tr>
-                <td colSpan={6} className="ledger-empty">
+                <td colSpan={8} className="ledger-empty">
                   Todavía no hay clientes. Creá el primero con &quot;+ Nuevo cliente&quot;.
                 </td>
               </tr>
@@ -55,7 +58,8 @@ export default async function CustomersPage() {
                   key={customer.id}
                   customer={customer}
                   onUpdate={updateCustomer.bind(null, customer.id)}
-                  onDelete={deleteCustomer.bind(null, customer.id)}
+                  onCancel={cancelCustomer.bind(null, customer.id)}
+                  onReactivate={reactivateCustomer.bind(null, customer.id)}
                 />
               ))
             )}

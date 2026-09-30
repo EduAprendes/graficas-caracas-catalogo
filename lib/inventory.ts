@@ -6,7 +6,6 @@ export type InventoryProduct = {
   description: string;
   dimension: string;
   price: number;
-  suggestedPrice: number | null;
   stock: number;
   imageUrl: string | null;
 };
@@ -36,7 +35,6 @@ export async function getInventory(): Promise<InventoryCategory[]> {
       description: product.description,
       dimension: product.dimension,
       price: Number(product.price),
-      suggestedPrice: product.suggestedPrice != null ? Number(product.suggestedPrice) : null,
       stock: product.stock,
       imageUrl: product.imageUrl,
     }));
@@ -48,10 +46,7 @@ export async function getInventory(): Promise<InventoryCategory[]> {
       dimensionLabel: category.dimensionLabel,
       imagePath: category.imagePath,
       products,
-      inventoryValue: products.reduce(
-        (sum, product) => sum + product.stock * (product.suggestedPrice ?? 0),
-        0
-      ),
+      inventoryValue: products.reduce((sum, product) => sum + product.stock * product.price, 0),
     };
   });
 }
@@ -62,7 +57,6 @@ export type ProductOption = {
   description: string;
   dimension: string;
   price: number;
-  suggestedPrice: number | null;
   stock: number;
   categoryTitle: string;
 };
@@ -79,7 +73,6 @@ export async function getProductOptions(): Promise<ProductOption[]> {
     description: product.description,
     dimension: product.dimension,
     price: Number(product.price),
-    suggestedPrice: product.suggestedPrice != null ? Number(product.suggestedPrice) : null,
     stock: product.stock,
     categoryTitle: product.category.title,
   }));

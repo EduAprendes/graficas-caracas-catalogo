@@ -49,24 +49,38 @@ export default async function CustomerDetailPage({
       <section className="ledger-head">
         <div>
           <p className="ledger-category">Cliente desde {formatDateTime(customer.createdAt)}</p>
-          <h2>{customer.name}</h2>
+          <h2>
+            {customer.name}
+            {customer.cancelled ? <span className="status-badge status-anulada"> Cancelado</span> : null}
+          </h2>
+          {customer.company ? <p className="ledger-dimension">{customer.company}</p> : null}
           <p className="ledger-dimension">
-            {customer.phone ?? "Sin teléfono"}
+            {[customer.phone ?? "Sin teléfono", customer.email, customer.address]
+              .filter(Boolean)
+              .join(" · ")}
             {customer.notes ? ` · ${customer.notes}` : ""}
           </p>
         </div>
         <div className="ledger-stock">
-          <span className="ledger-stock-label">Saldo por cobrar</span>
+          <span className="ledger-stock-label">
+            {customer.creditBalance > 0 ? "Saldo a favor" : "Saldo por cobrar"}
+          </span>
           <span
             className={`stock-badge stock-badge-lg${customer.creditOutstanding > 0 ? " stock-zero" : ""}`}
           >
-            {customer.creditOutstanding.toFixed(2)}
+            {(customer.creditBalance > 0
+              ? customer.creditBalance
+              : customer.creditOutstanding
+            ).toFixed(2)}
           </span>
         </div>
       </section>
 
       <p className="admin-inventory-total">
-        Total vendido a este cliente: <strong>{customer.totalSold.toFixed(2)}</strong>
+        Total vendido a este cliente: <strong>{customer.totalSold.toFixed(2)}</strong>{" "}
+        <Link href={`/admin/clientes/${customer.id}/estado-de-cuenta`} className="admin-edit-btn">
+          Estado de cuenta
+        </Link>
       </p>
 
       <div className="admin-table-wrap">

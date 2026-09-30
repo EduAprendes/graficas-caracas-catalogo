@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 
 export default function AddPaymentForm({
   onAddPayment,
+  maxAmount,
 }: {
+  // Lo que resta por pagar de la orden: no se permite abonar más que eso.
+  maxAmount?: number;
   onAddPayment: (input: { amount: number; notes: string }) => Promise<{ ok: true } | { error: string }>;
 }) {
   const router = useRouter();
@@ -36,7 +39,10 @@ export default function AddPaymentForm({
         type="number"
         step="0.01"
         min="0.01"
-        placeholder="Monto del abono"
+        max={maxAmount}
+        placeholder={
+          maxAmount != null ? `Monto del abono (máx. ${maxAmount.toFixed(2)})` : "Monto del abono"
+        }
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         required

@@ -8,7 +8,8 @@ import {
   createSalesOrder as createSalesOrderData,
   type SalesOrderItemInput,
 } from "@/lib/orders";
-import { createCustomer as createCustomerData } from "@/lib/customers";
+import { sendSalesOrderEmail, type OrderEmailStatus } from "@/lib/order-email";
+import { createCustomer as createCustomerData, type CustomerOption } from "@/lib/customers";
 
 async function requireUserId() {
   const session = await auth();
@@ -16,29 +17,63 @@ async function requireUserId() {
   return Number(session.user.id);
 }
 
+export async function createCustomerForOrderAction(input: {
+  name: string;
+  company: string;
+  phone: string;
+  email: string;
+  address: string;
+}): Promise<{ customer: CustomerOption } | { error: string }> {
+  try {
+    await requireUserId();
+    if (!input.name.trim()) return { error: "Falta el nombre de contacto" };
+
+    const customer = await createCustomerData({
+      name: input.name,
+      company: input.company || null,
+      phone: input.phone || null,
+      email: input.email || null,
+      address: input.address || null,
+      notes: null,
+    });
+
+    revalidatePath("/admin/clientes");
+
+    return {
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        company: customer.company,
+        phone: customer.phone,
+        email: customer.email,
+        address: customer.address,
+      },
+    };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "No se pudo crear el cliente" };
+  }
+}
+
 export async function createSalesOrderAction(input: {
   customerId: number | null;
-  newCustomerName: string;
   paymentType: "CONTADO" | "CREDITO";
-  plotter: string;
+  deliveryType: "TIENDA" | "DESPACHADO";
+  sellerId: number | null;
+  deliveryAddress: string;
   notes: string;
   items: SalesOrderItemInput[];
-}): Promise<{ id: number } | { error: string }> {
+}): Promise<{ id: number; email: OrderEmailStatus } | { error: string }> {
   try {
     const userId = await requireUserId();
 
-    let customerId = input.customerId;
-    if (!customerId) {
-      const name = input.newCustomerName.trim();
-      if (!name) return { error: "Elegí un cliente o escribí el nombre de uno nuevo" };
-      const customer = await createCustomerData({ name, phone: null, notes: null });
-      customerId = customer.id;
-    }
+    if (!input.customerId) return { error: "Elegí un cliente o creá uno nuevo" };
 
     const order = await createSalesOrderData(userId, {
-      customerId,
+      customerId: input.customerId,
       paymentType: input.paymentType,
-      plotter: input.plotter || null,
+      deliveryType: input.deliveryType,
+      sellerId: input.sellerId,
+      deliveryAddress: input.deliveryAddress || null,
       notes: input.notes || null,
       items: input.items,
     });
@@ -48,7 +83,10 @@ export async function createSalesOrderAction(input: {
     revalidatePath("/admin");
     revalidatePath("/");
 
-    return { id: order.id };
+    // Copia al correo del cliente; si falla, la orden ya está creada y se puede reenviar.
+    const email = await sendSalesOrderEmail(order.id);
+
+    return { id: order.id, email };
   } catch (err) {
     return { error: err instanceof Error ? err.message : "No se pudo crear la orden" };
   }
@@ -85,4 +123,9 @@ export async function cancelSalesOrderAction(orderId: number) {
   revalidatePath("/admin/clientes");
   revalidatePath("/admin");
   revalidatePath("/");
+}
+
+export async function resendSalesOrderEmailAction(orderId: number): Promise<OrderEmailStatus> {
+  await requireUserId();
+  return sendSalesOrderEmail(orderId);
 }

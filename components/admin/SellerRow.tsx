@@ -3,27 +3,24 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 
-export type CustomerRowData = {
+export type SellerRowData = {
   id: number;
   name: string;
-  company: string | null;
   phone: string | null;
-  email: string | null;
-  address: string | null;
+  commissionPercent: number;
   cancelled: boolean;
   orderCount: number;
   totalSold: number;
-  creditOutstanding: number;
-  creditBalance: number;
+  commissionEarned: number;
 };
 
-export default function CustomerRow({
-  customer,
+export default function SellerRow({
+  seller,
   onUpdate,
   onCancel,
   onReactivate,
 }: {
-  customer: CustomerRowData;
+  seller: SellerRowData;
   onUpdate: (formData: FormData) => void | Promise<void>;
   onCancel: () => void | Promise<void>;
   onReactivate: () => void | Promise<void>;
@@ -33,8 +30,7 @@ export default function CustomerRow({
 
   function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+    const formData = new FormData(e.currentTarget);
     startTransition(async () => {
       await onUpdate(formData);
       setEditing(false);
@@ -43,7 +39,7 @@ export default function CustomerRow({
 
   function handleCancel() {
     const ok = window.confirm(
-      `¿Cancelar el cliente "${customer.name}"? No se borra: conserva su historial y podés reactivarlo, pero deja de aparecer al crear órdenes nuevas.`
+      `¿Cancelar al vendedor "${seller.name}"? No se borra: conserva su historial de ventas y comisiones, pero deja de aparecer al crear órdenes nuevas. Podés reactivarlo cuando quieras.`
     );
     if (!ok) return;
     startTransition(() => {
@@ -51,27 +47,34 @@ export default function CustomerRow({
     });
   }
 
-  function handleReactivate() {
-    startTransition(() => {
-      onReactivate();
-    });
-  }
-
   if (editing) {
     return (
       <tr>
-        <td colSpan={8}>
+        <td colSpan={7}>
           <form className="admin-form admin-edit-form" onSubmit={handleSave}>
-            <input name="name" defaultValue={customer.name} placeholder="Nombre de contacto" required className="admin-input" />
-            <input name="company" defaultValue={customer.company ?? ""} placeholder="Empresa" className="admin-input" />
+            <input name="name" defaultValue={seller.name} placeholder="Nombre" required className="admin-input" />
             <input
               name="phone"
-              defaultValue={customer.phone ?? ""}
+              defaultValue={seller.phone ?? ""}
               placeholder="Teléfono"
               className="admin-input admin-input-sm"
             />
-            <input name="email" type="email" defaultValue={customer.email ?? ""} placeholder="Correo electrónico" className="admin-input" />
-            <input name="address" defaultValue={customer.address ?? ""} placeholder="Dirección" className="admin-input" />
+            <label className="admin-field admin-field-sm">
+              Comisión %
+              <input
+                name="commissionPercent"
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                defaultValue={seller.commissionPercent}
+                required
+                className="admin-input admin-input-sm"
+              />
+            </label>
+            <p className="statement-note">
+              El nuevo % aplica solo a órdenes futuras; las ya creadas conservan el % con que se vendieron.
+            </p>
             <button type="submit" className="admin-save-btn" disabled={isPending}>
               {isPending ? "Guardando…" : "Guardar"}
             </button>
@@ -85,35 +88,29 @@ export default function CustomerRow({
   }
 
   return (
-    <tr className={customer.cancelled ? "row-cancelled" : undefined}>
-      <td data-label="Nombre">
-        <Link href={`/admin/clientes/${customer.id}`} className="code code-link">
-          {customer.name}
+    <tr className={seller.cancelled ? "row-cancelled" : undefined}>
+      <td data-label="Vendedor">
+        <Link href={`/admin/vendedores/${seller.id}`} className="code code-link" title="Ver órdenes y comisiones">
+          {seller.name}
         </Link>
-        {customer.cancelled ? <span className="status-badge status-anulada"> Cancelado</span> : null}
+        {seller.cancelled ? <span className="status-badge status-anulada"> Cancelado</span> : null}
       </td>
-      <td data-label="Empresa">{customer.company ?? "—"}</td>
-      <td data-label="Teléfono">{customer.phone ?? "—"}</td>
-      <td data-label="Correo">{customer.email ?? "—"}</td>
-      <td data-label="Dirección">{customer.address ?? "—"}</td>
-      <td className="num" data-label="Órdenes">{customer.orderCount}</td>
-      <td className="num" data-label="Total vendido">{customer.totalSold.toFixed(2)}</td>
-      <td className="num" data-label="Saldo por cobrar">
-        {customer.creditOutstanding > 0 ? (
-          <span className="stock-badge stock-zero">{customer.creditOutstanding.toFixed(2)}</span>
-        ) : customer.creditBalance > 0 ? (
-          <span title="Pagó de más">{customer.creditBalance.toFixed(2)} a favor</span>
-        ) : (
-          "0.00"
-        )}
+      <td data-label="Teléfono">{seller.phone ?? "—"}</td>
+      <td className="num" data-label="Comisión">{seller.commissionPercent.toFixed(2)}%</td>
+      <td className="num" data-label="Órdenes">
+        <Link href={`/admin/vendedores/${seller.id}`} className="code-link">
+          {seller.orderCount}
+        </Link>
       </td>
+      <td className="num" data-label="Total vendido">{seller.totalSold.toFixed(2)}</td>
+      <td className="num" data-label="Comisión ganada">{seller.commissionEarned.toFixed(2)}</td>
       <td className="num" data-label="Acciones">
         <div className="admin-row-actions">
           <button
             type="button"
             className="admin-icon-btn"
             onClick={() => setEditing(true)}
-            aria-label={`Editar ${customer.name}`}
+            aria-label={`Editar ${seller.name}`}
             title="Editar"
           >
             <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden="true">
@@ -126,11 +123,11 @@ export default function CustomerRow({
               />
             </svg>
           </button>
-          {customer.cancelled ? (
+          {seller.cancelled ? (
             <button
               type="button"
               className="admin-edit-btn"
-              onClick={handleReactivate}
+              onClick={() => startTransition(() => onReactivate())}
               disabled={isPending}
             >
               Reactivar
@@ -141,8 +138,8 @@ export default function CustomerRow({
               className="admin-icon-btn admin-icon-btn-delete"
               onClick={handleCancel}
               disabled={isPending}
-              aria-label={`Cancelar ${customer.name}`}
-              title="Cancelar cliente"
+              aria-label={`Cancelar ${seller.name}`}
+              title="Cancelar vendedor"
             >
               <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden="true">
                 <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.3" />
