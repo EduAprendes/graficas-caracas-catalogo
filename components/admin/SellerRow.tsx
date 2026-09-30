@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import SellerAccessCell from "@/components/admin/SellerAccessCell";
 
 export type SellerRowData = {
   id: number;
@@ -12,6 +13,7 @@ export type SellerRowData = {
   orderCount: number;
   totalSold: number;
   commissionEarned: number;
+  username: string | null;
 };
 
 export default function SellerRow({
@@ -19,11 +21,13 @@ export default function SellerRow({
   onUpdate,
   onCancel,
   onReactivate,
+  onSaveAccess,
 }: {
   seller: SellerRowData;
   onUpdate: (formData: FormData) => void | Promise<void>;
   onCancel: () => void | Promise<void>;
   onReactivate: () => void | Promise<void>;
+  onSaveAccess: (formData: FormData) => Promise<{ ok: true } | { error: string }>;
 }) {
   const [editing, setEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -50,7 +54,7 @@ export default function SellerRow({
   if (editing) {
     return (
       <tr>
-        <td colSpan={7}>
+        <td colSpan={8}>
           <form className="admin-form admin-edit-form" onSubmit={handleSave}>
             <input name="name" defaultValue={seller.name} placeholder="Nombre" required className="admin-input" />
             <input
@@ -104,6 +108,13 @@ export default function SellerRow({
       </td>
       <td className="num" data-label="Total vendido">{seller.totalSold.toFixed(2)}</td>
       <td className="num" data-label="Comisión ganada">{seller.commissionEarned.toFixed(2)}</td>
+      <td data-label="Acceso al panel">
+        <SellerAccessCell
+          username={seller.username}
+          disabled={seller.cancelled}
+          onSave={onSaveAccess}
+        />
+      </td>
       <td className="num" data-label="Acciones">
         <div className="admin-row-actions">
           <button

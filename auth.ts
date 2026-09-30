@@ -6,12 +6,14 @@ import { prisma } from "@/lib/prisma";
 declare module "next-auth" {
   interface User {
     username?: string;
+    role?: string;
   }
   interface Session {
     user: {
       id: string;
       name?: string | null;
       username?: string;
+      role?: string;
     };
   }
 }
@@ -32,13 +34,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const user = await prisma.user.findUnique({ where: { username } });
+        const user = await prisma.user.findUnique({
+          where: { username },
+          include: { seller: true },
+        });
         if (!user) return null;
 
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
 
-        return { id: String(user.id), name: user.name, username: user.username };
+        // Una vendedora cancelada (o sin vendedora ligada) no puede entrar.
+        if (user.role === "VENDEDOR" && (!user.seller || user.seller.cancelledAt)) {
+          return null;
+        }
+
+        return { id: String(user.id), name: user.name, username: user.username, role: user.role };
       },
     }),
   ],
@@ -47,12 +57,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.username = user.username;
+        token.role = user.role;
       }
       return token;
     },
     session({ session, token }) {
       session.user.id = token.id as string;
       session.user.username = token.username as string | undefined;
+      session.user.role = token.role as string | undefined;
       return session;
     },
   },

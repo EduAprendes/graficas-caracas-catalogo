@@ -1680,3 +1680,23 @@ footer.foot {
   flex-wrap: wrap;
   max-width: 520px;
 }
+
+/* ---- Panel de vendedora ---- */
+.catalog-search {
+  width: 100%;
+  max-width: 420px;
+  flex: none;
+  margin: 0 0 14px;
+}
+.seller-access {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+.seller-access-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 190px;
+}

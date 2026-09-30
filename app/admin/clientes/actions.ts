@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { requireAdmin } from "@/lib/access";
 import {
   createCustomer as createCustomerData,
   cancelCustomer as cancelCustomerData,
@@ -22,9 +22,7 @@ function readCustomerForm(formData: FormData) {
 }
 
 async function requireSession() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
-  return session;
+  return requireAdmin();
 }
 
 export async function createCustomer(formData: FormData) {

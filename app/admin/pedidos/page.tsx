@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { getSalesOrders } from "@/lib/orders";
+import { getAccessUser } from "@/lib/access";
 import { formatDate } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
 import { logoutAction } from "@/app/admin/actions";
@@ -19,7 +20,11 @@ const PAYMENT_TYPE_LABELS: Record<string, string> = {
 
 export default async function SalesOrdersPage() {
   const session = await auth();
-  const orders = await getSalesOrders();
+  const access = await getAccessUser();
+  // Una vendedora solo ve sus propias órdenes.
+  const orders = await getSalesOrders(
+    access?.role === "VENDEDOR" && access.sellerId != null ? { sellerId: access.sellerId } : {}
+  );
 
   return (
     <div className="admin-page admin-page-wide">
@@ -83,7 +88,9 @@ export default async function SalesOrdersPage() {
                   <td data-label="Entrega">
                     {DELIVERY_TYPE_LABELS[order.deliveryType] ?? order.deliveryType}
                   </td>
-                  <td data-label="Vendedor">{order.sellerName ?? "Tienda"}</td>
+                  <td data-label="Vendedor">{order.sellerName
+                      ? `${order.sellerName} (${order.commissionPercent ?? 0}%)`
+                      : "Tienda"}</td>
                   <td className="num" data-label="Saldo">
                     {order.balance > 0 ? (
                       <span className="stock-badge stock-zero">{order.balance.toFixed(2)}</span>

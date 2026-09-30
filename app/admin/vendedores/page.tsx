@@ -1,6 +1,12 @@
 import { auth } from "@/auth";
 import { getSellers } from "@/lib/sellers";
-import { cancelSeller, createSeller, reactivateSeller, updateSeller } from "./actions";
+import {
+  cancelSeller,
+  createSeller,
+  reactivateSeller,
+  saveSellerAccess,
+  updateSeller,
+} from "./actions";
 import { logoutAction } from "@/app/admin/actions";
 import AdminNav from "@/components/admin/AdminNav";
 import NewSellerForm from "@/components/admin/NewSellerForm";
@@ -59,13 +65,14 @@ export default async function SellersPage() {
               <th className="num">Órdenes</th>
               <th className="num">Total vendido</th>
               <th className="num">Comisión ganada</th>
+              <th>Acceso al panel</th>
               <th className="num">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {sellers.length === 0 ? (
               <tr>
-                <td colSpan={7} className="ledger-empty">
+                <td colSpan={8} className="ledger-empty">
                   Todavía no hay vendedores. Creá el primero con &quot;+ Nuevo vendedor&quot;.
                 </td>
               </tr>
@@ -77,6 +84,7 @@ export default async function SellersPage() {
                   onUpdate={updateSeller.bind(null, seller.id)}
                   onCancel={cancelSeller.bind(null, seller.id)}
                   onReactivate={reactivateSeller.bind(null, seller.id)}
+                  onSaveAccess={saveSellerAccess.bind(null, seller.id)}
                 />
               ))
             )}

@@ -36,8 +36,11 @@ export type SalesOrderListItem = {
   balance: number;
 };
 
-export async function getSalesOrders(): Promise<SalesOrderListItem[]> {
+export async function getSalesOrders(
+  filter: { sellerId?: number } = {}
+): Promise<SalesOrderListItem[]> {
   const orders = await prisma.salesOrder.findMany({
+    where: filter.sellerId != null ? { sellerId: filter.sellerId } : undefined,
     orderBy: { id: "desc" },
     include: { user: true, seller: true, items: true, payments: true },
   });
@@ -92,6 +95,7 @@ export type SalesOrderPaymentDetail = {
 export type SalesOrderDetail = {
   id: number;
   customerId: number | null;
+  sellerId: number | null;
   customerName: string;
   collectionEmailSentAt: Date | null;
   deliveryAddress: string | null;
@@ -130,6 +134,7 @@ export async function getSalesOrder(id: number): Promise<SalesOrderDetail | null
   return {
     id: order.id,
     customerId: order.customerId,
+    sellerId: order.sellerId,
     customerName: order.customerName,
     collectionEmailSentAt: order.collectionEmailSentAt,
     deliveryAddress: order.deliveryAddress,

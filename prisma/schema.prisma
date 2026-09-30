@@ -58,6 +58,10 @@ model User {
   purchaseOrders     PurchaseOrder[]
   salesOrderPayments SalesOrderPayment[]
   campaigns          Campaign[]
+  /// ADMIN (todo el panel) o VENDEDOR (solo catálogo y sus órdenes de venta)
+  role               String              @default("ADMIN")
+  sellerId           Int?                @unique
+  seller             Seller?             @relation(fields: [sellerId], references: [id])
 
   @@map("users")
 }
@@ -94,6 +98,7 @@ model Seller {
   createdAt         DateTime  @default(now())
 
   salesOrders SalesOrder[]
+  user        User?
 
   @@map("sellers")
 }

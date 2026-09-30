@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { requireAdmin } from "@/lib/access";
 import {
   sendCampaign,
   sendCampaignTest,
@@ -11,9 +11,8 @@ import {
 } from "@/lib/campaigns";
 
 async function requireUserId() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
-  return Number(session.user.id);
+  const user = await requireAdmin();
+  return user.id;
 }
 
 export async function sendCampaignTestAction(

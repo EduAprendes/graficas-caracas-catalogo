@@ -1,27 +1,21 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth, signOut } from "@/auth";
+import { signOut } from "@/auth";
+import { requireAdmin } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 import { deleteCloudinaryImage } from "@/lib/cloudinary";
 import { slugify } from "@/lib/slug";
 
 async function requireSession() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("No autorizado");
-  }
-  return session;
+  return requireAdmin();
 }
 
 export async function setProductImage(
   productId: number,
   image: { url: string; publicId: string }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("No autorizado");
-  }
+  await requireAdmin();
 
   const previous = await prisma.product.findUniqueOrThrow({ where: { id: productId } });
 
@@ -39,10 +33,7 @@ export async function setProductImage(
 }
 
 export async function removeProductImage(productId: number) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("No autorizado");
-  }
+  await requireAdmin();
 
   const previous = await prisma.product.findUniqueOrThrow({ where: { id: productId } });
 
@@ -61,10 +52,7 @@ export async function setCategoryImage(
   categoryId: number,
   image: { url: string; publicId: string }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("No autorizado");
-  }
+  await requireAdmin();
 
   const previous = await prisma.category.findUniqueOrThrow({ where: { id: categoryId } });
 
@@ -82,10 +70,7 @@ export async function setCategoryImage(
 }
 
 export async function removeCategoryImage(categoryId: number) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("No autorizado");
-  }
+  await requireAdmin();
 
   const previous = await prisma.category.findUniqueOrThrow({ where: { id: categoryId } });
 

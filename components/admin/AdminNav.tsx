@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { auth } from "@/auth";
 
 const TABS = [
   { href: "/admin", label: "Inventario" },
+  { href: "/admin/catalogo", label: "Catálogo" },
   { href: "/admin/pedidos", label: "Órdenes de venta" },
   { href: "/admin/compras", label: "Órdenes de compra" },
   { href: "/admin/clientes", label: "Clientes" },
@@ -10,10 +12,20 @@ const TABS = [
   { href: "/admin/promociones", label: "Promociones" },
 ] as const;
 
-export default function AdminNav({ current }: { current: (typeof TABS)[number]["href"] }) {
+// Una vendedora solo ve catálogo y órdenes de venta; el administrador ve todo salvo el
+// catálogo de solo lectura (ya tiene Inventario, que es la versión editable).
+const SELLER_TABS: string[] = ["/admin/catalogo", "/admin/pedidos"];
+
+export default async function AdminNav({ current }: { current: (typeof TABS)[number]["href"] }) {
+  const session = await auth();
+  const isSeller = session?.user?.role === "VENDEDOR";
+  const tabs = TABS.filter((tab) =>
+    isSeller ? SELLER_TABS.includes(tab.href) : tab.href !== "/admin/catalogo"
+  );
+
   return (
     <nav className="admin-nav">
-      {TABS.map((tab) => (
+      {tabs.map((tab) => (
         <Link
           key={tab.href}
           href={tab.href}

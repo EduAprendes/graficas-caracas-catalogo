@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getSalesOrder } from "@/lib/orders";
+import { getAccessUser } from "@/lib/access";
 import { formatDateTime } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
 import PrintButton from "@/components/admin/PrintButton";
@@ -46,8 +47,12 @@ export default async function SalesOrderDetailPage({
   if (!Number.isInteger(orderId)) notFound();
 
   const session = await auth();
+  const access = await getAccessUser();
+  const isSeller = access?.role === "VENDEDOR";
   const order = await getSalesOrder(orderId);
   if (!order) notFound();
+  // Una vendedora solo puede abrir sus propias órdenes.
+  if (isSeller && order.sellerId !== access?.sellerId) notFound();
 
   const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -72,7 +77,7 @@ export default async function SalesOrderDetailPage({
         </Link>
       </div>
 
-      {emailNotice ? (
+      {!isSeller && emailNotice ? (
         <p className={`no-print ${emailNotice.ok ? "statement-note" : "login-error"}`}>
           {emailNotice.text}
         </p>
@@ -119,7 +124,7 @@ export default async function SalesOrderDetailPage({
             <strong>Entrega</strong>{" "}
             {DELIVERY_TYPE_LABELS[order.deliveryType] ?? order.deliveryType}
           </p>
-          {order.paymentType === "CREDITO" ? (
+          {!isSeller && order.paymentType === "CREDITO" ? (
             <p>
               <strong>Recordatorio de cobranza</strong>{" "}
               {order.collectionEmailSentAt
@@ -187,7 +192,7 @@ export default async function SalesOrderDetailPage({
         </div>
       </section>
 
-      {order.paymentType === "CREDITO" ? (
+      {!isSeller && order.paymentType === "CREDITO" ? (
         <section className="order-ticket no-print">
           <header className="order-ticket-head">
             <div>
@@ -247,8 +252,10 @@ export default async function SalesOrderDetailPage({
 
       <div className="order-form-actions no-print">
         <PrintButton />
-        <ResendOrderEmailButton onResend={resendSalesOrderEmailAction.bind(null, order.id)} />
-        {order.status === "CONFIRMADA" ? (
+        {!isSeller ? (
+          <ResendOrderEmailButton onResend={resendSalesOrderEmailAction.bind(null, order.id)} />
+        ) : null}
+        {!isSeller && order.status === "CONFIRMADA" ? (
           <ConfirmActionButton
             label="Anular orden"
             pendingLabel="Anulando…"

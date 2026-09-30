@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { getProductOptions } from "@/lib/inventory";
 import { getCustomerOptions } from "@/lib/customers";
 import { getSellerOptions } from "@/lib/sellers";
+import { getAccessUser } from "@/lib/access";
 import AdminNav from "@/components/admin/AdminNav";
 import SalesOrderForm from "@/components/admin/SalesOrderForm";
 import { logoutAction } from "@/app/admin/actions";
@@ -12,10 +13,12 @@ export const dynamic = "force-dynamic";
 
 export default async function NewSalesOrderPage() {
   const session = await auth();
+  const access = await getAccessUser();
+  const isSeller = access?.role === "VENDEDOR";
   const [products, customers, sellers] = await Promise.all([
     getProductOptions(),
     getCustomerOptions(),
-    getSellerOptions(),
+    isSeller ? Promise.resolve([]) : getSellerOptions(),
   ]);
 
   return (
@@ -42,6 +45,11 @@ export default async function NewSalesOrderPage() {
         products={products}
         customers={customers}
         sellers={sellers}
+        fixedSeller={
+          isSeller && access?.sellerName
+            ? { name: access.sellerName, commissionPercent: access.commissionPercent ?? 0 }
+            : undefined
+        }
         onCreate={createSalesOrderAction}
         onCreateCustomer={createCustomerForOrderAction}
       />

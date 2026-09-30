@@ -45,12 +45,14 @@ export type SellerListItem = {
   orderCount: number;
   totalSold: number;
   commissionEarned: number;
+  username: string | null; // usuario con el que entra la vendedora al panel
 };
 
 export async function getSellers(): Promise<SellerListItem[]> {
   const sellers = await prisma.seller.findMany({
     orderBy: { name: "asc" },
     include: {
+      user: { select: { username: true } },
       salesOrders: {
         where: { status: "CONFIRMADA" },
         include: { items: true },
@@ -78,6 +80,7 @@ export async function getSellers(): Promise<SellerListItem[]> {
       orderCount: seller.salesOrders.length,
       totalSold: round2(totalSold),
       commissionEarned: round2(commissionEarned),
+      username: seller.user?.username ?? null,
     };
   });
 }

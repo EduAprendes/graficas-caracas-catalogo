@@ -56,12 +56,15 @@ export default function SalesOrderForm({
   products,
   customers: initialCustomers,
   sellers,
+  fixedSeller,
   onCreate,
   onCreateCustomer,
 }: {
   products: ProductOption[];
   customers: CustomerOption[];
   sellers: SellerOption[];
+  // Si la orden la crea una vendedora, queda ligada a ella y no puede elegir otra.
+  fixedSeller?: { name: string; commissionPercent: number };
   onCreate: (
     data: SalesOrderPayload,
   ) => Promise<{ id: number; email: string } | { error: string }>;
@@ -215,23 +218,32 @@ export default function SalesOrderForm({
               <option value="CREDITO">Crédito</option>
             </select>
           </label>
-          <label>
-            Vendedor
-            <select
-              className="admin-input"
-              value={sellerId}
-              onChange={(e) =>
-                setSellerId(e.target.value ? Number(e.target.value) : "")
-              }
-            >
-              <option value="">Tienda (sin comisión)</option>
-              {sellers.map((seller) => (
-                <option key={seller.id} value={seller.id}>
-                  {seller.name} ({seller.commissionPercent}%)
-                </option>
-              ))}
-            </select>
-          </label>
+          {fixedSeller ? (
+            <div className="order-form-field">
+              Vendedora
+              <span className="order-m2">
+                {fixedSeller.name} — comisión {fixedSeller.commissionPercent}%
+              </span>
+            </div>
+          ) : (
+            <label>
+              Vendedor
+              <select
+                className="admin-input"
+                value={sellerId}
+                onChange={(e) =>
+                  setSellerId(e.target.value ? Number(e.target.value) : "")
+                }
+              >
+                <option value="">Tienda (sin comisión)</option>
+                {sellers.map((seller) => (
+                  <option key={seller.id} value={seller.id}>
+                    {seller.name} ({seller.commissionPercent}%)
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label>
             Entrega
             <select

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { requireAdmin, requireUser } from "@/lib/access";
 import {
   addSalesOrderPayment as addSalesOrderPaymentData,
   cancelSalesOrder as cancelSalesOrderData,
@@ -11,10 +11,9 @@ import {
 import { sendSalesOrderEmail, type OrderEmailStatus } from "@/lib/order-email";
 import { createCustomer as createCustomerData, type CustomerOption } from "@/lib/customers";
 
-async function requireUserId() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
-  return Number(session.user.id);
+async function requireAdminId() {
+  const user = await requireAdmin();
+  return user.id;
 }
 
 export async function createCustomerForOrderAction(input: {
@@ -25,7 +24,7 @@ export async function createCustomerForOrderAction(input: {
   address: string;
 }): Promise<{ customer: CustomerOption } | { error: string }> {
   try {
-    await requireUserId();
+    await requireUser();
     if (!input.name.trim()) return { error: "Falta el nombre de contacto" };
 
     const customer = await createCustomerData({
@@ -64,7 +63,8 @@ export async function createSalesOrderAction(input: {
   items: SalesOrderItemInput[];
 }): Promise<{ id: number; email: OrderEmailStatus } | { error: string }> {
   try {
-    const userId = await requireUserId();
+    const user = await requireUser();
+    const userId = user.id;
 
     if (!input.customerId) return { error: "Elegí un cliente o creá uno nuevo" };
 
@@ -72,7 +72,8 @@ export async function createSalesOrderAction(input: {
       customerId: input.customerId,
       paymentType: input.paymentType,
       deliveryType: input.deliveryType,
-      sellerId: input.sellerId,
+      // Una vendedora siempre vende como ella misma; el admin elige el vendedor (o tienda).
+      sellerId: user.role === "VENDEDOR" ? user.sellerId : input.sellerId,
       deliveryAddress: input.deliveryAddress || null,
       notes: input.notes || null,
       items: input.items,
@@ -97,7 +98,7 @@ export async function addSalesOrderPaymentAction(
   input: { amount: number; notes: string }
 ): Promise<{ ok: true } | { error: string }> {
   try {
-    const userId = await requireUserId();
+    const userId = await requireAdminId();
     await addSalesOrderPaymentData(orderId, userId, {
       amount: input.amount,
       notes: input.notes || null,
@@ -115,7 +116,7 @@ export async function addSalesOrderPaymentAction(
 }
 
 export async function cancelSalesOrderAction(orderId: number) {
-  const userId = await requireUserId();
+  const userId = await requireAdminId();
   await cancelSalesOrderData(orderId, userId);
 
   revalidatePath(`/admin/pedidos/${orderId}`);
@@ -126,6 +127,6 @@ export async function cancelSalesOrderAction(orderId: number) {
 }
 
 export async function resendSalesOrderEmailAction(orderId: number): Promise<OrderEmailStatus> {
-  await requireUserId();
+  await requireAdminId();
   return sendSalesOrderEmail(orderId);
 }

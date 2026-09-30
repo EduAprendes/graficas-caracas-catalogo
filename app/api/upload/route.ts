@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { requireAdmin } from "@/lib/access";
 import { cloudinary, cloudinaryFolder } from "@/lib/cloudinary";
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  try {
+    await requireAdmin();
+  } catch {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
