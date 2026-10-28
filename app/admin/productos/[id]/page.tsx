@@ -37,9 +37,9 @@ export default async function ProductLedgerPage({
         </form>
       </div>
 
-      <AdminNav current="/admin" />
+      <AdminNav current="/admin/inventario" />
 
-      <Link href="/admin" className="admin-back-link">
+      <Link href="/admin/inventario" className="admin-back-link">
         ← Volver al inventario
       </Link>
 

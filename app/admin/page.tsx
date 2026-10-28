@@ -1,38 +1,49 @@
+import Link from "next/link";
 import { auth } from "@/auth";
-import { getInventory } from "@/lib/inventory";
-import { getSalesSummary } from "@/lib/orders";
-import {
-  createCategory,
-  createProduct,
-  deleteCategory,
-  deleteProduct,
-  logoutAction,
-  removeCategoryImage,
-  removeProductImage,
-  setCategoryImage,
-  setProductImage,
-  updateCategory,
-  updateProduct,
-} from "./actions";
+import { getReceivables } from "@/lib/accounts";
+import { getDashboardStats } from "@/lib/dashboard";
+import { formatDate } from "@/lib/format";
+import { getPurchaseOrders, getSalesOrders, getSalesSummary } from "@/lib/orders";
 import AdminNav from "@/components/admin/AdminNav";
-import CategoryHead from "@/components/admin/CategoryHead";
-import CategorySection from "@/components/admin/CategorySection";
-import InfoTooltip from "@/components/admin/InfoTooltip";
-import NewCategoryForm from "@/components/admin/NewCategoryForm";
-import NewProductForm from "@/components/admin/NewProductForm";
-import ProductRow from "@/components/admin/ProductRow";
+import { logoutAction } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+const money = (n: number) =>
+  `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+export default async function DashboardPage() {
   const session = await auth();
-  const [categories, summary] = await Promise.all([getInventory(), getSalesSummary()]);
+  const [summary, salesOrders, purchaseOrders, receivables, stats] = await Promise.all([
+    getSalesSummary(),
+    getSalesOrders(),
+    getPurchaseOrders(),
+    getReceivables(),
+    getDashboardStats(),
+  ]);
+
+  const now = new Date();
+  const monthSales = salesOrders
+    .filter(
+      (o) =>
+        o.status === "CONFIRMADA" &&
+        o.createdAt.getFullYear() === now.getFullYear() &&
+        o.createdAt.getMonth() === now.getMonth()
+    )
+    .reduce((sum, o) => sum + o.totalAmount, 0);
+
+  const inTransit = purchaseOrders.filter((o) => o.status === "PENDIENTE");
+  const recentSales = salesOrders.slice(0, 5);
+  const debtors = receivables.rows
+    .filter((r) => r.balance > 0 && !r.cancelled)
+    .sort((a, b) => b.balance - a.balance)
+    .slice(0, 5);
 
   return (
-    <div className="admin-page">
+    <div className="admin-page admin-page-wide">
       <div className="admin-header">
         <div>
-          <h1>Inventario</h1>
+          <h1>Resumen</h1>
           <p className="admin-user">Sesión: {session?.user?.name ?? session?.user?.username}</p>
         </div>
         <form action={logoutAction}>
@@ -44,91 +55,131 @@ export default async function AdminPage() {
 
       <AdminNav current="/admin" />
 
+      <div className="dash-actions">
+        <Link href="/admin/pedidos/nueva" className="admin-save-btn admin-add-link">
+          + Nueva orden de venta
+        </Link>
+        <Link href="/admin/compras/nueva" className="admin-cancel-btn admin-add-link">
+          + Nueva orden de compra
+        </Link>
+        <Link href="/admin/clientes" className="admin-cancel-btn admin-add-link">
+          Clientes
+        </Link>
+      </div>
+
       <div className="admin-summary-row">
-        <div className="admin-summary-card">
-          <span className="admin-summary-label">
-            Por vender
-            <InfoTooltip text="Suma de stock actual × precio de catálogo (el que ve el cliente) de cada producto. Se actualiza al momento; no es el total de ninguna orden en particular." />
-          </span>
-          <span className="admin-summary-value">{summary.inventoryToSellValue.toFixed(2)}</span>
+        <div className="admin-summary-card dash-card-info">
+          <span className="admin-summary-label">Ventas del mes</span>
+          <span className="admin-summary-value">{money(monthSales)}</span>
         </div>
-        <div className="admin-summary-card">
+        <div className="admin-summary-card dash-card-warn">
           <span className="admin-summary-label">Por cobrar (crédito)</span>
-          <span className="admin-summary-value">{summary.creditOutstanding.toFixed(2)}</span>
+          <span className="admin-summary-value">{money(summary.creditOutstanding)}</span>
+        </div>
+        <div className="admin-summary-card dash-card-ok">
+          <span className="admin-summary-label">Inventario por vender</span>
+          <span className="admin-summary-value">{money(summary.inventoryToSellValue)}</span>
         </div>
         <div className="admin-summary-card">
           <span className="admin-summary-label">Total vendido</span>
-          <span className="admin-summary-value">{summary.totalSold.toFixed(2)}</span>
-        </div>
-        <div className="admin-summary-card">
-          <span className="admin-summary-label">
-            Valor total de inventario
-            <InfoTooltip text="Suma de stock actual × precio de cada producto." />
-          </span>
-          <span className="admin-summary-value">
-            {categories.reduce((sum, category) => sum + category.inventoryValue, 0).toFixed(2)}
-          </span>
+          <span className="admin-summary-value">{money(summary.totalSold)}</span>
         </div>
       </div>
 
-      <NewCategoryForm onCreate={createCategory} nextOrder={categories.length} />
+      <div className="dash-grid">
+        <section className="dash-panel">
+          <header className="dash-panel-head">
+            <h2>Mercancía en tránsito</h2>
+            <Link href="/admin/compras" className="dash-link">Ver compras</Link>
+          </header>
+          {inTransit.length === 0 ? (
+            <p className="dash-empty">No hay órdenes de compra pendientes.</p>
+          ) : (
+            <ul className="dash-list">
+              {inTransit.map((o) => (
+                <li key={o.id}>
+                  <Link href={`/admin/compras/${o.id}`} className="dash-row">
+                    <span>
+                      <strong>#{o.id}</strong> {o.supplierName}
+                      <small>{formatDate(o.createdAt)}</small>
+                    </span>
+                    <span className="dash-row-end">
+                      <span className="status-badge status-pendiente">Pendiente</span>
+                      <small>{o.totalQuantity.toLocaleString("en-US")} uds</small>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
-      {categories.map((category) => (
-        <CategorySection
-          key={category.id}
-          id={category.id}
-          head={
-            <CategoryHead
-              category={category}
-              onUploadImage={setCategoryImage.bind(null, category.id)}
-              onRemoveImage={removeCategoryImage.bind(null, category.id)}
-              onUpdate={updateCategory.bind(null, category.id)}
-              onDelete={deleteCategory.bind(null, category.id)}
-            />
-          }
-        >
-          <p className="admin-category-total">
-            Valor de esta categoría: <strong>{category.inventoryValue.toFixed(2)}</strong>
+        <section className="dash-panel">
+          <header className="dash-panel-head">
+            <h2>Mayores saldos por cobrar</h2>
+            <Link href="/admin/cuentas" className="dash-link">Ver cuentas</Link>
+          </header>
+          {debtors.length === 0 ? (
+            <p className="dash-empty">Nadie tiene saldo pendiente.</p>
+          ) : (
+            <ul className="dash-list">
+              {debtors.map((r) => (
+                <li key={r.customerId}>
+                  <Link href={`/admin/clientes/${r.customerId}`} className="dash-row">
+                    <span>
+                      <strong>{r.name}</strong>
+                      <small>
+                        {r.oldestDebtDays != null ? `Deuda más antigua: ${r.oldestDebtDays} días` : "Al día"}
+                      </small>
+                    </span>
+                    <span className="dash-row-end amount-overdue">{money(r.balance)}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="dash-panel">
+          <header className="dash-panel-head">
+            <h2>Últimas órdenes de venta</h2>
+            <Link href="/admin/pedidos" className="dash-link">Ver todas</Link>
+          </header>
+          {recentSales.length === 0 ? (
+            <p className="dash-empty">Todavía no hay órdenes de venta.</p>
+          ) : (
+            <ul className="dash-list">
+              {recentSales.map((o) => (
+                <li key={o.id}>
+                  <Link href={`/admin/pedidos/${o.id}`} className="dash-row">
+                    <span>
+                      <strong>#{o.id}</strong> {o.customerName}
+                      <small>{formatDate(o.createdAt)}</small>
+                    </span>
+                    <span className="dash-row-end">
+                      <span className={`status-badge status-${o.status.toLowerCase()}`}>
+                        {o.status.charAt(0) + o.status.slice(1).toLowerCase()}
+                      </span>
+                      <small>{money(o.totalAmount)}</small>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="dash-panel">
+          <header className="dash-panel-head">
+            <h2>Inventario</h2>
+            <Link href="/admin/inventario" className="dash-link">Ver inventario</Link>
+          </header>
+          <p className="dash-big">
+            {stats.outOfStockCount}
+            <span> de {stats.productCount} productos sin stock</span>
           </p>
-          <div className="admin-table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Foto</th>
-                  <th>Código</th>
-                  <th>Descripción</th>
-                  <th className="num">Stock</th>
-                  <th className="num">
-                    Precio
-                    <InfoTooltip text="Precio de catálogo: el que ve el cliente en la página pública. En las órdenes de venta se puede aplicar un descuento por línea." />
-                  </th>
-                  <th className="num">
-                    Valor
-                    <InfoTooltip text="Stock actual × precio de este producto." />
-                  </th>
-                  <th className="num">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {category.products.map((product) => (
-                  <ProductRow
-                    key={product.id}
-                    product={product}
-                    onUploadImage={setProductImage.bind(null, product.id)}
-                    onRemoveImage={removeProductImage.bind(null, product.id)}
-                    onUpdate={updateProduct.bind(null, product.id)}
-                    onDelete={deleteProduct.bind(null, product.id)}
-                  />
-                ))}
-                <NewProductForm
-                  onCreate={createProduct.bind(null, category.id)}
-                  nextOrder={category.products.length}
-                />
-              </tbody>
-            </table>
-          </div>
-        </CategorySection>
-      ))}
+        </section>
+      </div>
     </div>
   );
 }
