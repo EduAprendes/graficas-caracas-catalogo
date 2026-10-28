@@ -84,7 +84,11 @@ export default async function SalesOrdersPage() {
                   <td className="num" data-label="Líneas">{order.itemCount}</td>
                   <td className="num" data-label="Cant.">{order.totalQuantity}</td>
                   <td className="num" data-label="Total">{order.totalAmount.toFixed(2)}</td>
-                  <td data-label="Pago">{PAYMENT_TYPE_LABELS[order.paymentType] ?? order.paymentType}</td>
+                  <td data-label="Pago">
+                    <span className={`pay-badge pay-${order.paymentType.toLowerCase()}`}>
+                      {PAYMENT_TYPE_LABELS[order.paymentType] ?? order.paymentType}
+                    </span>
+                  </td>
                   <td data-label="Entrega">
                     {DELIVERY_TYPE_LABELS[order.deliveryType] ?? order.deliveryType}
                   </td>

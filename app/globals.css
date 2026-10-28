@@ -1908,6 +1908,39 @@ footer.foot {
   .dash-grid { grid-template-columns: 1fr; }
 }
 
+/* ---- Admin: rediseño fase 6 (módulos: cuentas por cobrar y órdenes) ---- */
+
+.dash-card-warn2 { border-top: 3px solid var(--danger-line); }
+.dash-card-danger { border-top: 3px solid var(--danger); }
+.stock-badge.stock-ok { color: var(--ok); background: var(--ok-bg); border-color: var(--ok-line); }
+
+/* Filtro de la lista: control segmentado */
+.admin-filter-row {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+}
+.admin-filter-row .admin-nav-link { border: none; background: transparent; padding: 6px 14px; }
+.admin-filter-row .admin-nav-link-active { background: var(--surface); color: var(--ink); box-shadow: var(--sh-1); }
+.admin-filter-row .admin-nav-link-active:hover { background: var(--surface); color: var(--ink); }
+
+/* Tipo de pago */
+.pay-badge {
+  display: inline-block;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: var(--surface-3);
+  color: var(--ink-soft);
+}
+.pay-credito { color: var(--warn); background: var(--warn-bg); border-color: var(--warn-line); }
+.pay-contado { color: var(--ok); background: var(--ok-bg); border-color: var(--ok-line); }
+
 /* Selector con búsqueda (orden de venta: cliente y producto) */
 .search-select {
   position: relative;

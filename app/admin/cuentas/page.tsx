@@ -55,19 +55,19 @@ export default async function ReceivablesPage({
       </div>
 
       <div className="admin-summary-row">
-        <div className="admin-summary-card">
+        <div className="admin-summary-card dash-card-ok">
           <span className="admin-summary-label">Vigente (0–30 días)</span>
           <span className="admin-summary-value">{report.aging.current.toFixed(2)}</span>
         </div>
-        <div className="admin-summary-card">
+        <div className="admin-summary-card dash-card-warn">
           <span className="admin-summary-label">31–60 días</span>
           <span className="admin-summary-value">{report.aging.days31to60.toFixed(2)}</span>
         </div>
-        <div className="admin-summary-card">
+        <div className="admin-summary-card dash-card-warn2">
           <span className="admin-summary-label">61–90 días</span>
           <span className="admin-summary-value">{report.aging.days61to90.toFixed(2)}</span>
         </div>
-        <div className="admin-summary-card">
+        <div className="admin-summary-card dash-card-danger">
           <span className="admin-summary-label">Más de 90 días</span>
           <span
             className={`admin-summary-value${report.aging.over90 > 0 ? " amount-overdue" : ""}`}
@@ -137,7 +137,9 @@ export default async function ReceivablesPage({
                     {row.balance > 0 ? (
                       <span className="stock-badge stock-zero">{row.balance.toFixed(2)}</span>
                     ) : row.balance < 0 ? (
-                      <span title="Pagó de más">{Math.abs(row.balance).toFixed(2)} a favor</span>
+                      <span className="stock-badge stock-ok" title="Pagó de más">
+                        {Math.abs(row.balance).toFixed(2)} a favor
+                      </span>
                     ) : (
                       "0.00"
                     )}
