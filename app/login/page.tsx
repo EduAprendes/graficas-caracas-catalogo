@@ -13,7 +13,7 @@ export default async function LoginPage({
         <h1>Gráficas Caracas</h1>
         <p className="login-subtitle">Acceso al inventario</p>
 
-        <input type="hidden" name="callbackUrl" value={params.callbackUrl || "/admin"} />
+        <input type="hidden" name="callbackUrl" value={params.callbackUrl || "/admin/resumen"} />
 
         {params.error ? (
           <p className="login-error">Usuario o contraseña incorrectos.</p>

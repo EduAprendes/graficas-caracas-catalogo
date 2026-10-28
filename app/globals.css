@@ -1854,6 +1854,60 @@ footer.foot {
   .admin-nav { display: none; }
 }
 
+/* ---- Admin: rediseño fase 5 (resumen / dashboard) ---- */
+
+.dash-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-bottom: var(--sp-4); }
+.dash-actions .admin-add-link { text-decoration: none; display: inline-flex; align-items: center; }
+.dash-card-info { border-top: 3px solid var(--info); }
+.dash-card-warn { border-top: 3px solid var(--warn); }
+.dash-card-ok { border-top: 3px solid var(--ok); }
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+.dash-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-1);
+  padding: var(--sp-4);
+  min-width: 0;
+}
+.dash-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-2);
+}
+.dash-panel-head h2 { margin: 0; font-size: var(--fs-md); }
+.dash-link { font-size: var(--fs-sm); color: var(--info); text-decoration: none; }
+.dash-link:hover { text-decoration: underline; }
+.dash-empty { color: var(--ink-muted); font-size: var(--fs-sm); margin: var(--sp-3) 0 0; }
+.dash-list { list-style: none; margin: 0; padding: 0; }
+.dash-list li + li { border-top: 1px solid var(--line); }
+.dash-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-1);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: var(--fs-sm);
+  border-radius: var(--r-sm);
+}
+.dash-row:hover { background: var(--surface-2); }
+.dash-row small { display: block; color: var(--ink-muted); font-size: var(--fs-xs); }
+.dash-row-end { text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.dash-big { font-size: var(--fs-xl); font-weight: 700; margin: var(--sp-3) 0 0; }
+.dash-big span { font-size: var(--fs-sm); font-weight: 400; color: var(--ink-muted); }
+@media screen and (max-width: 700px) {
+  .dash-grid { grid-template-columns: 1fr; }
+}
+
 /* Selector con búsqueda (orden de venta: cliente y producto) */
 .search-select {
   position: relative;

@@ -21,6 +21,12 @@ const icon = (paths: ReactNode) => (
 
 const TABS = [
   {
+    href: "/admin/resumen",
+    label: "Resumen",
+    group: "operacion",
+    icon: icon(<path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />),
+  },
+  {
     href: "/admin",
     label: "Inventario",
     group: "operacion",
