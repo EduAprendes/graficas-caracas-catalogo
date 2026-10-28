@@ -1822,6 +1822,38 @@ footer.foot {
   .search-select-option { padding: 12px 14px; font-size: var(--fs-md); }
 }
 
+/* ---- Admin: rediseño fase 4 (menú con iconos, agrupado y fijo) ---- */
+
+.admin-nav-item { display: contents; }
+.admin-nav-icon { flex-shrink: 0; opacity: 0.85; }
+.admin-nav-link { gap: 7px; }
+.admin-nav-sep {
+  align-self: center;
+  width: 1px;
+  height: 18px;
+  margin: 0 var(--sp-2);
+  background: var(--line-strong);
+  flex-shrink: 0;
+}
+
+@media screen and (min-width: 701px) {
+  .admin-nav {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    margin-inline: calc(var(--sp-3) * -1);
+    padding: var(--sp-2) var(--sp-3);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+@media print {
+  .admin-nav { display: none; }
+}
+
 /* Selector con búsqueda (orden de venta: cliente y producto) */
 .search-select {
   position: relative;
