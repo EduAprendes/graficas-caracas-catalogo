@@ -18,15 +18,20 @@ import AdminNav from "@/components/admin/AdminNav";
 import CategoryHead from "@/components/admin/CategoryHead";
 import CategorySection from "@/components/admin/CategorySection";
 import InfoTooltip from "@/components/admin/InfoTooltip";
+import InventorySearch from "@/components/admin/InventorySearch";
 import NewCategoryForm from "@/components/admin/NewCategoryForm";
 import NewProductForm from "@/components/admin/NewProductForm";
 import ProductRow from "@/components/admin/ProductRow";
 
 export const dynamic = "force-dynamic";
 
+const productText = (p: { code: string; description: string; dimension: string }) =>
+  `${p.code} ${p.description} ${p.dimension}`;
+
 export default async function AdminPage() {
   const session = await auth();
   const [categories, summary] = await Promise.all([getInventory(), getSalesSummary()]);
+  const allTexts = categories.flatMap((c) => c.products.map(productText));
 
   return (
     <div className="admin-page">
@@ -71,12 +76,14 @@ export default async function AdminPage() {
         </div>
       </div>
 
+      <InventorySearch texts={allTexts}>
       <NewCategoryForm onCreate={createCategory} nextOrder={categories.length} />
 
       {categories.map((category) => (
         <CategorySection
           key={category.id}
           id={category.id}
+          searchTexts={category.products.map(productText)}
           head={
             <CategoryHead
               category={{
@@ -134,6 +141,7 @@ export default async function AdminPage() {
           </div>
         </CategorySection>
       ))}
+      </InventorySearch>
     </div>
   );
 }

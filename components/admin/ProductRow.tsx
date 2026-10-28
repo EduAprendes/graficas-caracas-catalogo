@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import ImageUploadControl from "@/components/admin/ImageUploadControl";
+import { matchesSearch, useInventoryQuery } from "@/components/admin/InventorySearch";
 
 export type ProductRowData = {
   id: number;
@@ -29,6 +30,7 @@ export default function ProductRow({
 }) {
   const [editing, setEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const query = useInventoryQuery();
 
   function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,6 +50,15 @@ export default function ProductRow({
     startTransition(() => {
       onDelete();
     });
+  }
+
+  // Con una búsqueda activa solo se muestran los productos que coinciden.
+  if (
+    query &&
+    !editing &&
+    !matchesSearch(`${product.code} ${product.description} ${product.dimension}`, query)
+  ) {
+    return null;
   }
 
   if (editing) {

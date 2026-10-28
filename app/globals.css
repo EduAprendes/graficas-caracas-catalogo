@@ -2147,6 +2147,45 @@ footer.foot {
   .admin-category-toggle-checkbox:checked ~ .admin-category-toggle-row .admin-category-head { flex-wrap: wrap; }
 }
 
+/* ---- Admin: buscador de inventario ---- */
+
+.inventory-search {
+  position: sticky;
+  top: 52px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: var(--sp-4) 0 var(--sp-2);
+  padding: var(--sp-2);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-1);
+}
+.inventory-search-icon { flex-shrink: 0; margin-left: var(--sp-2); color: var(--ink-muted); }
+.admin-page .inventory-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  min-height: 36px;
+  font-size: var(--fs-md);
+}
+.admin-page .inventory-search-input:focus { box-shadow: none; }
+.inventory-search:focus-within { border-color: var(--info); box-shadow: var(--focus-ring); }
+.inventory-search-clear { white-space: nowrap; }
+.inventory-search-count { margin: 0 0 var(--sp-3); font-size: var(--fs-sm); color: var(--ink-muted); }
+@media screen and (max-width: 700px) {
+  .inventory-search { top: 0; }
+  .admin-page .inventory-search-input { font-size: 16px; }
+}
+/* Con búsqueda activa, las categorías con coincidencias se ven abiertas también en celular */
+@media screen and (max-width: 700px) {
+  .admin-category.is-searching .admin-category-body { display: block; }
+}
+@media print { .inventory-search, .inventory-search-count { display: none; } }
+
 /* Selector con búsqueda (orden de venta: cliente y producto) */
 .search-select {
   position: relative;
