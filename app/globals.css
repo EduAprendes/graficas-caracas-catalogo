@@ -1750,6 +1750,78 @@ footer.foot {
   }
 }
 
+/* ---- Admin: rediseño fase 3 (tablas y celular) ---- */
+
+.orders-table-wrap tbody tr { transition: background 0.12s; }
+.orders-table-wrap tbody tr:hover { background: var(--surface-2); }
+
+/* Tarjetas de fila (tablet y celular) */
+@media screen and (max-width: 1024px) {
+  .orders-table-wrap tbody tr {
+    background: var(--surface);
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-1);
+    padding: var(--sp-3) var(--sp-4);
+  }
+  .orders-table-wrap tbody td[data-label]::before {
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+}
+
+@media screen and (max-width: 700px) {
+  .admin-table-wrap { border: none; box-shadow: none; background: transparent; }
+  .admin-table-wrap tbody tr {
+    background: var(--surface);
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-1);
+    padding: var(--sp-3) var(--sp-4);
+  }
+  .admin-table-wrap tbody td[data-label]::before {
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+
+  /* Áreas táctiles de 44px y 16px en inputs (evita el zoom automático de iOS) */
+  .admin-save-btn,
+  .admin-cancel-btn,
+  .admin-edit-btn,
+  .admin-delete-btn,
+  .admin-add-btn,
+  .logout-btn,
+  .admin-nav-link { min-height: var(--tap); display: inline-flex; align-items: center; justify-content: center; }
+  .admin-icon-btn { width: var(--tap); height: var(--tap); }
+  .admin-input,
+  .admin-page select,
+  .admin-page textarea { font-size: 16px; min-height: var(--tap); }
+  .admin-row-actions { gap: var(--sp-2); }
+
+  /* Menú deslizable con desvanecido en los bordes para indicar que hay más */
+  .admin-nav {
+    gap: var(--sp-2);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 28px), transparent 100%);
+    padding-inline: 12px;
+    margin-inline: -12px;
+  }
+  .admin-nav-link { border: 1px solid var(--line); background: var(--surface); }
+  .admin-nav-link-active { border-color: var(--ink); background: var(--ink); }
+  .admin-header { gap: var(--sp-3); }
+}
+
+/* Lista del selector con búsqueda */
+.search-select-list { border-radius: var(--r-md); box-shadow: var(--sh-2); border-color: var(--line-strong); }
+.search-select-option { padding: 10px 12px; }
+@media screen and (max-width: 700px) {
+  .search-select-option { padding: 12px 14px; font-size: var(--fs-md); }
+}
+
 /* Selector con búsqueda (orden de venta: cliente y producto) */
 .search-select {
   position: relative;
@@ -1800,11 +1872,12 @@ footer.foot {
   min-width: 220px;
 }
 .order-form-header .order-form-field {
-  font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-soft);
 }
 .order-form-header .order-form-field .admin-input {
   width: 100%;
@@ -1836,11 +1909,12 @@ footer.foot {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-soft);
 }
 .customer-modal-form .admin-input {
   width: 100%;
