@@ -69,7 +69,7 @@ export default async function PurchaseOrdersPage() {
                       {order.status}
                     </span>
                   </td>
-                  <td data-label="Recibida">{order.receivedAt ? formatDate(order.receivedAt) : "—"}</td>
+                  <td data-label="Recibida" className={order.receivedAt ? undefined : "card-hide"}>{order.receivedAt ? formatDate(order.receivedAt) : "—"}</td>
                   <td data-label="Usuario">{order.userName}</td>
                   <td>
                     <Link href={`/admin/compras/${order.id}`} className="admin-edit-btn">

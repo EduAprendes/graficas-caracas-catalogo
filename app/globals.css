@@ -1990,6 +1990,109 @@ footer.foot {
   .logout-btn { display: none !important; }
 }
 
+/* ---- Admin: tarjetas compactas de órdenes (tablet y celular) ----
+   Título + estado arriba, datos clave en una línea, total abajo. */
+@media screen and (max-width: 1024px) {
+  .orders-table-wrap tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--sp-3);
+    row-gap: 6px;
+    padding: var(--sp-3) var(--sp-4);
+  }
+  .orders-table-wrap tbody tr::before,
+  .orders-table-wrap tbody tr::after { content: ""; flex-basis: 100%; height: 0; }
+  .orders-table-wrap tbody tr::after { order: 3; }
+  .orders-table-wrap tbody tr::before { order: 7; }
+  .orders-table-wrap tbody tr:not(:has(td[data-label="Total"]))::before { display: none; }
+
+  .orders-table-wrap tbody tr td {
+    display: block;
+    width: auto;
+    padding: 0;
+    border: 0;
+    font-size: var(--fs-sm);
+    color: var(--ink-muted);
+  }
+  .orders-table-wrap tbody tr td[data-label]::before { display: none; }
+
+  /* Título y estado */
+  .orders-table-wrap td[data-label="Cliente"],
+  .orders-table-wrap td[data-label="Proveedor"] {
+    order: 1;
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: var(--fs-md);
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .orders-table-wrap td[data-label="Estado"] { order: 2; }
+
+  /* Línea de datos */
+  .orders-table-wrap td[data-label="N°"] { order: 4; font-weight: 600; color: var(--ink); }
+  .orders-table-wrap td[data-label="Fecha"],
+  .orders-table-wrap td[data-label="Pago"],
+  .orders-table-wrap td[data-label="Vendedor"],
+  .orders-table-wrap td[data-label="Cant."],
+  .orders-table-wrap td[data-label="Recibida"] { order: 5; }
+  .orders-table-wrap tbody tr td[data-label="Fecha"]::before,
+  .orders-table-wrap tbody tr td[data-label="Pago"]::before,
+  .orders-table-wrap tbody tr td[data-label="Vendedor"]::before,
+  .orders-table-wrap tbody tr td[data-label="Cant."]::before {
+    display: inline;
+    content: "·";
+    margin-right: var(--sp-3);
+    font-size: inherit;
+    font-weight: 400;
+    color: var(--line-strong);
+  }
+  .orders-table-wrap td[data-label="Cant."]::after { content: " uds"; }
+  .orders-table-wrap tbody tr td[data-label="Recibida"]::before {
+    display: inline;
+    content: "· Recibida ";
+    margin-right: 0;
+    font-size: inherit;
+    font-weight: 400;
+    text-transform: none;
+    color: var(--ink-muted);
+  }
+  .orders-table-wrap tbody tr td:last-child { order: 6; margin-left: auto; }
+  .orders-table-wrap td:last-child .admin-edit-btn { min-height: 34px; padding: 6px 14px; }
+
+  /* Totales (ventas) */
+  .orders-table-wrap td[data-label="Total"] {
+    order: 8;
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .orders-table-wrap td[data-label="Saldo"] { order: 9; margin-left: auto; }
+  .orders-table-wrap tbody tr td[data-label="Total"]::before,
+  .orders-table-wrap tbody tr td[data-label="Saldo"]::before {
+    display: inline;
+    content: attr(data-label) " ";
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    color: var(--ink-muted);
+  }
+
+  /* Datos que no entran en la tarjeta (están en el detalle) */
+  .orders-table-wrap td[data-label="Líneas"],
+  .orders-table-wrap td[data-label="Usuario"],
+  .orders-table-wrap td[data-label="Entrega"],
+  .orders-table-wrap td.card-hide { display: none; }
+
+  /* Fila vacía */
+  .orders-table-wrap tbody tr td.ledger-empty {
+    order: 0;
+    flex: 1 1 100%;
+    margin: 0;
+    text-align: center !important;
+    padding: var(--sp-4) 0;
+  }
+}
+
 /* Selector con búsqueda (orden de venta: cliente y producto) */
 .search-select {
   position: relative;
