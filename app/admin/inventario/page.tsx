@@ -79,7 +79,12 @@ export default async function AdminPage() {
           id={category.id}
           head={
             <CategoryHead
-              category={category}
+              category={{
+                ...category,
+                meta: `${category.products.length} ${
+                  category.products.length === 1 ? "producto" : "productos"
+                } · valor ${category.inventoryValue.toFixed(2)}`,
+              }}
               onUploadImage={setCategoryImage.bind(null, category.id)}
               onRemoveImage={removeCategoryImage.bind(null, category.id)}
               onUpdate={updateCategory.bind(null, category.id)}

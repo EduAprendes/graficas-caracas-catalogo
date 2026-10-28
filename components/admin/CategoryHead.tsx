@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import ImageUploadControl from "@/components/admin/ImageUploadControl";
 
 export type CategoryHeadData = {
+  /** Resumen corto bajo el título (ej. "7 productos · 1234.00"). */
+  meta?: string;
   id: number;
   title: string;
   subtitle: string | null;
@@ -80,7 +82,10 @@ export default function CategoryHead({
         </form>
       ) : (
         <>
-          <h2>{category.title}</h2>
+          <div className="admin-category-title">
+            <h2>{category.title}</h2>
+            {category.meta ? <span className="admin-category-meta">{category.meta}</span> : null}
+          </div>
           <div className="admin-row-actions">
             <button
               type="button"

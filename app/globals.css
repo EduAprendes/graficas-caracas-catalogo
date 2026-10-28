@@ -2093,6 +2093,60 @@ footer.foot {
   }
 }
 
+/* ---- Admin: tarjeta de categoría del inventario ---- */
+
+.admin-category-title { flex: 1; min-width: 0; }
+.admin-category-title h2 { margin: 0; }
+.admin-category-meta { display: block; font-size: var(--fs-xs); color: var(--ink-muted); margin-top: 2px; }
+
+@media screen and (max-width: 700px) {
+  .admin-category {
+    margin-top: var(--sp-3);
+    padding: var(--sp-3);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-1);
+  }
+  .admin-category-toggle-row {
+    position: relative;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    border-bottom: none;
+  }
+  /* Toda la franja es tocable; los botones internos siguen funcionando */
+  .admin-category-toggle::after { content: ""; position: absolute; inset: 0; border-radius: var(--r-sm); }
+  .admin-category-toggle-head { position: relative; z-index: 1; pointer-events: none; }
+  .admin-category-toggle-head button,
+  .admin-category-toggle-head input,
+  .admin-category-toggle-head form,
+  .admin-category-toggle-head label { pointer-events: auto; }
+  .admin-category-toggle {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-pill);
+    background: var(--surface-3);
+    border-color: transparent;
+  }
+  .admin-category-head { flex-wrap: nowrap; gap: var(--sp-3); }
+  .admin-category-head h2 { font-size: var(--fs-md); }
+  .admin-category-head .image-upload { width: auto; gap: 0; }
+  .admin-category-head .image-upload-thumb { width: 52px; height: 52px; border-radius: var(--r-sm); }
+  .admin-category-head .image-upload-empty { font-size: 0.6rem; }
+  /* Cerrada: solo foto, título y flecha. Las acciones aparecen al abrir. */
+  .admin-category-head .image-upload-actions,
+  .admin-category-head > .admin-row-actions { display: none; }
+  .admin-category-toggle-checkbox:checked ~ .admin-category-toggle-row .image-upload-actions { display: flex; }
+  .admin-category-toggle-checkbox:checked ~ .admin-category-toggle-row .admin-category-head > .admin-row-actions { display: flex; }
+  .admin-category-toggle-checkbox:checked ~ .admin-category-toggle-row {
+    padding-bottom: var(--sp-3);
+    margin-bottom: var(--sp-3);
+    border-bottom: 1px solid var(--line);
+  }
+  .admin-category-toggle-checkbox:checked ~ .admin-category-toggle-row .admin-category-head { flex-wrap: wrap; }
+}
+
 /* Selector con búsqueda (orden de venta: cliente y producto) */
 .search-select {
   position: relative;
