@@ -12,6 +12,21 @@
   --yellow: #ffd400;
   --key: #17191a;
   --shadow: 0 1px 0 rgba(23, 25, 26, 0.05);
+  /* Admin: tokens de diseño (fase 1) */
+  --ok: #1f7a4d; --ok-bg: #e6f4ec; --ok-line: #b7dcc7;
+  --warn: #8a5a00; --warn-bg: #fff3d6; --warn-line: #f0d28a;
+  --danger: #b4232f; --danger-bg: #fdeaec; --danger-line: #f0b8bd;
+  --info: #1d5fa8; --info-bg: #e7f0fb; --info-line: #b5cfee;
+  --ink-soft: #3a3d38;
+  --line-strong: #bfbcab;
+  --surface-3: #ecece4;
+  --fs-xs: 0.75rem; --fs-sm: 0.8125rem; --fs-md: 0.9375rem; --fs-lg: 1.125rem; --fs-xl: 1.5rem;
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-7: 48px;
+  --r-sm: 6px; --r-md: 10px; --r-pill: 999px;
+  --sh-1: 0 1px 2px rgba(23, 25, 26, 0.06), 0 1px 1px rgba(23, 25, 26, 0.04);
+  --sh-2: 0 4px 14px rgba(23, 25, 26, 0.1);
+  --focus-ring: 0 0 0 3px rgba(29, 95, 168, 0.35);
+  --tap: 44px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,6 +44,16 @@
     --yellow: #ffdc4d;
     --key: #eceae3;
     --shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+    --ok: #5fd39a; --ok-bg: #12261c; --ok-line: #25503a;
+    --warn: #f0c35c; --warn-bg: #2a2111; --warn-line: #5a4719;
+    --danger: #ff8a8f; --danger-bg: #2c1517; --danger-line: #5e2b2f;
+    --info: #7db6f5; --info-bg: #101f33; --info-line: #264a75;
+    --ink-soft: #cfcdc4;
+    --line-strong: #4a4c42;
+    --surface-3: #262725;
+    --sh-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --sh-2: 0 4px 14px rgba(0, 0, 0, 0.5);
+    --focus-ring: 0 0 0 3px rgba(125, 182, 245, 0.45);
   }
 }
 
@@ -46,6 +71,16 @@
   --yellow: #ffdc4d;
   --key: #eceae3;
   --shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  --ok: #5fd39a; --ok-bg: #12261c; --ok-line: #25503a;
+  --warn: #f0c35c; --warn-bg: #2a2111; --warn-line: #5a4719;
+  --danger: #ff8a8f; --danger-bg: #2c1517; --danger-line: #5e2b2f;
+  --info: #7db6f5; --info-bg: #101f33; --info-line: #264a75;
+  --ink-soft: #cfcdc4;
+  --line-strong: #4a4c42;
+  --surface-3: #262725;
+  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sh-2: 0 4px 14px rgba(0, 0, 0, 0.5);
+  --focus-ring: 0 0 0 3px rgba(125, 182, 245, 0.45);
 }
 
 * { box-sizing: border-box; }
@@ -1255,6 +1290,56 @@ footer.foot {
 .status-confirmada, .status-recibida { color: var(--ink); border-color: var(--line); }
 .status-pendiente { color: var(--ink); border-color: var(--yellow); background: var(--surface); }
 .status-anulada { color: var(--ink-muted); text-decoration: line-through; }
+
+/* ---- Admin: rediseño fase 1 (base legible y accesible) ----
+   Solo toca el panel (admin-*, status-*, logout-btn); el catálogo público no cambia. */
+
+.admin-page :focus-visible,
+.logout-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.admin-page input:focus-visible,
+.admin-page select:focus-visible,
+.admin-page textarea:focus-visible {
+  border-color: var(--info);
+}
+
+.admin-page table,
+.admin-page .admin-summary-value,
+.admin-page .amount-overdue,
+.admin-page .stock-badge {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tamaños mínimos legibles (antes 0.6-0.7rem) */
+.admin-field,
+.admin-summary-label,
+.admin-table-wrap thead th,
+.status-badge,
+.admin-category-total,
+.admin-save-btn,
+.admin-cancel-btn,
+.admin-edit-btn,
+.admin-delete-btn,
+.admin-nav-link,
+.logout-btn { font-size: var(--fs-xs); }
+.admin-input,
+.admin-user { font-size: var(--fs-sm); }
+
+/* Radios y profundidad coherentes */
+.admin-summary-card,
+.admin-table-wrap {
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-1);
+}
+.admin-save-btn,
+.admin-cancel-btn,
+.admin-edit-btn,
+.admin-delete-btn,
+.admin-icon-btn,
+.logout-btn,
+.admin-input { border-radius: var(--r-sm); }
 
 /* ---- Admin: formularios de orden de venta / compra ---- */
 
