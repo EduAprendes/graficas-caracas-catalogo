@@ -1941,6 +1941,55 @@ footer.foot {
 .pay-credito { color: var(--warn); background: var(--warn-bg); border-color: var(--warn-line); }
 .pay-contado { color: var(--ok); background: var(--ok-bg); border-color: var(--ok-line); }
 
+/* ---- Admin: rediseño fase 7 (contraste, movimiento reducido, impresión) ---- */
+
+/* Borde de campos con contraste >= 3:1 contra el fondo (antes ~1.9:1) */
+:root { --input-border: #8a8778; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --input-border: #747668; }
+}
+:root[data-theme="dark"] { --input-border: #747668; }
+.admin-input { border-color: var(--input-border); }
+.admin-input:hover { border-color: var(--ink-muted); }
+.admin-input:focus { border-color: var(--info); }
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-nav-link,
+  .admin-save-btn,
+  .admin-cancel-btn,
+  .admin-edit-btn,
+  .admin-delete-btn,
+  .logout-btn,
+  .admin-add-btn,
+  .admin-input,
+  .admin-table-wrap tbody tr,
+  .orders-table-wrap tbody tr { transition: none; }
+}
+
+/* Impresión siempre en claro (aunque el sistema esté en oscuro) y sin sombras */
+@media print {
+  :root {
+    --bg: #fff !important;
+    --surface: #fff !important;
+    --surface-2: #fff !important;
+    --surface-3: #f1f1f1 !important;
+    --ink: #000 !important;
+    --ink-soft: #222 !important;
+    --ink-muted: #444 !important;
+    --line: #bbb !important;
+    --line-strong: #888 !important;
+    --ok: #14532d !important; --ok-bg: #fff !important; --ok-line: #14532d !important;
+    --warn: #7a4a00 !important; --warn-bg: #fff !important; --warn-line: #7a4a00 !important;
+    --danger: #8f1d26 !important; --danger-bg: #fff !important; --danger-line: #8f1d26 !important;
+    --info: #174a82 !important; --info-bg: #fff !important; --info-line: #174a82 !important;
+  }
+  .admin-summary-card,
+  .admin-table-wrap,
+  .dash-panel { box-shadow: none !important; }
+  .dash-actions,
+  .logout-btn { display: none !important; }
+}
+
 /* Selector con búsqueda (orden de venta: cliente y producto) */
 .search-select {
   position: relative;
