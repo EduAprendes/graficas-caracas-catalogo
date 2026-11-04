@@ -224,7 +224,11 @@ export default async function PurchaseOrderDetailPage({
               className={`admin-summary-card ${costing.balance > 0 ? "dash-card-warn" : "dash-card-ok"}`}
             >
               <span className="admin-summary-label">
-                {costing.balance > 0 ? "Pendiente por pagar" : "Orden pagada"}
+                {costing.totalCost <= 0
+                  ? "Sin costo cargado"
+                  : costing.balance > 0
+                    ? "Pendiente por pagar"
+                    : "Orden pagada"}
               </span>
               <span className="admin-summary-value">{usd(costing.balance)}</span>
             </div>
@@ -239,6 +243,14 @@ export default async function PurchaseOrderDetailPage({
             El costo total a pagar es la factura más los gastos del contenedor. Registra cada pago
             a medida que lo haces, igual que los abonos de los clientes.
           </p>
+
+          {costing.totalCost <= 0 ? (
+            <p className="statement-note">
+              Esta orden aún no tiene costo. Pulsa &quot;Editar&quot;, carga el costo unitario de los
+              productos (o el total de la factura con &quot;Repartir entre los productos&quot;) y
+              agrega los gastos del contenedor; entonces podrás registrar pagos aquí.
+            </p>
+          ) : null}
 
           {costing.balance > 0 ? (
             <div className="seller-pay-box">
