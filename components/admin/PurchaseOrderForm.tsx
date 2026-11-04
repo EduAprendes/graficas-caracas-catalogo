@@ -34,6 +34,42 @@ export type PurchaseOrderInitialData = {
   }[];
 };
 
+// Reparte el total de una factura entre las líneas en proporción a su valor de venta
+// (precio de venta × cantidad). Devuelve el costo unitario de cada línea (2 decimales);
+// las líneas sin producto o sin cantidad quedan en null. Es una aproximación: sirve cuando el
+// proveedor solo da el total de la factura. Al final corrige el redondeo para que la suma
+// de costo × cantidad se acerque lo más posible al total.
+export function distributeInvoice(
+  total: number,
+  lines: { price: number; quantity: number }[]
+): (number | null)[] {
+  const base = lines.reduce((sum, l) => (l.quantity > 0 ? sum + l.price * l.quantity : sum), 0);
+  if (!(total > 0) || base <= 0) return lines.map(() => null);
+
+  const cents = lines.map((l) =>
+    l.quantity > 0 ? Math.round(((l.price * total) / base) * 100) : null
+  );
+  let diff = Math.round(total * 100) - cents.reduce<number>((s, c, i) => s + (c ?? 0) * lines[i].quantity, 0);
+
+  // Ajusta de a centavos empezando por las líneas de menor cantidad (mueven menos el total).
+  const order = lines
+    .map((l, i) => i)
+    .filter((i) => cents[i] !== null)
+    .sort((a, b) => lines[a].quantity - lines[b].quantity);
+  for (const i of order) {
+    const step = Math.round(diff / lines[i].quantity);
+    if (step === 0) continue;
+    const next = (cents[i] as number) + step;
+    if (next < 0) continue;
+    const newDiff = diff - step * lines[i].quantity;
+    if (Math.abs(newDiff) < Math.abs(diff)) {
+      cents[i] = next;
+      diff = newDiff;
+    }
+  }
+  return cents.map((c) => (c === null ? null : c / 100));
+}
+
 export default function PurchaseOrderForm({
   products,
   onCreate,
@@ -61,6 +97,34 @@ export default function PurchaseOrderForm({
   );
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [invoiceTotal, setInvoiceTotal] = useState("");
+  const [distributeNote, setDistributeNote] = useState<string | null>(null);
+
+  function handleDistribute() {
+    setDistributeNote(null);
+    const total = Number(invoiceTotal);
+    if (!(total > 0)) {
+      setDistributeNote("Escribí el total de la factura (mayor a cero).");
+      return;
+    }
+    const lines = rows.map((row) => {
+      const product = products.find((p) => p.id === row.productId);
+      return { price: product?.price ?? 0, quantity: product ? Number(row.quantity) || 0 : 0 };
+    });
+    const costs = distributeInvoice(total, lines);
+    if (costs.every((c) => c === null)) {
+      setDistributeNote("Elegí al menos un producto con cantidad para poder repartir.");
+      return;
+    }
+    setRows((prev) =>
+      prev.map((row, i) => (costs[i] === null ? row : { ...row, cost: String(costs[i]) }))
+    );
+    const sum = costs.reduce<number>((s, c, i) => s + (c ?? 0) * lines[i].quantity, 0);
+    setDistributeNote(
+      `Costos repartidos en proporción al precio de venta (aproximado). Suma: ${sum.toFixed(2)} de ${total.toFixed(2)}. ` +
+        "Revisalos y reemplazalos por los reales cuando el proveedor los entregue."
+    );
+  }
 
   function updateRow(index: number, patch: Partial<Row>) {
     setRows((prev) => prev.map((row, i) => (i === index ? { ...row, ...patch } : row)));
@@ -123,6 +187,25 @@ export default function PurchaseOrderForm({
           />
         </label>
       </div>
+
+      <div className="order-form-header">
+        <label>
+          Total de la factura (opcional)
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            className="admin-input"
+            value={invoiceTotal}
+            onChange={(e) => setInvoiceTotal(e.target.value)}
+            placeholder="Ej. 41424"
+          />
+        </label>
+        <button type="button" className="admin-add-btn" onClick={handleDistribute}>
+          Repartir entre los productos
+        </button>
+      </div>
+      {distributeNote ? <p className="admin-notice">{distributeNote}</p> : null}
 
       <div className="order-items-list">
         {rows.map((row, index) => (
