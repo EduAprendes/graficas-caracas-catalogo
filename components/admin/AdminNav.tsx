@@ -79,7 +79,7 @@ const TABS = [
   {
     href: "/admin/ganancias",
     tone: "ganancias",
-    label: "Ganancias",
+    label: "Balance",
     group: "finanzas",
     icon: icon(<><path d="M3 17l6-6 4 4 8-8" /><path d="M15 7h6v6" /></>),
   },

@@ -92,15 +92,6 @@ export default function DeliveryOrderForm({
             placeholder="00-000000"
           />
         </label>
-        <label className="admin-field">
-          Datos de la imprenta autorizada
-          <input
-            className="admin-input"
-            value={values.deliveryPrinterInfo}
-            onChange={(e) => set("deliveryPrinterInfo", e.target.value)}
-            placeholder="Nombre, RIF y providencia de autorización"
-          />
-        </label>
         <button type="submit" className="admin-save-btn" disabled={isPending}>
           {isPending ? "Guardando…" : "Guardar datos"}
         </button>

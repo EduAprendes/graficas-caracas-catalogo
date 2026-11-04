@@ -50,7 +50,7 @@ export default async function ProfitPage({
     <div className="admin-page">
       <div className="admin-header">
         <div>
-          <h1>Ganancias y gastos</h1>
+          <h1>Balance y gastos</h1>
           <p className="admin-user">Sesión: {session?.user?.name ?? session?.user?.username}</p>
         </div>
         <form action={logoutAction}>

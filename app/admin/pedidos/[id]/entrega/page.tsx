@@ -121,12 +121,6 @@ export default async function DeliveryOrderPage({
               {controlNumber ?? <span className="delivery-blank" style={{ minWidth: "12rem" }} />}
             </span>
           </div>
-          <div>
-            <span className="delivery-label">Imprenta digital autorizada (nombre, RIF y providencia)</span>
-            <span>
-              <Blank value={fields?.deliveryPrinterInfo} minWidth="20rem" />
-            </span>
-          </div>
         </div>
 
         <div className="delivery-grid">
