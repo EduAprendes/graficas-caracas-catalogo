@@ -5,6 +5,8 @@ import { getCustomerStatement } from "@/lib/accounts";
 import { formatDate, formatDateTime } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
 import PrintButton from "@/components/admin/PrintButton";
+import CustomerPaymentModal from "@/components/admin/CustomerPaymentModal";
+import { addCustomerPaymentAction } from "@/app/admin/pedidos/actions";
 import { logoutAction } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
@@ -102,6 +104,13 @@ export default async function CustomerStatementPage({
             >
               {Math.abs(statement.balance).toFixed(2)}
             </span>
+            {statement.balance > 0 ? (
+              <CustomerPaymentModal
+                customerName={customer.name}
+                balance={statement.balance}
+                onAddPayment={addCustomerPaymentAction.bind(null, customerId)}
+              />
+            ) : null}
           </div>
           <div className="admin-summary-card">
             <span className="admin-summary-label">Vencido (+30 días)</span>

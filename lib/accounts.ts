@@ -22,11 +22,17 @@ function emptyAging(): AgingBuckets {
   return { current: 0, days31to60: 0, days61to90: 0, over90: 0 };
 }
 
+export type AgingBucketKey = keyof AgingBuckets;
+
+export function agingBucketOf(ageDays: number): AgingBucketKey {
+  if (ageDays <= 30) return "current";
+  if (ageDays <= 60) return "days31to60";
+  if (ageDays <= 90) return "days61to90";
+  return "over90";
+}
+
 function addToAging(aging: AgingBuckets, balance: number, ageDays: number) {
-  if (ageDays <= 30) aging.current += balance;
-  else if (ageDays <= 60) aging.days31to60 += balance;
-  else if (ageDays <= 90) aging.days61to90 += balance;
-  else aging.over90 += balance;
+  aging[agingBucketOf(ageDays)] += balance;
 }
 
 // Solo las órdenes CONFIRMADAS cuentan: las anuladas no generan deuda ni venta.
@@ -120,7 +126,21 @@ export type ReceivableRow = {
   aging: AgingBuckets;
 };
 
+// Una orden con saldo pendiente, para ver el detalle de cada tramo de antigüedad.
+export type AgingOrder = {
+  orderId: number;
+  customerId: number;
+  customerName: string;
+  createdAt: Date;
+  ageDays: number;
+  bucket: AgingBucketKey;
+  total: number;
+  paid: number;
+  balance: number;
+};
+
 export type ReceivablesReport = {
+  agingOrders: AgingOrder[];
   rows: ReceivableRow[];
   totalSold: number;
   totalPaid: number;
@@ -143,6 +163,7 @@ export async function getReceivables(): Promise<ReceivablesReport> {
   });
 
   const rows: ReceivableRow[] = [];
+  const agingOrders: AgingOrder[] = [];
   const globalAging = emptyAging();
 
   for (const customer of customers) {
@@ -161,6 +182,17 @@ export async function getReceivables(): Promise<ReceivablesReport> {
       if (order.balance > 0) {
         const age = daysSince(order.createdAt, now);
         addToAging(aging, order.balance, age);
+        agingOrders.push({
+          orderId: order.id,
+          customerId: customer.id,
+          customerName: customer.name,
+          createdAt: order.createdAt,
+          ageDays: age,
+          bucket: agingBucketOf(age),
+          total: order.total,
+          paid: order.paid,
+          balance: order.balance,
+        });
         oldestDebtDays = oldestDebtDays == null ? age : Math.max(oldestDebtDays, age);
       }
     }
@@ -192,7 +224,11 @@ export async function getReceivables(): Promise<ReceivablesReport> {
   // Mayores deudores primero; luego el resto por nombre.
   rows.sort((a, b) => b.balance - a.balance || a.name.localeCompare(b.name, "es"));
 
+  // Más antiguas primero.
+  agingOrders.sort((a, b) => b.ageDays - a.ageDays || a.orderId - b.orderId);
+
   return {
+    agingOrders,
     rows,
     totalSold: round2(rows.reduce((sum, r) => sum + r.totalSold, 0)),
     totalPaid: round2(rows.reduce((sum, r) => sum + r.totalPaid, 0)),

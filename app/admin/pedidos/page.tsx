@@ -18,6 +18,11 @@ const PAYMENT_TYPE_LABELS: Record<string, string> = {
   CREDITO: "Crédito",
 };
 
+// Las órdenes anuladas se atenúan; el resto usa filas alternadas.
+function rowTone(status: string): string | undefined {
+  return status === "ANULADA" ? "row-void" : undefined;
+}
+
 export default async function SalesOrdersPage() {
   const session = await auth();
   const access = await getAccessUser();
@@ -77,7 +82,7 @@ export default async function SalesOrdersPage() {
               </tr>
             ) : (
               orders.map((order) => (
-                <tr key={order.id}>
+                <tr key={order.id} className={rowTone(order.status)}>
                   <td data-label="N°">#{order.id}</td>
                   <td data-label="Fecha">{formatDate(order.createdAt)}</td>
                   <td data-label="Cliente">{order.customerName}</td>

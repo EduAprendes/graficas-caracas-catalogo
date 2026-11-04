@@ -2,6 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getPurchaseOrder } from "@/lib/orders";
+import { getPurchaseCosting } from "@/lib/finance";
+import { PurchaseExpenseForm } from "@/components/admin/ExpenseForms";
+import {
+  addPurchaseExpenseAction,
+  deletePurchaseExpenseAction,
+} from "@/app/admin/gastos/actions";
 import { formatDateTime } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
 import PrintButton from "@/components/admin/PrintButton";
@@ -23,6 +29,9 @@ export default async function PurchaseOrderDetailPage({
   const session = await auth();
   const order = await getPurchaseOrder(orderId);
   if (!order) notFound();
+  const costing = await getPurchaseCosting(orderId);
+  const usd = (value: number) =>
+    `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const totalCost = order.items.reduce(
@@ -126,6 +135,79 @@ export default async function PurchaseOrderDetailPage({
           </table>
         </div>
       </section>
+
+      {order.status !== "ANULADA" ? (
+        <section className="no-print">
+          <h2 className="statement-heading">Costos y ganancia del contenedor (en $)</h2>
+          <div className="admin-summary-row">
+            <div className="admin-summary-card dash-card-info">
+              <span className="admin-summary-label">Factura</span>
+              <span className="admin-summary-value">{usd(costing.invoiceTotal)}</span>
+            </div>
+            <div className="admin-summary-card dash-card-warn">
+              <span className="admin-summary-label">Gastos del contenedor</span>
+              <span className="admin-summary-value">{usd(costing.expensesTotal)}</span>
+            </div>
+            <div className="admin-summary-card">
+              <span className="admin-summary-label">Costo total</span>
+              <span className="admin-summary-value">{usd(costing.totalCost)}</span>
+            </div>
+            <div className="admin-summary-card dash-card-total">
+              <span className="admin-summary-label">Venta esperada</span>
+              <span className="admin-summary-value">{usd(costing.expectedSale)}</span>
+            </div>
+            <div
+              className={`admin-summary-card ${costing.expectedProfit >= 0 ? "dash-card-ok" : "dash-card-danger"}`}
+            >
+              <span className="admin-summary-label">Ganancia esperada</span>
+              <span className="admin-summary-value">{usd(costing.expectedProfit)}</span>
+            </div>
+          </div>
+          <p className="statement-note">
+            Venta esperada = piezas × precio de venta actual de cada producto. Los gastos se reparten
+            entre los productos en proporción a su costo de factura, y ese costo real es el que se usa
+            para calcular las ganancias del mes.
+            {costing.itemsWithoutCost > 0
+              ? ` Hay ${costing.itemsWithoutCost} producto(s) sin costo de factura: no entran en el reparto.`
+              : ""}
+          </p>
+
+          <div className="seller-pay-box">
+            <PurchaseExpenseForm onAdd={addPurchaseExpenseAction.bind(null, order.id)} />
+          </div>
+
+          {costing.expenses.length > 0 ? (
+            <div className="admin-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Concepto</th>
+                    <th className="num">Monto</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {costing.expenses.map((e) => (
+                    <tr key={e.id}>
+                      <td data-label="Concepto">{e.concept}</td>
+                      <td className="num" data-label="Monto">{usd(e.amount)}</td>
+                      <td>
+                        <ConfirmActionButton
+                          label="Quitar"
+                          pendingLabel="Quitando…"
+                          confirmMessage="¿Quitar este gasto del contenedor?"
+                          className="admin-delete-btn"
+                          action={deletePurchaseExpenseAction.bind(null, order.id, e.id)}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       <div className="order-form-actions no-print">
         <PrintButton />

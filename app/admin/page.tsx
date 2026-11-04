@@ -80,7 +80,7 @@ export default async function DashboardPage() {
           <span className="admin-summary-label">Inventario por vender</span>
           <span className="admin-summary-value">{money(summary.inventoryToSellValue)}</span>
         </div>
-        <div className="admin-summary-card">
+        <div className="admin-summary-card dash-card-total">
           <span className="admin-summary-label">Total vendido</span>
           <span className="admin-summary-value">{money(summary.totalSold)}</span>
         </div>

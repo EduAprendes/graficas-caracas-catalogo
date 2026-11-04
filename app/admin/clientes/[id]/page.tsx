@@ -2,8 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getCustomer } from "@/lib/customers";
-import { formatDateTime } from "@/lib/format";
+import { caracasYearMonth, formatDateTime } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
+import AddPaymentForm from "@/components/admin/AddPaymentForm";
+import { addCustomerPaymentAction } from "@/app/admin/pedidos/actions";
 import { logoutAction } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
@@ -13,18 +15,49 @@ const PAYMENT_TYPE_LABELS: Record<string, string> = {
   CREDITO: "Crédito",
 };
 
+const MONTHS = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+];
+
 export default async function CustomerDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ anio?: string; mes?: string }>;
 }) {
   const { id } = await params;
+  const { anio, mes } = await searchParams;
   const customerId = Number(id);
   if (!Number.isInteger(customerId)) notFound();
 
   const session = await auth();
   const customer = await getCustomer(customerId);
   if (!customer) notFound();
+
+  // Por defecto: el año en curso, todos los meses.
+  const currentYear = caracasYearMonth(new Date()).year;
+  const yearFilter = anio === "todos" ? null : Number(anio) || currentYear;
+  const monthFilter = Number(mes) >= 1 && Number(mes) <= 12 ? Number(mes) : null;
+
+  const years = Array.from(
+    new Set([currentYear, ...customer.orders.map((o) => caracasYearMonth(o.createdAt).year)])
+  ).sort((a, b) => b - a);
+
+  const visibleOrders = customer.orders.filter((order) => {
+    const { year, month } = caracasYearMonth(order.createdAt);
+    return (yearFilter == null || year === yearFilter) && (monthFilter == null || month === monthFilter);
+  });
+  const confirmed = visibleOrders.filter((o) => o.status === "CONFIRMADA");
+  const periodSold = confirmed.reduce((sum, o) => sum + o.total, 0);
+  const periodPaid = confirmed.reduce((sum, o) => sum + o.paid, 0);
+  const periodBalance = confirmed.reduce((sum, o) => sum + o.balance, 0);
+  const periodLabel = [
+    monthFilter ? MONTHS[monthFilter - 1] : "Todo el año",
+    yearFilter ?? "todos los años",
+  ].join(" · ");
+  const isDefaultFilter = yearFilter === currentYear && monthFilter == null;
 
   return (
     <div className="admin-page">
@@ -83,6 +116,67 @@ export default async function CustomerDetailPage({
         </Link>
       </p>
 
+      {customer.creditOutstanding > 0 ? (
+        <section>
+          <h3>Registrar abono general</h3>
+          <p className="ledger-dimension">
+            Se reparte entre las órdenes a crédito con saldo, de la más antigua a la más nueva.
+          </p>
+          <AddPaymentForm
+            maxAmount={customer.creditOutstanding}
+            onAddPayment={addCustomerPaymentAction.bind(null, customer.id)}
+          />
+        </section>
+      ) : null}
+
+      <form className="admin-form seller-range-form" method="get">
+        <label className="admin-field admin-field-sm">
+          Año
+          <select name="anio" defaultValue={yearFilter == null ? "todos" : String(yearFilter)} className="admin-input">
+            <option value="todos">Todos</option>
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="admin-field admin-field-sm">
+          Mes
+          <select name="mes" defaultValue={monthFilter ? String(monthFilter) : ""} className="admin-input">
+            <option value="">Todo el año</option>
+            {MONTHS.map((name, i) => (
+              <option key={name} value={i + 1}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="submit" className="admin-save-btn">
+          Filtrar
+        </button>
+        {!isDefaultFilter ? (
+          <Link href={`/admin/clientes/${customer.id}`} className="admin-cancel-btn">
+            Año en curso
+          </Link>
+        ) : null}
+      </form>
+
+      <div className="admin-summary-row">
+        <div className="admin-summary-card">
+          <span className="admin-summary-label">Vendido · {periodLabel}</span>
+          <span className="admin-summary-value">{periodSold.toFixed(2)}</span>
+        </div>
+        <div className="admin-summary-card">
+          <span className="admin-summary-label">Pagado en ese período</span>
+          <span className="admin-summary-value">{periodPaid.toFixed(2)}</span>
+        </div>
+        <div className="admin-summary-card">
+          <span className="admin-summary-label">Saldo de esas órdenes</span>
+          <span className="admin-summary-value">{periodBalance.toFixed(2)}</span>
+        </div>
+      </div>
+
       <div className="admin-table-wrap">
         <table>
           <thead>
@@ -98,14 +192,16 @@ export default async function CustomerDetailPage({
             </tr>
           </thead>
           <tbody>
-            {customer.orders.length === 0 ? (
+            {visibleOrders.length === 0 ? (
               <tr>
                 <td colSpan={8} className="ledger-empty">
-                  Este cliente todavía no tiene órdenes de venta.
+                  {customer.orders.length === 0
+                    ? "Este cliente todavía no tiene órdenes de venta."
+                    : "No hay órdenes en este período."}
                 </td>
               </tr>
             ) : (
-              customer.orders.map((order) => (
+              visibleOrders.map((order) => (
                 <tr key={order.id}>
                   <td data-label="N°">#{order.id}</td>
                   <td data-label="Fecha">{formatDateTime(order.createdAt)}</td>

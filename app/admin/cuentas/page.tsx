@@ -1,23 +1,34 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import { getReceivables } from "@/lib/accounts";
+import { getReceivables, type AgingBucketKey } from "@/lib/accounts";
 import { formatDate } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
 import { logoutAction } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
 
+const BUCKETS: { key: AgingBucketKey; param: string; label: string; tone: string }[] = [
+  { key: "current", param: "vigente", label: "Vigente (0–30 días)", tone: "dash-card-ok" },
+  { key: "days31to60", param: "31-60", label: "31–60 días", tone: "dash-card-warn" },
+  { key: "days61to90", param: "61-90", label: "61–90 días", tone: "dash-card-warn2" },
+  { key: "over90", param: "90", label: "Más de 90 días", tone: "dash-card-danger" },
+];
+
 export default async function ReceivablesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ver?: string }>;
+  searchParams: Promise<{ ver?: string; edad?: string }>;
 }) {
-  const { ver } = await searchParams;
+  const { ver, edad } = await searchParams;
   const showAll = ver === "todos";
+  const activeBucket = BUCKETS.find((b) => b.param === edad) ?? null;
 
   const session = await auth();
   const report = await getReceivables();
   const rows = showAll ? report.rows : report.rows.filter((row) => row.balance > 0);
+  const bucketOrders = activeBucket
+    ? report.agingOrders.filter((o) => o.bucket === activeBucket.key)
+    : [];
 
   return (
     <div className="admin-page admin-page-wide">
@@ -55,27 +66,86 @@ export default async function ReceivablesPage({
       </div>
 
       <div className="admin-summary-row">
-        <div className="admin-summary-card dash-card-ok">
-          <span className="admin-summary-label">Vigente (0–30 días)</span>
-          <span className="admin-summary-value">{report.aging.current.toFixed(2)}</span>
-        </div>
-        <div className="admin-summary-card dash-card-warn">
-          <span className="admin-summary-label">31–60 días</span>
-          <span className="admin-summary-value">{report.aging.days31to60.toFixed(2)}</span>
-        </div>
-        <div className="admin-summary-card dash-card-warn2">
-          <span className="admin-summary-label">61–90 días</span>
-          <span className="admin-summary-value">{report.aging.days61to90.toFixed(2)}</span>
-        </div>
-        <div className="admin-summary-card dash-card-danger">
-          <span className="admin-summary-label">Más de 90 días</span>
-          <span
-            className={`admin-summary-value${report.aging.over90 > 0 ? " amount-overdue" : ""}`}
+        {BUCKETS.map((b) => (
+          <Link
+            key={b.key}
+            href={activeBucket?.key === b.key ? "/admin/cuentas" : `/admin/cuentas?edad=${b.param}`}
+            scroll={false}
+            aria-pressed={activeBucket?.key === b.key}
+            title="Ver las órdenes de este tramo"
+            className={`admin-summary-card aging-card ${b.tone}${activeBucket?.key === b.key ? " aging-card-active" : ""}`}
           >
-            {report.aging.over90.toFixed(2)}
-          </span>
-        </div>
+            <span className="admin-summary-label">{b.label}</span>
+            <span
+              className={`admin-summary-value${b.key === "over90" && report.aging.over90 > 0 ? " amount-overdue" : ""}`}
+            >
+              {report.aging[b.key].toFixed(2)}
+            </span>
+          </Link>
+        ))}
       </div>
+
+      {activeBucket ? (
+        <section className="aging-detail">
+          <div className="aging-detail-head">
+            <h2>
+              Órdenes con saldo · {activeBucket.label}{" "}
+              <span className="aging-detail-count">({bucketOrders.length})</span>
+            </h2>
+            <Link href="/admin/cuentas" className="admin-cancel-btn">
+              Quitar filtro
+            </Link>
+          </div>
+          <div className="admin-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Orden</th>
+                  <th>Cliente</th>
+                  <th>Fecha</th>
+                  <th className="num">Antigüedad</th>
+                  <th className="num">Total</th>
+                  <th className="num">Pagado</th>
+                  <th className="num">Saldo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {bucketOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="ledger-empty">
+                      No hay órdenes con saldo en este tramo.
+                    </td>
+                  </tr>
+                ) : (
+                  bucketOrders.map((o) => (
+                    <tr key={o.orderId}>
+                      <td data-label="Orden">#{o.orderId}</td>
+                      <td data-label="Cliente">
+                        <Link href={`/admin/clientes/${o.customerId}`} className="code code-link">
+                          {o.customerName}
+                        </Link>
+                      </td>
+                      <td data-label="Fecha">{formatDate(o.createdAt)}</td>
+                      <td className="num" data-label="Antigüedad">{o.ageDays} días</td>
+                      <td className="num" data-label="Total">{o.total.toFixed(2)}</td>
+                      <td className="num" data-label="Pagado">{o.paid.toFixed(2)}</td>
+                      <td className="num" data-label="Saldo">
+                        <span className="stock-badge stock-zero">{o.balance.toFixed(2)}</span>
+                      </td>
+                      <td>
+                        <Link href={`/admin/pedidos/${o.orderId}`} className="admin-edit-btn">
+                          Ver orden
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
 
       <div className="admin-filter-row">
         <Link

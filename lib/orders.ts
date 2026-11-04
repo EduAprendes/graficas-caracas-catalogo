@@ -102,6 +102,7 @@ export type SalesOrderDetail = {
   notes: string | null;
   status: string;
   paymentType: string;
+  creditDays: number | null;
   deliveryType: string;
   sellerName: string | null;
   commissionPercent: number | null;
@@ -141,6 +142,7 @@ export async function getSalesOrder(id: number): Promise<SalesOrderDetail | null
     notes: order.notes,
     status: order.status,
     paymentType: order.paymentType,
+    creditDays: order.creditDays,
     deliveryType: order.deliveryType,
     sellerName: order.seller?.name ?? null,
     commissionPercent: order.commissionPercent != null ? Number(order.commissionPercent) : null,
@@ -180,11 +182,15 @@ export type SalesOrderItemInput = {
   discountPercent?: number | null;
 };
 
+// Plazos de crédito que se pueden ofrecer, en días.
+export const CREDIT_TERM_OPTIONS = [7, 15, 30];
+
 export async function createSalesOrder(
   userId: number,
   input: {
     customerId: number;
     paymentType: "CONTADO" | "CREDITO";
+    creditDays?: number | null;
     deliveryType: "TIENDA" | "DESPACHADO";
     sellerId: number | null;
     deliveryAddress: string | null;
@@ -205,6 +211,12 @@ export async function createSalesOrder(
       throw new Error("Este vendedor está cancelado; reactivalo para asignarle órdenes");
     }
   }
+
+  // A crédito hay que saber qué plazo se ofreció.
+  if (input.paymentType === "CREDITO" && !CREDIT_TERM_OPTIONS.includes(Number(input.creditDays))) {
+    throw new Error("Elegí el plazo de crédito (7, 15 o 30 días)");
+  }
+  const creditDays = input.paymentType === "CREDITO" ? Number(input.creditDays) : null;
 
   const items = input.items
     .map((item) => ({
@@ -260,6 +272,7 @@ export async function createSalesOrder(
         customerId: customer.id,
         customerName: customer.name,
         paymentType: input.paymentType,
+        creditDays,
         deliveryType: input.deliveryType === "DESPACHADO" ? "DESPACHADO" : "TIENDA",
         sellerId: seller ? seller.id : null,
         commissionPercent: seller ? Number(seller.commissionPercent) : null,
@@ -374,6 +387,60 @@ export async function addSalesOrderPayment(
       },
     });
   });
+}
+
+// Abono general de un cliente: se reparte entre sus órdenes a crédito con saldo,
+// de la más antigua a la más nueva. No permite pagar más de lo que debe.
+export async function addCustomerPayment(
+  customerId: number,
+  userId: number,
+  input: { amount: number; notes: string | null }
+): Promise<{ applied: { orderId: number; amount: number }[] }> {
+  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+    throw new Error("El monto del abono debe ser mayor a cero");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const orders = await tx.salesOrder.findMany({
+      where: { customerId, status: "CONFIRMADA", paymentType: "CREDITO" },
+      include: { items: true, payments: true },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    });
+
+    const debts = orders
+      .map((o) => ({
+        id: o.id,
+        cents: Math.round((itemsTotal(o.items) - paymentsTotal(o.payments)) * 100),
+      }))
+      .filter((d) => d.cents > 0);
+
+    const totalDebt = debts.reduce((sum, d) => sum + d.cents, 0);
+    let left = Math.round(input.amount * 100);
+
+    if (totalDebt === 0) throw new Error("Este cliente no tiene deudas pendientes");
+    if (left > totalDebt) {
+      throw new Error(
+        `El abono (${(left / 100).toFixed(2)}) supera lo que debe el cliente (${(totalDebt / 100).toFixed(2)})`
+      );
+    }
+
+    const applied: { orderId: number; amount: number }[] = [];
+    for (const debt of debts) {
+      if (left <= 0) break;
+      const part = Math.min(left, debt.cents);
+      await tx.salesOrderPayment.create({
+        data: {
+          orderId: debt.id,
+          userId,
+          amount: part / 100,
+          notes: input.notes?.trim() || null,
+        },
+      });
+      applied.push({ orderId: debt.id, amount: part / 100 });
+      left -= part;
+    }
+    return { applied };
+  }, { maxWait: 15000, timeout: 30000 });
 }
 
 export type SalesSummary = {

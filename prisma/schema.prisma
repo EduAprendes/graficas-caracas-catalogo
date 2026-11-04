@@ -57,6 +57,8 @@ model User {
   salesOrders        SalesOrder[]
   purchaseOrders     PurchaseOrder[]
   salesOrderPayments SalesOrderPayment[]
+  sellerPayments     SellerPayment[]
+  operatingExpenses  OperatingExpense[]
   campaigns          Campaign[]
   /// ADMIN (todo el panel) o VENDEDOR (solo catálogo y sus órdenes de venta)
   role               String              @default("ADMIN")
@@ -101,8 +103,26 @@ model Seller {
 
   salesOrders SalesOrder[]
   user        User?
+  payments    SellerPayment[]
 
   @@map("sellers")
+}
+
+/// Pago hecho a un vendedor por su comisión de un mes (periodYear/periodMonth, hora de Caracas)
+model SellerPayment {
+  id          Int      @id @default(autoincrement())
+  sellerId    Int
+  seller      Seller   @relation(fields: [sellerId], references: [id])
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  amount      Decimal  @db.Decimal(10, 2)
+  periodYear  Int
+  periodMonth Int
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@index([sellerId, periodYear, periodMonth])
+  @@map("seller_payments")
 }
 
 /// Promoción enviada por correo a clientes (historial de envíos masivos)
@@ -168,6 +188,8 @@ model SalesOrder {
   notes                 String?
   status                String    @default("CONFIRMADA")
   paymentType           String    @default("CONTADO")
+  /// Plazo de crédito que se ofreció (7, 15 o 30 días); solo en órdenes a crédito
+  creditDays            Int?
   /// TIENDA = recogido en tienda, DESPACHADO = lo llevamos al cliente en transporte propio
   deliveryType          String    @default("TIENDA")
   userId                Int
@@ -231,10 +253,40 @@ model PurchaseOrder {
   createdAt    DateTime  @default(now())
   receivedAt   DateTime?
 
-  items PurchaseOrderItem[]
+  items    PurchaseOrderItem[]
+  expenses PurchaseOrderExpense[]
 
   @@index([userId])
   @@map("purchase_orders")
+}
+
+/// Gasto propio de un contenedor / orden de compra (flete, aduana, transporte...), en dólares.
+/// Se reparte entre los productos de la orden en proporción a su costo de factura.
+model PurchaseOrderExpense {
+  id        Int           @id @default(autoincrement())
+  orderId   Int
+  order     PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  concept   String
+  amount    Decimal       @db.Decimal(10, 2)
+  createdAt DateTime      @default(now())
+
+  @@index([orderId])
+  @@map("purchase_order_expenses")
+}
+
+/// Gasto operativo del negocio (empleados, transporte de despachos, servicios...), en dólares.
+model OperatingExpense {
+  id          Int      @id @default(autoincrement())
+  expenseDate DateTime
+  category    String
+  amount      Decimal  @db.Decimal(10, 2)
+  notes       String?
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([expenseDate])
+  @@map("operating_expenses")
 }
 
 model PurchaseOrderItem {

@@ -5,7 +5,7 @@ import { getSalesOrder } from "@/lib/orders";
 import { getAccessUser } from "@/lib/access";
 import { getDeliveryFields } from "@/lib/delivery";
 import DeliveryOrderForm from "@/components/admin/DeliveryOrderForm";
-import { formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
 import PrintButton from "@/components/admin/PrintButton";
 import ConfirmActionButton from "@/components/admin/ConfirmActionButton";
@@ -125,6 +125,9 @@ export default async function SalesOrderDetailPage({
           <p>
             <strong>Forma de pago</strong>{" "}
             {PAYMENT_TYPE_LABELS[order.paymentType] ?? order.paymentType}
+            {order.paymentType === "CREDITO" && order.creditDays
+              ? ` · plazo ${order.creditDays} días (vence el ${formatDate(new Date(order.createdAt.getTime() + order.creditDays * 86400000))})`
+              : ""}
           </p>
           <p>
             <strong>Entrega</strong>{" "}

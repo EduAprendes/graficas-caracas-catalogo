@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireUser } from "@/lib/access";
 import {
+  addCustomerPayment as addCustomerPaymentData,
   addSalesOrderPayment as addSalesOrderPaymentData,
   cancelSalesOrder as cancelSalesOrderData,
   createSalesOrder as createSalesOrderData,
@@ -59,6 +60,7 @@ export async function createCustomerForOrderAction(input: {
 export async function createSalesOrderAction(input: {
   customerId: number | null;
   paymentType: "CONTADO" | "CREDITO";
+  creditDays: number | null;
   deliveryType: "TIENDA" | "DESPACHADO";
   sellerId: number | null;
   deliveryAddress: string;
@@ -74,6 +76,7 @@ export async function createSalesOrderAction(input: {
     const order = await createSalesOrderData(userId, {
       customerId: input.customerId,
       paymentType: input.paymentType,
+      creditDays: input.creditDays,
       deliveryType: input.deliveryType,
       // Una vendedora siempre vende como ella misma; el admin elige el vendedor (o tienda).
       sellerId: user.role === "VENDEDOR" ? user.sellerId : input.sellerId,
@@ -110,6 +113,31 @@ export async function addSalesOrderPaymentAction(
     revalidatePath(`/admin/pedidos/${orderId}`);
     revalidatePath("/admin/pedidos");
     revalidatePath("/admin/clientes");
+    revalidatePath("/admin");
+
+    return { ok: true };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "No se pudo registrar el abono" };
+  }
+}
+
+export async function addCustomerPaymentAction(
+  customerId: number,
+  input: { amount: number; notes: string }
+): Promise<{ ok: true } | { error: string }> {
+  try {
+    const userId = await requireAdminId();
+    const { applied } = await addCustomerPaymentData(customerId, userId, {
+      amount: input.amount,
+      notes: input.notes || null,
+    });
+
+    for (const a of applied) revalidatePath(`/admin/pedidos/${a.orderId}`);
+    revalidatePath(`/admin/clientes/${customerId}`);
+    revalidatePath(`/admin/clientes/${customerId}/estado-de-cuenta`);
+    revalidatePath("/admin/pedidos");
+    revalidatePath("/admin/clientes");
+    revalidatePath("/admin/cuentas");
     revalidatePath("/admin");
 
     return { ok: true };

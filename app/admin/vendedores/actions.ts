@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { requireAdmin } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 import {
+  addSellerPayment as addSellerPaymentData,
   cancelSeller as cancelSellerData,
   createSeller as createSellerData,
   reactivateSeller as reactivateSellerData,
@@ -97,5 +98,27 @@ export async function saveSellerAccess(
     return { ok: true };
   } catch (err) {
     return { error: err instanceof Error ? err.message : "No se pudo guardar el acceso" };
+  }
+}
+
+export async function addSellerPaymentAction(
+  sellerId: number,
+  year: number,
+  month: number,
+  input: { amount: number; notes: string }
+): Promise<{ ok: true } | { error: string }> {
+  try {
+    const user = await requireSession();
+    await addSellerPaymentData(sellerId, user.id, {
+      amount: input.amount,
+      year,
+      month,
+      notes: input.notes || null,
+    });
+    revalidatePath(`/admin/vendedores/${sellerId}`);
+    revalidatePath("/admin/vendedores");
+    return { ok: true };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "No se pudo registrar el pago" };
   }
 }

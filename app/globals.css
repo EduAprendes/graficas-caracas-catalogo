@@ -1,5 +1,5 @@
 :root {
-  --bg: #edeee8;
+  --bg: #f6f6f2;
   --surface: #ffffff;
   --surface-2: #f5f5ef;
   --ink: #17191a;
@@ -674,7 +674,7 @@ footer.foot {
 /* ---- Admin / inventario ---- */
 
 .admin-page {
-  max-width: 980px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 28px 20px 80px;
 }
@@ -925,6 +925,14 @@ footer.foot {
 }
 
 .admin-table-wrap thead th.num, .admin-table-wrap td.num { text-align: right; }
+
+/* Clientes: sin scroll horizontal en PC; los textos largos (correo, dirección) se parten. */
+.customers-table-wrap table { min-width: 0; }
+.customers-table-wrap thead th,
+.customers-table-wrap tbody td {
+  padding: 8px 10px;
+  overflow-wrap: anywhere;
+}
 
 .orders-table-wrap thead th,
 .orders-table-wrap tbody td {
@@ -1847,7 +1855,19 @@ footer.foot {
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--line);
+    /* Siempre en una sola fila, igual en todas las secciones */
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
+  .admin-nav::-webkit-scrollbar { display: none; }
+  .admin-nav-link { flex-shrink: 0; white-space: nowrap; }
+}
+
+/* Pantallas medianas: casillas un poco más compactas para que quepan todas */
+@media screen and (min-width: 701px) and (max-width: 1240px) {
+  .admin-nav-link { padding: 7px 10px; gap: 5px; font-size: 0.8rem; }
+  .admin-nav-sep { margin: 0 2px; }
 }
 
 @media print {
@@ -2434,3 +2454,153 @@ footer.foot {
   .delivery-doc { font-size: 11px; }
   .delivery-doc .admin-table-wrap { border: 1px solid #000; }
 }
+
+/* ---- Admin: menú en casillas de color + filas de órdenes con color de estado ----
+   Cada sección tiene su acento: --nv-X (texto/borde/relleno activo), -bg (tinte),
+   -line (borde suave) y --nv-on (texto sobre el relleno activo). */
+:root {
+  --nv-resumen: #3b5bdb;     --nv-resumen-bg: #eaeefd;     --nv-resumen-line: #c3cdf5;
+  --nv-inventario: #0f766e;  --nv-inventario-bg: #e3f4f2;  --nv-inventario-line: #aedcd7;
+  --nv-catalogo: #6d28d9;    --nv-catalogo-bg: #f0eafc;    --nv-catalogo-line: #d2c1f3;
+  --nv-ventas: #1f7a4d;      --nv-ventas-bg: #e6f4ec;      --nv-ventas-line: #b7dcc7;
+  --nv-compras: #a14a08;     --nv-compras-bg: #fdf0e1;     --nv-compras-line: #f0cc9f;
+  --nv-clientes: #be185d;    --nv-clientes-bg: #fce8f1;    --nv-clientes-line: #f2b6d2;
+  --nv-cuentas: #b91c1c;     --nv-cuentas-bg: #fdeaea;     --nv-cuentas-line: #f1b9b9;
+  --nv-vendedores: #0369a1;  --nv-vendedores-bg: #e3f1fa;  --nv-vendedores-line: #aed2ea;
+  --nv-promociones: #a21caf; --nv-promociones-bg: #f9e8fb; --nv-promociones-line: #e5b6ea;
+  --nv-on: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --nv-resumen: #8fa8ff;     --nv-resumen-bg: #141a33;     --nv-resumen-line: #2c3a73;
+    --nv-inventario: #5eead4;  --nv-inventario-bg: #0e2523;  --nv-inventario-line: #1f5a54;
+    --nv-catalogo: #c4b5fd;    --nv-catalogo-bg: #1c1633;    --nv-catalogo-line: #4b3a8a;
+    --nv-ventas: #5fd39a;      --nv-ventas-bg: #12261c;      --nv-ventas-line: #25503a;
+    --nv-compras: #fdba74;     --nv-compras-bg: #2a1d0f;     --nv-compras-line: #6b4519;
+    --nv-clientes: #f9a8d4;    --nv-clientes-bg: #2d1423;    --nv-clientes-line: #6b2b52;
+    --nv-cuentas: #fca5a5;     --nv-cuentas-bg: #2c1517;     --nv-cuentas-line: #6b2d31;
+    --nv-vendedores: #7dd3fc;  --nv-vendedores-bg: #0f2230;  --nv-vendedores-line: #245276;
+    --nv-promociones: #e9a8f5; --nv-promociones-bg: #281330; --nv-promociones-line: #5f2d6e;
+    --nv-on: #111210;
+  }
+}
+:root[data-theme="dark"] {
+  --nv-resumen: #8fa8ff;     --nv-resumen-bg: #141a33;     --nv-resumen-line: #2c3a73;
+  --nv-inventario: #5eead4;  --nv-inventario-bg: #0e2523;  --nv-inventario-line: #1f5a54;
+  --nv-catalogo: #c4b5fd;    --nv-catalogo-bg: #1c1633;    --nv-catalogo-line: #4b3a8a;
+  --nv-ventas: #5fd39a;      --nv-ventas-bg: #12261c;      --nv-ventas-line: #25503a;
+  --nv-compras: #fdba74;     --nv-compras-bg: #2a1d0f;     --nv-compras-line: #6b4519;
+  --nv-clientes: #f9a8d4;    --nv-clientes-bg: #2d1423;    --nv-clientes-line: #6b2b52;
+  --nv-cuentas: #fca5a5;     --nv-cuentas-bg: #2c1517;     --nv-cuentas-line: #6b2d31;
+  --nv-vendedores: #7dd3fc;  --nv-vendedores-bg: #0f2230;  --nv-vendedores-line: #245276;
+  --nv-promociones: #e9a8f5; --nv-promociones-bg: #281330; --nv-promociones-line: #5f2d6e;
+  --nv-on: #111210;
+}
+
+.admin-nav-link[data-tone="resumen"]     { --t: var(--nv-resumen);     --t-bg: var(--nv-resumen-bg);     --t-line: var(--nv-resumen-line); }
+.admin-nav-link[data-tone="inventario"]  { --t: var(--nv-inventario);  --t-bg: var(--nv-inventario-bg);  --t-line: var(--nv-inventario-line); }
+.admin-nav-link[data-tone="catalogo"]    { --t: var(--nv-catalogo);    --t-bg: var(--nv-catalogo-bg);    --t-line: var(--nv-catalogo-line); }
+.admin-nav-link[data-tone="ventas"]      { --t: var(--nv-ventas);      --t-bg: var(--nv-ventas-bg);      --t-line: var(--nv-ventas-line); }
+.admin-nav-link[data-tone="compras"]     { --t: var(--nv-compras);     --t-bg: var(--nv-compras-bg);     --t-line: var(--nv-compras-line); }
+.admin-nav-link[data-tone="clientes"]    { --t: var(--nv-clientes);    --t-bg: var(--nv-clientes-bg);    --t-line: var(--nv-clientes-line); }
+.admin-nav-link[data-tone="cuentas"]     { --t: var(--nv-cuentas);     --t-bg: var(--nv-cuentas-bg);     --t-line: var(--nv-cuentas-line); }
+.admin-nav-link[data-tone="vendedores"]  { --t: var(--nv-vendedores);  --t-bg: var(--nv-vendedores-bg);  --t-line: var(--nv-vendedores-line); }
+.admin-nav-link[data-tone="promociones"] { --t: var(--nv-promociones); --t-bg: var(--nv-promociones-bg); --t-line: var(--nv-promociones-line); }
+
+.admin-nav-link[data-tone] {
+  color: var(--t);
+  background: var(--t-bg);
+  border: 1px solid var(--t-line);
+  font-weight: 600;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.admin-nav-link[data-tone] .admin-nav-icon { opacity: 1; }
+.admin-nav-link[data-tone]:hover {
+  color: var(--t);
+  background: var(--t-bg);
+  border-color: var(--t);
+  box-shadow: var(--sh-1);
+  transform: translateY(-1px);
+}
+.admin-nav-link[data-tone]:focus-visible { outline: 2px solid var(--t); outline-offset: 2px; }
+.admin-nav-link-active[data-tone],
+.admin-nav-link-active[data-tone]:hover {
+  color: var(--nv-on);
+  background: var(--t);
+  border-color: var(--t);
+  box-shadow: var(--sh-1);
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-nav-link[data-tone] { transition: none; }
+  .admin-nav-link[data-tone]:hover { transform: none; }
+}
+
+/* Menú: casillas rectangulares (esquinas casi cuadradas) */
+.admin-nav-link[data-tone] { border-radius: 3px; }
+
+/* Tablas del admin: filas alternadas (blanca / gris clara de la paleta).
+   En celular las filas son tarjetas, así que solo aplica en pantallas anchas. */
+@media screen and (min-width: 701px) {
+  .admin-table-wrap:not(.orders-table-wrap) tbody tr:nth-child(even) { background: var(--surface-2); }
+  .admin-table-wrap:not(.orders-table-wrap) tbody tr:hover { background: var(--surface-3); }
+}
+@media screen and (min-width: 1025px) {
+  .orders-table-wrap tbody tr:nth-child(even) { background: var(--surface-2); }
+  .orders-table-wrap tbody tr:hover { background: var(--surface-3); }
+}
+
+/* Orden anulada: texto atenuado y cliente/total tachados */
+.orders-table-wrap tbody tr.row-void td { color: var(--ink-muted); }
+.orders-table-wrap tbody tr.row-void td[data-label="Cliente"],
+.orders-table-wrap tbody tr.row-void td[data-label="Total"] { text-decoration: line-through; }
+
+/* Resumen: cajas con color propio (fondo tenue, borde y valor del tono) */
+.admin-summary-card.dash-card-info  { --c: var(--info); --c-bg: var(--info-bg); --c-line: var(--info-line); }
+.admin-summary-card.dash-card-warn  { --c: var(--warn); --c-bg: var(--warn-bg); --c-line: var(--warn-line); }
+.admin-summary-card.dash-card-ok    { --c: var(--ok);   --c-bg: var(--ok-bg);   --c-line: var(--ok-line); }
+.admin-summary-card.dash-card-total { --c: var(--nv-catalogo); --c-bg: var(--nv-catalogo-bg); --c-line: var(--nv-catalogo-line); }
+
+.admin-summary-card.dash-card-info,
+.admin-summary-card.dash-card-warn,
+.admin-summary-card.dash-card-ok,
+.admin-summary-card.dash-card-total {
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+  border-top: 3px solid var(--c);
+  border-radius: 4px;
+}
+.admin-summary-card.dash-card-info .admin-summary-label,
+.admin-summary-card.dash-card-warn .admin-summary-label,
+.admin-summary-card.dash-card-ok .admin-summary-label,
+.admin-summary-card.dash-card-total .admin-summary-label { color: var(--c); }
+.admin-summary-card.dash-card-info .admin-summary-value,
+.admin-summary-card.dash-card-warn .admin-summary-value,
+.admin-summary-card.dash-card-ok .admin-summary-value,
+.admin-summary-card.dash-card-total .admin-summary-value { color: var(--ink); }
+
+/* Cuentas por cobrar: tarjetas de antigüedad clicables */
+a.aging-card { text-decoration: none; color: inherit; cursor: pointer; transition: box-shadow 0.15s, transform 0.15s; }
+a.aging-card:hover { box-shadow: var(--sh-2); transform: translateY(-1px); }
+a.aging-card:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+a.aging-card-active { box-shadow: 0 0 0 2px var(--ink), var(--sh-1); }
+.aging-detail { margin: 0 0 var(--sp-5, 24px); }
+.aging-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.aging-detail-head h2 { font-size: var(--fs-md, 1rem); margin: 0; }
+.aging-detail-count { color: var(--ink-muted); font-weight: 400; }
+@media (prefers-reduced-motion: reduce) { a.aging-card { transition: none; } a.aging-card:hover { transform: none; } }
+
+/* Vendedora: pago de comisión */
+.seller-pay-box { margin: 0 0 16px; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; }
+.seller-pay-box h3, .seller-pay-title { margin: 0 0 6px; font-size: var(--fs-md, 1rem); }
+.seller-pay-title { margin-top: 24px; }
+
+.pay-modal-trigger { margin-top: 8px; align-self: flex-start; }
+
+/* Menú: pestaña Ganancias */
+:root { --nv-ganancias: #4d7c0f; --nv-ganancias-bg: #eef6df; --nv-ganancias-line: #c9de9e; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --nv-ganancias: #bef264; --nv-ganancias-bg: #1a2410; --nv-ganancias-line: #3f5a1a; }
+}
+:root[data-theme="dark"] { --nv-ganancias: #bef264; --nv-ganancias-bg: #1a2410; --nv-ganancias-line: #3f5a1a; }
+.admin-nav-link[data-tone="ganancias"] { --t: var(--nv-ganancias); --t-bg: var(--nv-ganancias-bg); --t-line: var(--nv-ganancias-line); }

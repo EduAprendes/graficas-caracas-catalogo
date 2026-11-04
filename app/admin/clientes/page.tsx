@@ -13,7 +13,7 @@ export default async function CustomersPage() {
   const customers = await getCustomers();
 
   return (
-    <div className="admin-page">
+    <div className="admin-page admin-page-wide">
       <div className="admin-header">
         <div>
           <h1>Clientes</h1>
@@ -30,7 +30,7 @@ export default async function CustomersPage() {
 
       <NewCustomerForm onCreate={createCustomer} />
 
-      <div className="admin-table-wrap">
+      <div className="admin-table-wrap customers-table-wrap">
         <table>
           <thead>
             <tr>
@@ -48,7 +48,7 @@ export default async function CustomersPage() {
           <tbody>
             {customers.length === 0 ? (
               <tr>
-                <td colSpan={8} className="ledger-empty">
+                <td colSpan={9} className="ledger-empty">
                   Todavía no hay clientes. Creá el primero con &quot;+ Nuevo cliente&quot;.
                 </td>
               </tr>

@@ -39,6 +39,7 @@ function emptyRow(): Row {
 export type SalesOrderPayload = {
   customerId: number | null;
   paymentType: "CONTADO" | "CREDITO";
+  creditDays: number | null;
   deliveryType: "TIENDA" | "DESPACHADO";
   sellerId: number | null;
   deliveryAddress: string;
@@ -79,6 +80,7 @@ export default function SalesOrderForm({
   const [paymentType, setPaymentType] = useState<"CONTADO" | "CREDITO">(
     "CONTADO",
   );
+  const [creditDays, setCreditDays] = useState<"" | "7" | "15" | "30">("");
   const [deliveryType, setDeliveryType] = useState<"TIENDA" | "DESPACHADO">(
     "TIENDA",
   );
@@ -144,9 +146,15 @@ export default function SalesOrderForm({
       return;
     }
 
+    if (paymentType === "CREDITO" && creditDays === "") {
+      setError("Elegí el plazo de crédito que ofreciste (7, 15 o 30 días)");
+      return;
+    }
+
     const payload: SalesOrderPayload = {
       customerId,
       paymentType,
+      creditDays: paymentType === "CREDITO" ? Number(creditDays) : null,
       deliveryType,
       sellerId: sellerId === "" ? null : sellerId,
       deliveryAddress: deliveryAddress.trim(),
@@ -218,6 +226,22 @@ export default function SalesOrderForm({
               <option value="CREDITO">Crédito</option>
             </select>
           </label>
+          {paymentType === "CREDITO" ? (
+            <label>
+              Plazo de crédito
+              <select
+                className="admin-input"
+                value={creditDays}
+                onChange={(e) => setCreditDays(e.target.value as "" | "7" | "15" | "30")}
+                required
+              >
+                <option value="">Elegí el plazo…</option>
+                <option value="7">7 días</option>
+                <option value="15">15 días</option>
+                <option value="30">30 días</option>
+              </select>
+            </label>
+          ) : null}
           {fixedSeller ? (
             <div className="order-form-field">
               Vendedora

@@ -61,7 +61,7 @@ export default function CustomerRow({
   if (editing) {
     return (
       <tr>
-        <td colSpan={8}>
+        <td colSpan={9}>
           <form className="admin-form admin-edit-form" onSubmit={handleSave}>
             <input name="name" defaultValue={customer.name} placeholder="Nombre de contacto" required className="admin-input" />
             <input name="company" defaultValue={customer.company ?? ""} placeholder="Empresa" className="admin-input" />

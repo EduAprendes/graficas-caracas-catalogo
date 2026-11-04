@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { lineTotal } from "@/lib/pricing";
+import { caracasYearMonth } from "@/lib/format";
 
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
@@ -190,4 +191,137 @@ export async function getSellerDetail(
     commissionEarned: round2(counted.reduce((sum, row) => sum + row.commission, 0)),
     countedOrders: counted.length,
   };
+}
+
+// ---------- Pagos de comisión a la vendedora (mes a mes) ----------
+
+export type SellerPaymentRow = {
+  id: number;
+  createdAt: Date;
+  periodYear: number;
+  periodMonth: number;
+  amount: number;
+  notes: string | null;
+  userName: string;
+};
+
+export type SellerMonthLedger = {
+  year: number;
+  month: number;
+  earned: number;
+  paid: number;
+  pending: number;
+};
+
+export type SellerLedger = {
+  months: SellerMonthLedger[]; // más reciente primero
+  payments: SellerPaymentRow[]; // más reciente primero
+  totalEarned: number;
+  totalPaid: number;
+  totalPending: number;
+};
+
+type LedgerDb = Pick<typeof prisma, "salesOrder" | "sellerPayment">;
+
+async function buildSellerLedger(db: LedgerDb, sellerId: number): Promise<SellerLedger> {
+  const [orders, payments] = await Promise.all([
+    db.salesOrder.findMany({
+      where: { sellerId, status: "CONFIRMADA" },
+      include: { items: true },
+    }),
+    db.sellerPayment.findMany({
+      where: { sellerId },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      include: { user: { select: { name: true } } },
+    }),
+  ]);
+
+  const byMonth = new Map<string, SellerMonthLedger>();
+  const bucket = (year: number, month: number) => {
+    const key = `${year}-${month}`;
+    let row = byMonth.get(key);
+    if (!row) {
+      row = { year, month, earned: 0, paid: 0, pending: 0 };
+      byMonth.set(key, row);
+    }
+    return row;
+  };
+
+  for (const order of orders) {
+    const total = round2(order.items.reduce((sum, item) => sum + lineTotal(item), 0));
+    const percent = order.commissionPercent != null ? Number(order.commissionPercent) : null;
+    const { year, month } = caracasYearMonth(order.createdAt);
+    bucket(year, month).earned += commissionAmount(total, percent);
+  }
+  for (const p of payments) {
+    bucket(p.periodYear, p.periodMonth).paid += Number(p.amount);
+  }
+
+  const months = [...byMonth.values()]
+    .map((m) => ({
+      ...m,
+      earned: round2(m.earned),
+      paid: round2(m.paid),
+      pending: round2(m.earned - m.paid),
+    }))
+    .sort((a, b) => b.year - a.year || b.month - a.month);
+
+  return {
+    months,
+    payments: payments.map((p) => ({
+      id: p.id,
+      createdAt: p.createdAt,
+      periodYear: p.periodYear,
+      periodMonth: p.periodMonth,
+      amount: Number(p.amount),
+      notes: p.notes,
+      userName: p.user.name,
+    })),
+    totalEarned: round2(months.reduce((sum, m) => sum + m.earned, 0)),
+    totalPaid: round2(months.reduce((sum, m) => sum + m.paid, 0)),
+    totalPending: round2(months.reduce((sum, m) => sum + m.pending, 0)),
+  };
+}
+
+export async function getSellerLedger(sellerId: number): Promise<SellerLedger> {
+  return buildSellerLedger(prisma, sellerId);
+}
+
+// Registra un pago (abono) de la comisión de un mes. No permite pagar más de lo pendiente de ese mes.
+export async function addSellerPayment(
+  sellerId: number,
+  userId: number,
+  input: { amount: number; year: number; month: number; notes: string | null }
+) {
+  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+    throw new Error("El monto del pago debe ser mayor a cero");
+  }
+  if (!Number.isInteger(input.year) || !Number.isInteger(input.month) || input.month < 1 || input.month > 12) {
+    throw new Error("Elegí el mes que vas a pagar");
+  }
+
+  await prisma.$transaction(
+    async (tx) => {
+      const ledger = await buildSellerLedger(tx, sellerId);
+      const row = ledger.months.find((m) => m.year === input.year && m.month === input.month);
+      const pending = row?.pending ?? 0;
+      if (pending <= 0) throw new Error("Ese mes no tiene comisión pendiente");
+      if (Math.round(input.amount * 100) > Math.round(pending * 100)) {
+        throw new Error(
+          `El pago (${input.amount.toFixed(2)}) supera lo pendiente de ese mes (${pending.toFixed(2)})`
+        );
+      }
+      await tx.sellerPayment.create({
+        data: {
+          sellerId,
+          userId,
+          amount: input.amount,
+          periodYear: input.year,
+          periodMonth: input.month,
+          notes: input.notes?.trim() || null,
+        },
+      });
+    },
+    { maxWait: 15000, timeout: 30000 }
+  );
 }
