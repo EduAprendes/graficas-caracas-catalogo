@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getPurchaseOrder } from "@/lib/orders";
 import { getPurchaseCosting } from "@/lib/finance";
-import { PurchaseExpenseForm } from "@/components/admin/ExpenseForms";
+import { PurchaseExpenseForm, PurchasePaymentForm } from "@/components/admin/ExpenseForms";
 import {
   addPurchaseExpenseAction,
+  addPurchasePaymentAction,
   deletePurchaseExpenseAction,
+  deletePurchasePaymentAction,
 } from "@/app/admin/gastos/actions";
-import { formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
 import PrintButton from "@/components/admin/PrintButton";
 import ConfirmActionButton from "@/components/admin/ConfirmActionButton";
@@ -32,6 +34,7 @@ export default async function PurchaseOrderDetailPage({
   const costing = await getPurchaseCosting(orderId);
   const usd = (value: number) =>
     `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Caracas" });
 
   const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const totalCost = order.items.reduce(
@@ -206,6 +209,83 @@ export default async function PurchaseOrderDetailPage({
               </table>
             </div>
           ) : null}
+
+          <h2 className="statement-heading">Pagos de esta orden (en $)</h2>
+          <div className="admin-summary-row">
+            <div className="admin-summary-card">
+              <span className="admin-summary-label">Costo total a pagar</span>
+              <span className="admin-summary-value">{usd(costing.totalCost)}</span>
+            </div>
+            <div className="admin-summary-card dash-card-ok">
+              <span className="admin-summary-label">Pagado</span>
+              <span className="admin-summary-value">{usd(costing.paidTotal)}</span>
+            </div>
+            <div
+              className={`admin-summary-card ${costing.balance > 0 ? "dash-card-warn" : "dash-card-ok"}`}
+            >
+              <span className="admin-summary-label">
+                {costing.balance > 0 ? "Pendiente por pagar" : "Orden pagada"}
+              </span>
+              <span className="admin-summary-value">{usd(costing.balance)}</span>
+            </div>
+          </div>
+          {costing.overpaid > 0 ? (
+            <p className="statement-note">
+              Se ha pagado {usd(costing.overpaid)} más que el costo actual de la orden (el costo se
+              corrigió a la baja o falta un gasto por cargar).
+            </p>
+          ) : null}
+          <p className="statement-note">
+            El costo total a pagar es la factura más los gastos del contenedor. Registra cada pago
+            a medida que lo haces, igual que los abonos de los clientes.
+          </p>
+
+          {costing.balance > 0 ? (
+            <div className="seller-pay-box">
+              <PurchasePaymentForm
+                maxAmount={costing.balance}
+                defaultDate={today}
+                onAdd={addPurchasePaymentAction.bind(null, order.id)}
+              />
+            </div>
+          ) : null}
+
+          {costing.payments.length > 0 ? (
+            <div className="admin-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th className="num">Monto</th>
+                    <th>Notas</th>
+                    <th>Registrado por</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {costing.payments.map((p) => (
+                    <tr key={p.id}>
+                      <td data-label="Fecha">{formatDate(p.paidAt)}</td>
+                      <td className="num" data-label="Monto">{usd(p.amount)}</td>
+                      <td data-label="Notas" className={p.notes ? undefined : "card-hide"}>{p.notes ?? "—"}</td>
+                      <td data-label="Registrado por">{p.userName}</td>
+                      <td>
+                        <ConfirmActionButton
+                          label="Quitar"
+                          pendingLabel="Quitando…"
+                          confirmMessage="¿Quitar este pago? El saldo pendiente de la orden aumentará."
+                          className="admin-delete-btn"
+                          action={deletePurchasePaymentAction.bind(null, order.id, p.id)}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="statement-note">Todavía no hay pagos registrados en esta orden.</p>
+          )}
         </section>
       ) : null}
 

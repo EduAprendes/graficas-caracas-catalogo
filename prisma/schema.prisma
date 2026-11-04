@@ -58,6 +58,7 @@ model User {
   purchaseOrders     PurchaseOrder[]
   salesOrderPayments SalesOrderPayment[]
   sellerPayments     SellerPayment[]
+  purchasePayments   PurchaseOrderPayment[]
   operatingExpenses  OperatingExpense[]
   campaigns          Campaign[]
   /// ADMIN (todo el panel) o VENDEDOR (solo catálogo y sus órdenes de venta)
@@ -255,9 +256,28 @@ model PurchaseOrder {
 
   items    PurchaseOrderItem[]
   expenses PurchaseOrderExpense[]
+  payments PurchaseOrderPayment[]
 
   @@index([userId])
   @@map("purchase_orders")
+}
+
+/// Pago (abono) hecho al proveedor / por los gastos de una orden de compra, en dólares.
+/// Lo que se debe = costo total de la orden (factura + gastos) menos la suma de sus pagos.
+model PurchaseOrderPayment {
+  id        Int           @id @default(autoincrement())
+  orderId   Int
+  order     PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount    Decimal       @db.Decimal(10, 2)
+  /// Fecha en que se hizo el pago (puede ser anterior al registro)
+  paidAt    DateTime      @default(now())
+  notes     String?
+  userId    Int
+  user      User          @relation(fields: [userId], references: [id])
+  createdAt DateTime      @default(now())
+
+  @@index([orderId])
+  @@map("purchase_order_payments")
 }
 
 /// Gasto propio de un contenedor / orden de compra (flete, aduana, transporte...), en dólares.

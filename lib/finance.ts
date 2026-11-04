@@ -33,6 +33,14 @@ function checkAmount(amount: number) {
 
 export type PurchaseExpenseRow = { id: number; concept: string; amount: number; createdAt: Date };
 
+export type PurchasePaymentRow = {
+  id: number;
+  paidAt: Date;
+  amount: number;
+  notes: string | null;
+  userName: string;
+};
+
 export type PurchaseCosting = {
   invoiceTotal: number; // costo de factura (Σ costo × cantidad)
   expensesTotal: number; // fletes, aduana, etc.
@@ -43,6 +51,11 @@ export type PurchaseCosting = {
   itemsWithoutCost: number;
   // Factor para repartir los gastos entre los productos: 1 + gastos / factura.
   landedFactor: number;
+  // Cuenta por pagar: costo total (factura + gastos) menos lo ya pagado.
+  payments: PurchasePaymentRow[];
+  paidTotal: number;
+  balance: number; // lo que aún se debe (nunca negativo)
+  overpaid: number; // pagado de más, si el costo se corrigió a la baja
 };
 
 export async function getPurchaseCosting(orderId: number): Promise<PurchaseCosting> {
@@ -51,6 +64,7 @@ export async function getPurchaseCosting(orderId: number): Promise<PurchaseCosti
     include: {
       items: { include: { product: { select: { price: true } } } },
       expenses: { orderBy: { id: "asc" } },
+      payments: { include: { user: { select: { name: true } } }, orderBy: [{ paidAt: "asc" }, { id: "asc" }] },
     },
   });
 
@@ -64,8 +78,19 @@ export async function getPurchaseCosting(orderId: number): Promise<PurchaseCosti
   }
   const expensesTotal = order.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
   const totalCost = invoiceTotal + expensesTotal;
+  const paidTotal = order.payments.reduce((sum, p) => sum + Number(p.amount), 0);
 
   return {
+    paidTotal: round2(paidTotal),
+    balance: Math.max(0, round2(totalCost - paidTotal)),
+    overpaid: Math.max(0, round2(paidTotal - totalCost)),
+    payments: order.payments.map((p) => ({
+      id: p.id,
+      paidAt: p.paidAt,
+      amount: Number(p.amount),
+      notes: p.notes,
+      userName: p.user.name,
+    })),
     invoiceTotal: round2(invoiceTotal),
     expensesTotal: round2(expensesTotal),
     totalCost: round2(totalCost),
@@ -93,6 +118,67 @@ export async function addPurchaseExpense(orderId: number, input: { concept: stri
 
 export async function deletePurchaseExpense(orderId: number, expenseId: number) {
   await prisma.purchaseOrderExpense.deleteMany({ where: { id: expenseId, orderId } });
+}
+
+// ---------- Pagos a proveedores (cuentas por pagar) ----------
+
+// Registra un pago contra una orden de compra. No se permite pagar más de lo que se debe, ni en
+// órdenes anuladas, ni antes de que la orden tenga costo (factura + gastos) cargado.
+export async function addPurchasePayment(
+  orderId: number,
+  userId: number,
+  input: { amount: number; date: string; notes: string | null }
+) {
+  checkAmount(input.amount);
+  const paidAt = parseExpenseDate(input.date);
+
+  const order = await prisma.purchaseOrder.findUniqueOrThrow({ where: { id: orderId } });
+  if (order.status === "ANULADA") throw new Error("La orden está anulada: no admite pagos");
+
+  const costing = await getPurchaseCosting(orderId);
+  if (costing.totalCost <= 0) {
+    throw new Error("Carga primero el costo de la factura de la orden para poder registrar pagos");
+  }
+  if (costing.balance <= 0) throw new Error("Esta orden ya está pagada por completo");
+  if (input.amount > costing.balance + 0.001) {
+    throw new Error(
+      `El pago (${input.amount.toFixed(2)}) supera lo que resta por pagar (${costing.balance.toFixed(2)})`
+    );
+  }
+
+  await prisma.purchaseOrderPayment.create({
+    data: { orderId, userId, amount: input.amount, paidAt, notes: input.notes?.trim() || null },
+  });
+}
+
+export async function deletePurchasePayment(orderId: number, paymentId: number) {
+  await prisma.purchaseOrderPayment.deleteMany({ where: { id: paymentId, orderId } });
+}
+
+export type PayableSummary = { totalCost: number; paid: number; balance: number };
+
+// Costo total, pagado y saldo de cada orden de compra no anulada (para el listado).
+export async function getPayablesByOrder(): Promise<Map<number, PayableSummary>> {
+  const orders = await prisma.purchaseOrder.findMany({
+    where: { status: { not: "ANULADA" } },
+    include: { items: true, expenses: true, payments: true },
+  });
+  const result = new Map<number, PayableSummary>();
+  for (const order of orders) {
+    const invoice = order.items.reduce(
+      (sum, i) => sum + (i.cost != null ? Number(i.cost) * i.quantity : 0),
+      0
+    );
+    const expenses = order.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+    const paid = order.payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const totalCost = invoice + expenses;
+    result.set(order.id, {
+      totalCost: round2(totalCost),
+      paid: round2(paid),
+      balance: Math.max(0, round2(totalCost - paid)),
+    });
+  }
+  return result;
 }
 
 // ---------- Gastos operativos ----------

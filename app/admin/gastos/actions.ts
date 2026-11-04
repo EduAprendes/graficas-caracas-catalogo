@@ -5,8 +5,10 @@ import { requireAdmin } from "@/lib/access";
 import {
   addOperatingExpense,
   addPurchaseExpense,
+  addPurchasePayment,
   deleteOperatingExpense,
   deletePurchaseExpense,
+  deletePurchasePayment,
 } from "@/lib/finance";
 
 type Result = { ok: true } | { error: string };
@@ -35,6 +37,33 @@ export async function deletePurchaseExpenseAction(orderId: number, expenseId: nu
   await deletePurchaseExpense(orderId, expenseId);
   revalidatePath(`/admin/compras/${orderId}`);
   revalidatePath("/admin/ganancias");
+}
+
+// Pago (abono) al proveedor de una orden de compra.
+export async function addPurchasePaymentAction(
+  orderId: number,
+  input: { amount: number; date: string; notes: string }
+): Promise<Result> {
+  try {
+    const user = await requireAdmin();
+    await addPurchasePayment(orderId, user.id, {
+      amount: input.amount,
+      date: input.date,
+      notes: input.notes || null,
+    });
+    revalidatePath(`/admin/compras/${orderId}`);
+    revalidatePath("/admin/compras");
+    return { ok: true };
+  } catch (err) {
+    return fail(err, "No se pudo registrar el pago");
+  }
+}
+
+export async function deletePurchasePaymentAction(orderId: number, paymentId: number) {
+  await requireAdmin();
+  await deletePurchasePayment(orderId, paymentId);
+  revalidatePath(`/admin/compras/${orderId}`);
+  revalidatePath("/admin/compras");
 }
 
 export async function addOperatingExpenseAction(input: {

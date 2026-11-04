@@ -60,6 +60,74 @@ export function PurchaseExpenseForm({
   );
 }
 
+// Pago (abono) a una orden de compra: fecha, monto en dólares (máximo lo que se debe) y nota.
+export function PurchasePaymentForm({
+  maxAmount,
+  defaultDate,
+  onAdd,
+}: {
+  maxAmount: number;
+  defaultDate: string;
+  onAdd: (input: { amount: number; date: string; notes: string }) => Promise<Result>;
+}) {
+  const router = useRouter();
+  const [date, setDate] = useState(defaultDate);
+  const [amount, setAmount] = useState("");
+  const [notes, setNotes] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    startTransition(async () => {
+      const result = await onAdd({ amount: Number(amount), date, notes });
+      if ("error" in result) {
+        setError(result.error);
+        return;
+      }
+      setAmount("");
+      setNotes("");
+      router.refresh();
+    });
+  }
+
+  return (
+    <form className="admin-form" onSubmit={handleSubmit}>
+      <input
+        type="date"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+        required
+        className="admin-input admin-input-sm"
+        aria-label="Fecha del pago"
+      />
+      <input
+        type="number"
+        step="0.01"
+        min="0.01"
+        max={maxAmount}
+        inputMode="decimal"
+        placeholder={`Monto del pago en $ (máx. ${maxAmount.toFixed(2)})`}
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        required
+        className="admin-input admin-input-sm"
+      />
+      <input
+        placeholder="Notas (opcional)"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        className="admin-input"
+      />
+      <button type="submit" className="admin-save-btn" disabled={isPending}>
+        {isPending ? "Guardando…" : "Registrar pago"}
+      </button>
+      {error ? <p className="login-error">{error}</p> : null}
+    </form>
+  );
+}
+
 // Gasto operativo: fecha, categoría, monto en dólares y nota.
 export function OperatingExpenseForm({
   categories,

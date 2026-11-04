@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { getPurchaseOrders } from "@/lib/orders";
+import { getPayablesByOrder } from "@/lib/finance";
 import { formatDate } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
 import { logoutAction } from "@/app/admin/actions";
@@ -10,6 +11,10 @@ export const dynamic = "force-dynamic";
 export default async function PurchaseOrdersPage() {
   const session = await auth();
   const orders = await getPurchaseOrders();
+  const payables = await getPayablesByOrder();
+  const usd = (value: number) =>
+    `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const totalDue = [...payables.values()].reduce((sum, p) => sum + p.balance, 0);
 
   return (
     <div className="admin-page admin-page-wide">
@@ -33,6 +38,10 @@ export default async function PurchaseOrdersPage() {
         </Link>
       </div>
 
+      <p className="admin-inventory-total">
+        Total por pagar a proveedores: <strong>{usd(totalDue)}</strong>
+      </p>
+
       <div className="admin-table-wrap orders-table-wrap">
         <table>
           <thead>
@@ -42,6 +51,9 @@ export default async function PurchaseOrdersPage() {
               <th>Proveedor</th>
               <th className="num">Líneas</th>
               <th className="num">Cant.</th>
+              <th className="num">Costo total</th>
+              <th className="num">Pagado</th>
+              <th className="num">Por pagar</th>
               <th>Estado</th>
               <th>Recibida</th>
               <th>Usuario</th>
@@ -51,7 +63,7 @@ export default async function PurchaseOrdersPage() {
           <tbody>
             {orders.length === 0 ? (
               <tr>
-                <td colSpan={9} className="ledger-empty">
+                <td colSpan={12} className="ledger-empty">
                   Todavía no hay órdenes de compra. Creá la primera con &quot;+ Nueva orden de
                   compra&quot;.
                 </td>
@@ -64,6 +76,15 @@ export default async function PurchaseOrdersPage() {
                   <td data-label="Proveedor">{order.supplierName}</td>
                   <td className="num" data-label="Líneas">{order.itemCount}</td>
                   <td className="num" data-label="Cant.">{order.totalQuantity}</td>
+                  <td className="num" data-label="Costo total">
+                    {payables.get(order.id) ? usd(payables.get(order.id)!.totalCost) : "—"}
+                  </td>
+                  <td className="num" data-label="Pagado">
+                    {payables.get(order.id) ? usd(payables.get(order.id)!.paid) : "—"}
+                  </td>
+                  <td className="num" data-label="Por pagar">
+                    {payables.get(order.id) ? usd(payables.get(order.id)!.balance) : "—"}
+                  </td>
                   <td data-label="Estado">
                     <span className={`status-badge status-${order.status.toLowerCase()}`}>
                       {order.status}
