@@ -31,7 +31,36 @@ function checkAmount(amount: number) {
 
 // ---------- Costos de un contenedor (orden de compra) ----------
 
-export type PurchaseExpenseRow = { id: number; concept: string; amount: number; createdAt: Date };
+// Huella de una anulación: los pagos y gastos de una orden nunca se borran, se anulan.
+export type VoidInfo = { voidedAt: Date; voidedByName: string | null; voidReason: string | null };
+
+type Voidable = {
+  voidedAt: Date | null;
+  voidedByName: string | null;
+  voidReason: string | null;
+};
+
+function voidInfoOf(row: Voidable): VoidInfo | null {
+  return row.voidedAt
+    ? { voidedAt: row.voidedAt, voidedByName: row.voidedByName, voidReason: row.voidReason }
+    : null;
+}
+
+// Motivo obligatorio para anular (la columna admite 191 caracteres).
+function cleanVoidReason(reason: string): string {
+  const clean = reason.trim();
+  if (clean.length < 3) throw new Error("Escribe el motivo de la anulación");
+  if (clean.length > 180) throw new Error("El motivo es demasiado largo (máximo 180 caracteres)");
+  return clean;
+}
+
+export type PurchaseExpenseRow = {
+  id: number;
+  concept: string;
+  amount: number;
+  createdAt: Date;
+  void: VoidInfo | null;
+};
 
 export type PurchasePaymentRow = {
   id: number;
@@ -39,6 +68,7 @@ export type PurchasePaymentRow = {
   amount: number;
   notes: string | null;
   userName: string;
+  void: VoidInfo | null;
 };
 
 export type PurchaseCosting = {
@@ -76,9 +106,14 @@ export async function getPurchaseCosting(orderId: number): Promise<PurchaseCosti
     if (item.cost == null) itemsWithoutCost += 1;
     else invoiceTotal += Number(item.cost) * item.quantity;
   }
-  const expensesTotal = order.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+  // Lo anulado se muestra en el historial pero no cuenta en ningún total.
+  const expensesTotal = order.expenses
+    .filter((e) => e.voidedAt == null)
+    .reduce((sum, e) => sum + Number(e.amount), 0);
   const totalCost = invoiceTotal + expensesTotal;
-  const paidTotal = order.payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const paidTotal = order.payments
+    .filter((p) => p.voidedAt == null)
+    .reduce((sum, p) => sum + Number(p.amount), 0);
 
   return {
     paidTotal: round2(paidTotal),
@@ -90,6 +125,7 @@ export async function getPurchaseCosting(orderId: number): Promise<PurchaseCosti
       amount: Number(p.amount),
       notes: p.notes,
       userName: p.user.name,
+      void: voidInfoOf(p),
     })),
     invoiceTotal: round2(invoiceTotal),
     expensesTotal: round2(expensesTotal),
@@ -101,6 +137,7 @@ export async function getPurchaseCosting(orderId: number): Promise<PurchaseCosti
       concept: e.concept,
       amount: Number(e.amount),
       createdAt: e.createdAt,
+      void: voidInfoOf(e),
     })),
     itemsWithoutCost,
     landedFactor: invoiceTotal > 0 ? 1 + expensesTotal / invoiceTotal : 1,
@@ -116,8 +153,19 @@ export async function addPurchaseExpense(orderId: number, input: { concept: stri
   });
 }
 
-export async function deletePurchaseExpense(orderId: number, expenseId: number) {
-  await prisma.purchaseOrderExpense.deleteMany({ where: { id: expenseId, orderId } });
+// Los gastos no se borran: se anulan con motivo y quedan en el historial.
+export async function voidPurchaseExpense(
+  orderId: number,
+  expenseId: number,
+  user: { id: number; name: string },
+  reason: string
+) {
+  const voidReason = cleanVoidReason(reason);
+  const result = await prisma.purchaseOrderExpense.updateMany({
+    where: { id: expenseId, orderId, voidedAt: null },
+    data: { voidedAt: new Date(), voidedById: user.id, voidedByName: user.name, voidReason },
+  });
+  if (result.count === 0) throw new Error("El gasto no existe o ya está anulado");
 }
 
 // ---------- Pagos a proveedores (cuentas por pagar) ----------
@@ -151,8 +199,19 @@ export async function addPurchasePayment(
   });
 }
 
-export async function deletePurchasePayment(orderId: number, paymentId: number) {
-  await prisma.purchaseOrderPayment.deleteMany({ where: { id: paymentId, orderId } });
+// Los pagos no se borran: se anulan con motivo y quedan en el historial (no cuentan en el saldo).
+export async function voidPurchasePayment(
+  orderId: number,
+  paymentId: number,
+  user: { id: number; name: string },
+  reason: string
+) {
+  const voidReason = cleanVoidReason(reason);
+  const result = await prisma.purchaseOrderPayment.updateMany({
+    where: { id: paymentId, orderId, voidedAt: null },
+    data: { voidedAt: new Date(), voidedById: user.id, voidedByName: user.name, voidReason },
+  });
+  if (result.count === 0) throw new Error("El pago no existe o ya está anulado");
 }
 
 export type PayableSummary = { totalCost: number; paid: number; balance: number };
@@ -169,8 +228,12 @@ export async function getPayablesByOrder(): Promise<Map<number, PayableSummary>>
       (sum, i) => sum + (i.cost != null ? Number(i.cost) * i.quantity : 0),
       0
     );
-    const expenses = order.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
-    const paid = order.payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const expenses = order.expenses
+      .filter((e) => e.voidedAt == null)
+      .reduce((sum, e) => sum + Number(e.amount), 0);
+    const paid = order.payments
+      .filter((p) => p.voidedAt == null)
+      .reduce((sum, p) => sum + Number(p.amount), 0);
     const totalCost = invoice + expenses;
     result.set(order.id, {
       totalCost: round2(totalCost),
@@ -229,7 +292,9 @@ async function getAverageLandedCosts(): Promise<Map<number, number>> {
       (sum, i) => sum + (i.cost != null ? Number(i.cost) * i.quantity : 0),
       0
     );
-    const expenses = order.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+    const expenses = order.expenses
+      .filter((e) => e.voidedAt == null)
+      .reduce((sum, e) => sum + Number(e.amount), 0);
     const factor = invoice > 0 ? 1 + expenses / invoice : 1;
     for (const item of order.items) {
       if (item.cost == null || item.quantity <= 0) continue;

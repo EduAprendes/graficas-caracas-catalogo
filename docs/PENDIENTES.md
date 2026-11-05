@@ -84,6 +84,8 @@ Fecha: 2026-09-30 (último despliegue: commit `255292a`, todas las migraciones a
 
 ## Documentos relacionados
 
+- `docs/SESION-2026-11-04.md` — órdenes de compra (costos, pagos, numeración), Balance y lo
+  pendiente para la siguiente sesión (**leer primero**).
 - `docs/CORREO-ORDENES.md` — correo de órdenes, copia al administrador, cobranza y promociones.
 - `docs/PANEL-VENDEDORA.md` — roles, permisos y cómo crear el acceso.
 - `docs/ORDEN-DE-ENTREGA-SENIAT.md` — orden de entrega y lista de verificación legal.

@@ -2323,6 +2323,12 @@ footer.foot {
 .statement-heading { margin: 20px 0 8px; font-size: 0.95rem; }
 .statement-summary { margin-top: 14px; }
 .statement-note { font-size: 0.85rem; color: var(--ink-muted); margin: 14px 0 0; }
+/* Pagos y gastos anulados: se ven tachados y en gris, con la huella de quién, cuándo y por qué. */
+.row-voided td { color: var(--ink-muted); }
+.row-voided .voided-amount { text-decoration: line-through; }
+.void-note { display: block; font-size: 0.8rem; color: var(--ink-muted); text-decoration: none; }
+.void-inline { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.void-inline .admin-input { min-width: 12rem; flex: 1 1 12rem; }
 .seller-range-form { margin: 0 0 14px; align-items: flex-end; }
 
 /* ---- Promociones (correo masivo) ---- */

@@ -7,8 +7,8 @@ import {
   addPurchaseExpense,
   addPurchasePayment,
   deleteOperatingExpense,
-  deletePurchaseExpense,
-  deletePurchasePayment,
+  voidPurchaseExpense,
+  voidPurchasePayment,
 } from "@/lib/finance";
 
 type Result = { ok: true } | { error: string };
@@ -32,11 +32,22 @@ export async function addPurchaseExpenseAction(
   }
 }
 
-export async function deletePurchaseExpenseAction(orderId: number, expenseId: number) {
-  await requireAdmin();
-  await deletePurchaseExpense(orderId, expenseId);
-  revalidatePath(`/admin/compras/${orderId}`);
-  revalidatePath("/admin/ganancias");
+// Los gastos de una orden no se borran: se anulan con motivo y queda la huella.
+export async function voidPurchaseExpenseAction(
+  orderId: number,
+  expenseId: number,
+  reason: string
+): Promise<Result> {
+  try {
+    const user = await requireAdmin();
+    await voidPurchaseExpense(orderId, expenseId, { id: user.id, name: user.name }, reason);
+    revalidatePath(`/admin/compras/${orderId}`);
+    revalidatePath("/admin/compras");
+    revalidatePath("/admin/ganancias");
+    return { ok: true };
+  } catch (err) {
+    return fail(err, "No se pudo anular el gasto");
+  }
 }
 
 // Pago (abono) al proveedor de una orden de compra.
@@ -59,11 +70,21 @@ export async function addPurchasePaymentAction(
   }
 }
 
-export async function deletePurchasePaymentAction(orderId: number, paymentId: number) {
-  await requireAdmin();
-  await deletePurchasePayment(orderId, paymentId);
-  revalidatePath(`/admin/compras/${orderId}`);
-  revalidatePath("/admin/compras");
+// Los pagos de una orden no se borran: se anulan con motivo y queda la huella.
+export async function voidPurchasePaymentAction(
+  orderId: number,
+  paymentId: number,
+  reason: string
+): Promise<Result> {
+  try {
+    const user = await requireAdmin();
+    await voidPurchasePayment(orderId, paymentId, { id: user.id, name: user.name }, reason);
+    revalidatePath(`/admin/compras/${orderId}`);
+    revalidatePath("/admin/compras");
+    return { ok: true };
+  } catch (err) {
+    return fail(err, "No se pudo anular el pago");
+  }
 }
 
 export async function addOperatingExpenseAction(input: {

@@ -275,6 +275,12 @@ model PurchaseOrderPayment {
   userId    Int
   user      User          @relation(fields: [userId], references: [id])
   createdAt DateTime      @default(now())
+  /// Un pago nunca se borra: se anula y queda la huella (cuándo, quién y por qué).
+  /// Los pagos anulados no cuentan en el saldo.
+  voidedAt     DateTime?
+  voidedById   Int?
+  voidedByName String?
+  voidReason   String?
 
   @@index([orderId])
   @@map("purchase_order_payments")
@@ -289,6 +295,12 @@ model PurchaseOrderExpense {
   concept   String
   amount    Decimal       @db.Decimal(10, 2)
   createdAt DateTime      @default(now())
+  /// Un gasto nunca se borra: se anula y queda la huella (cuándo, quién y por qué).
+  /// Los gastos anulados no cuentan en el costo de la orden.
+  voidedAt     DateTime?
+  voidedById   Int?
+  voidedByName String?
+  voidReason   String?
 
   @@index([orderId])
   @@map("purchase_order_expenses")
