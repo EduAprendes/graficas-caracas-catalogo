@@ -20,8 +20,8 @@ function Blank({ value, minWidth = "9rem" }: { value?: string | null; minWidth?:
   );
 }
 
-// Orden de entrega imprimible para el transportista. Es un documento INTERNO: solo tiene
-// validez fiscal cuando la imprenta digital autorizada le asigna su número de control.
+// Orden de entrega imprimible para el transportista. Se imprime sobre la hoja física que ya
+// trae el membrete (y el número de control) de la imprenta.
 export default async function DeliveryOrderPage({
   params,
 }: {
@@ -44,7 +44,6 @@ export default async function DeliveryOrderPage({
   ]);
   const company = getCompany();
   const missing = missingCompanyFields(company);
-  const controlNumber = fields?.deliveryControlNumber ?? null;
   const cancelled = order.status !== "CONFIRMADA";
   const destination = order.deliveryAddress || customer?.address || null;
 
@@ -113,15 +112,6 @@ export default async function DeliveryOrderPage({
             </p>
           </div>
         </header>
-
-        <div className="delivery-control">
-          <div>
-            <span className="delivery-label">N° de control (asignado por la imprenta digital autorizada)</span>
-            <span className="delivery-control-value">
-              {controlNumber ?? <span className="delivery-blank" style={{ minWidth: "12rem" }} />}
-            </span>
-          </div>
-        </div>
 
         <div className="delivery-grid">
           <div className="delivery-box">
@@ -220,12 +210,6 @@ export default async function DeliveryOrderPage({
             <p>Recibido conforme (nombre, C.I., firma, sello, fecha y hora)</p>
           </div>
         </div>
-
-        <p className={controlNumber ? "delivery-warning delivery-warning-soft" : "delivery-warning"}>
-          {controlNumber
-            ? "N° de control registrado manualmente: verificar que coincide con el documento emitido por la imprenta digital autorizada."
-            : "DOCUMENTO INTERNO SIN NÚMERO DE CONTROL: no tiene validez fiscal. Debe emitirse por la imprenta digital autorizada por el SENIAT."}
-        </p>
       </section>
 
       <div className="order-form-actions no-print">

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { DeliveryFields, DeliveryInput } from "@/lib/delivery";
 
-// Datos de transporte y de control de la orden de entrega de un pedido despachado.
+// Datos de transporte de la orden de entrega de un pedido despachado.
 export default function DeliveryOrderForm({
   orderId,
   initial,
@@ -20,8 +20,6 @@ export default function DeliveryOrderForm({
     driverName: initial.driverName ?? "",
     driverIdNumber: initial.driverIdNumber ?? "",
     vehiclePlate: initial.vehiclePlate ?? "",
-    deliveryControlNumber: initial.deliveryControlNumber ?? "",
-    deliveryPrinterInfo: initial.deliveryPrinterInfo ?? "",
   });
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -51,10 +49,6 @@ export default function DeliveryOrderForm({
           <p className="order-ticket-title">Orden de entrega</p>
         </div>
       </header>
-      <p className="statement-note">
-        Documento interno para el transportista. No es un documento fiscal hasta que la imprenta
-        digital autorizada le asigne su número de control (ver docs/ORDEN-DE-ENTREGA-SENIAT.md).
-      </p>
       <form className="admin-form delivery-form" onSubmit={handleSubmit}>
         <label className="admin-field">
           Chofer
@@ -81,15 +75,6 @@ export default function DeliveryOrderForm({
             value={values.vehiclePlate}
             onChange={(e) => set("vehiclePlate", e.target.value)}
             placeholder="AB123CD"
-          />
-        </label>
-        <label className="admin-field admin-field-sm">
-          N° de control (imprenta)
-          <input
-            className="admin-input"
-            value={values.deliveryControlNumber}
-            onChange={(e) => set("deliveryControlNumber", e.target.value)}
-            placeholder="00-000000"
           />
         </label>
         <button type="submit" className="admin-save-btn" disabled={isPending}>

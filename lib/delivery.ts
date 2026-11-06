@@ -4,8 +4,6 @@ export type DeliveryFields = {
   driverName: string | null;
   driverIdNumber: string | null;
   vehiclePlate: string | null;
-  deliveryControlNumber: string | null;
-  deliveryPrinterInfo: string | null;
 };
 
 export async function getDeliveryFields(orderId: number): Promise<DeliveryFields | null> {
@@ -15,8 +13,6 @@ export async function getDeliveryFields(orderId: number): Promise<DeliveryFields
       driverName: true,
       driverIdNumber: true,
       vehiclePlate: true,
-      deliveryControlNumber: true,
-      deliveryPrinterInfo: true,
     },
   });
   return order;
@@ -26,8 +22,6 @@ export type DeliveryInput = {
   driverName: string;
   driverIdNumber: string;
   vehiclePlate: string;
-  deliveryControlNumber: string;
-  deliveryPrinterInfo: string;
 };
 
 export async function saveDeliveryFields(orderId: number, input: DeliveryInput) {
@@ -38,8 +32,6 @@ export async function saveDeliveryFields(orderId: number, input: DeliveryInput) 
       driverName: clean(input.driverName),
       driverIdNumber: clean(input.driverIdNumber),
       vehiclePlate: clean(input.vehiclePlate)?.toUpperCase() ?? null,
-      deliveryControlNumber: clean(input.deliveryControlNumber),
-      deliveryPrinterInfo: clean(input.deliveryPrinterInfo),
     },
   });
 }
