@@ -1,27 +1,12 @@
 import { auth } from "@/auth";
 import { getInventory } from "@/lib/inventory";
 import { getSalesSummary } from "@/lib/orders";
-import {
-  createCategory,
-  createProduct,
-  deleteCategory,
-  deleteProduct,
-  logoutAction,
-  removeCategoryImage,
-  removeProductImage,
-  setCategoryImage,
-  setProductImage,
-  updateCategory,
-  updateProduct,
-} from "../actions";
+import { createCategory, logoutAction } from "../actions";
 import AdminNav from "@/components/admin/AdminNav";
-import CategoryHead from "@/components/admin/CategoryHead";
-import CategorySection from "@/components/admin/CategorySection";
+import CategoryCard from "@/components/admin/CategoryCard";
 import InfoTooltip from "@/components/admin/InfoTooltip";
 import InventorySearch from "@/components/admin/InventorySearch";
 import NewCategoryForm from "@/components/admin/NewCategoryForm";
-import NewProductForm from "@/components/admin/NewProductForm";
-import ProductRow from "@/components/admin/ProductRow";
 
 export const dynamic = "force-dynamic";
 
@@ -77,70 +62,26 @@ export default async function AdminPage() {
       </div>
 
       <InventorySearch texts={allTexts}>
-      <NewCategoryForm onCreate={createCategory} nextOrder={categories.length} />
-
-      {categories.map((category) => (
-        <CategorySection
-          key={category.id}
-          id={category.id}
-          searchTexts={category.products.map(productText)}
-          head={
-            <CategoryHead
-              category={{
-                ...category,
-                meta: `${category.products.length} ${
-                  category.products.length === 1 ? "producto" : "productos"
-                } · valor ${category.inventoryValue.toFixed(2)}`,
-              }}
-              onUploadImage={setCategoryImage.bind(null, category.id)}
-              onRemoveImage={removeCategoryImage.bind(null, category.id)}
-              onUpdate={updateCategory.bind(null, category.id)}
-              onDelete={deleteCategory.bind(null, category.id)}
+        <div className="inv-grid">
+          {categories.map((category) => (
+            <CategoryCard
+              key={category.id}
+              id={category.id}
+              title={category.title}
+              subtitle={category.subtitle}
+              imagePath={category.imagePath}
+              productCount={category.products.length}
+              outOfStock={category.products.filter((p) => p.stock <= 0).length}
+              value={category.inventoryValue.toFixed(2)}
+              searchTexts={category.products.map(productText)}
             />
-          }
-        >
-          <p className="admin-category-total">
-            Valor de esta categoría: <strong>{category.inventoryValue.toFixed(2)}</strong>
-          </p>
-          <div className="admin-table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Foto</th>
-                  <th>Código</th>
-                  <th>Descripción</th>
-                  <th className="num">Stock</th>
-                  <th className="num">
-                    Precio
-                    <InfoTooltip text="Precio de catálogo: el que ve el cliente en la página pública. En las órdenes de venta se puede aplicar un descuento por línea." />
-                  </th>
-                  <th className="num">
-                    Valor
-                    <InfoTooltip text="Stock actual × precio de este producto." />
-                  </th>
-                  <th className="num">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {category.products.map((product) => (
-                  <ProductRow
-                    key={product.id}
-                    product={product}
-                    onUploadImage={setProductImage.bind(null, product.id)}
-                    onRemoveImage={removeProductImage.bind(null, product.id)}
-                    onUpdate={updateProduct.bind(null, product.id)}
-                    onDelete={deleteProduct.bind(null, product.id)}
-                  />
-                ))}
-                <NewProductForm
-                  onCreate={createProduct.bind(null, category.id)}
-                  nextOrder={category.products.length}
-                />
-              </tbody>
-            </table>
-          </div>
-        </CategorySection>
-      ))}
+          ))}
+        </div>
+        {categories.length === 0 ? (
+          <p className="dash-empty">Todavía no hay categorías. Crea la primera aquí abajo.</p>
+        ) : null}
+
+        <NewCategoryForm onCreate={createCategory} nextOrder={categories.length} />
       </InventorySearch>
     </div>
   );

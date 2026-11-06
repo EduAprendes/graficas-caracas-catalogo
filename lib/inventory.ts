@@ -20,6 +20,45 @@ export type InventoryCategory = {
   inventoryValue: number;
 };
 
+type CategoryRow = {
+  id: number;
+  title: string;
+  subtitle: string | null;
+  dimensionLabel: string;
+  imagePath: string | null;
+  products: {
+    id: number;
+    code: string;
+    description: string;
+    dimension: string;
+    price: unknown;
+    stock: number;
+    imageUrl: string | null;
+  }[];
+};
+
+function toInventoryCategory(category: CategoryRow): InventoryCategory {
+  const products = category.products.map((product) => ({
+    id: product.id,
+    code: product.code,
+    description: product.description,
+    dimension: product.dimension,
+    price: Number(product.price),
+    stock: product.stock,
+    imageUrl: product.imageUrl,
+  }));
+
+  return {
+    id: category.id,
+    title: category.title,
+    subtitle: category.subtitle,
+    dimensionLabel: category.dimensionLabel,
+    imagePath: category.imagePath,
+    products,
+    inventoryValue: products.reduce((sum, product) => sum + product.stock * product.price, 0),
+  };
+}
+
 export async function getInventory(): Promise<InventoryCategory[]> {
   const categories = await prisma.category.findMany({
     orderBy: { order: "asc" },
@@ -28,27 +67,18 @@ export async function getInventory(): Promise<InventoryCategory[]> {
     },
   });
 
-  return categories.map((category) => {
-    const products = category.products.map((product) => ({
-      id: product.id,
-      code: product.code,
-      description: product.description,
-      dimension: product.dimension,
-      price: Number(product.price),
-      stock: product.stock,
-      imageUrl: product.imageUrl,
-    }));
+  return categories.map(toInventoryCategory);
+}
 
-    return {
-      id: category.id,
-      title: category.title,
-      subtitle: category.subtitle,
-      dimensionLabel: category.dimensionLabel,
-      imagePath: category.imagePath,
-      products,
-      inventoryValue: products.reduce((sum, product) => sum + product.stock * product.price, 0),
-    };
+export async function getInventoryCategory(id: number): Promise<InventoryCategory | null> {
+  const category = await prisma.category.findUnique({
+    where: { id },
+    include: {
+      products: { orderBy: { order: "asc" } },
+    },
   });
+
+  return category ? toInventoryCategory(category) : null;
 }
 
 export type ProductOption = {

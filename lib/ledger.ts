@@ -18,6 +18,7 @@ export type ProductLedger = {
     description: string;
     dimension: string;
     stock: number;
+    categoryId: number;
     categoryTitle: string;
   };
   entries: LedgerEntry[];
@@ -86,6 +87,7 @@ export async function getProductLedger(productId: number): Promise<ProductLedger
       description: product.description,
       dimension: product.dimension,
       stock: product.stock,
+      categoryId: product.categoryId,
       categoryTitle: product.category.title,
     },
     entries: chronological.reverse(),

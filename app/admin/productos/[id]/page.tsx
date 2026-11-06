@@ -39,8 +39,8 @@ export default async function ProductLedgerPage({
 
       <AdminNav current="/admin/inventario" />
 
-      <Link href="/admin/inventario" className="admin-back-link">
-        ← Volver al inventario
+      <Link href={`/admin/inventario/${product.categoryId}`} className="admin-back-link">
+        ← Volver a {product.categoryTitle}
       </Link>
 
       <section className="ledger-head">

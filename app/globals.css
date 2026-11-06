@@ -2182,6 +2182,71 @@ footer.foot {
   .admin-category-toggle-checkbox:checked ~ .admin-category-toggle-row .admin-category-head { flex-wrap: wrap; }
 }
 
+/* ---- Admin: inventario por categorías (tarjetas) ---- */
+
+.inv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+}
+.inv-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-1);
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+.inv-card:hover { border-color: var(--ink-muted); }
+.inv-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.inv-card-media {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.inv-card-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.inv-card-initial { font-size: 1.6rem; font-weight: 700; color: var(--ink-muted); }
+.inv-card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.inv-card-title { font-weight: 600; font-size: var(--fs-md); overflow-wrap: anywhere; }
+.inv-card-sub { font-size: var(--fs-xs); color: var(--ink-muted); }
+.inv-card-meta { font-size: var(--fs-sm); color: var(--ink-muted); }
+.inv-card-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.inv-card-badges:empty { display: none; }
+.inv-card-badge {
+  font-size: var(--fs-xs);
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  color: var(--ink-muted);
+}
+.inv-card-badge-warn { color: var(--danger, #b3261e); border-color: currentColor; }
+.inv-card-badge-hit { color: var(--info, #1a5fb4); border-color: currentColor; }
+.inv-card-arrow { flex-shrink: 0; font-size: 1.6rem; color: var(--ink-muted); }
+
+.admin-category-page-head {
+  padding-bottom: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--line);
+}
+/* En la página de una categoría las acciones siempre se ven (no hay acordeón) */
+@media screen and (max-width: 700px) {
+  .admin-category-page .admin-category-head { flex-wrap: wrap; }
+  .admin-category-page .admin-category-head .image-upload-actions { display: flex; }
+  .admin-category-page .admin-category-head > .admin-row-actions { display: flex; }
+}
+
 /* ---- Admin: buscador de inventario ---- */
 
 .inventory-search {
