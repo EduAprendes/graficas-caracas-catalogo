@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getReceivables } from "@/lib/accounts";
 import { lineTotal } from "@/lib/pricing";
 import { commissionAmount } from "@/lib/sellers";
+import { activePaymentsTotal, cleanVoidReason, voidInfoOf, type VoidInfo } from "@/lib/void";
 
 // ---------- Órdenes de venta ----------
 
@@ -13,8 +14,9 @@ function itemsTotal(
   return items.reduce((sum, item) => sum + lineTotal(item), 0);
 }
 
-function paymentsTotal(payments: { amount: unknown }[]): number {
-  return payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+// Los abonos anulados no cuentan en lo pagado.
+function paymentsTotal(payments: { amount: unknown; voidedAt?: Date | null }[]): number {
+  return activePaymentsTotal(payments);
 }
 
 export type SalesOrderListItem = {
@@ -90,6 +92,7 @@ export type SalesOrderPaymentDetail = {
   notes: string | null;
   userName: string;
   createdAt: Date;
+  void: VoidInfo | null;
 };
 
 export type SalesOrderDetail = {
@@ -167,6 +170,7 @@ export async function getSalesOrder(id: number): Promise<SalesOrderDetail | null
       notes: payment.notes,
       userName: payment.user.name,
       createdAt: payment.createdAt,
+      void: voidInfoOf(payment),
     })),
     total,
     paid,
@@ -387,6 +391,22 @@ export async function addSalesOrderPayment(
       },
     });
   });
+}
+
+// Los abonos no se borran: se anulan con motivo y quedan en el historial (no cuentan en el saldo).
+// Para corregir un monto: anular el abono equivocado y registrar el correcto.
+export async function voidSalesOrderPayment(
+  orderId: number,
+  paymentId: number,
+  user: { id: number; name: string },
+  reason: string
+) {
+  const voidReason = cleanVoidReason(reason);
+  const result = await prisma.salesOrderPayment.updateMany({
+    where: { id: paymentId, orderId, voidedAt: null },
+    data: { voidedAt: new Date(), voidedById: user.id, voidedByName: user.name, voidReason },
+  });
+  if (result.count === 0) throw new Error("El abono no existe o ya está anulado");
 }
 
 // Abono general de un cliente: se reparte entre sus órdenes a crédito con saldo,

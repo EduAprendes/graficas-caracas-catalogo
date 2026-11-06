@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { lineTotal } from "@/lib/pricing";
 import { caracasRange } from "@/lib/format";
 import { commissionAmount } from "@/lib/sellers";
+import { cleanVoidReason, voidInfoOf, type VoidInfo } from "@/lib/void";
 
 // Todo en dólares.
 
@@ -31,28 +32,8 @@ function checkAmount(amount: number) {
 
 // ---------- Costos de un contenedor (orden de compra) ----------
 
-// Huella de una anulación: los pagos y gastos de una orden nunca se borran, se anulan.
-export type VoidInfo = { voidedAt: Date; voidedByName: string | null; voidReason: string | null };
-
-type Voidable = {
-  voidedAt: Date | null;
-  voidedByName: string | null;
-  voidReason: string | null;
-};
-
-function voidInfoOf(row: Voidable): VoidInfo | null {
-  return row.voidedAt
-    ? { voidedAt: row.voidedAt, voidedByName: row.voidedByName, voidReason: row.voidReason }
-    : null;
-}
-
-// Motivo obligatorio para anular (la columna admite 191 caracteres).
-function cleanVoidReason(reason: string): string {
-  const clean = reason.trim();
-  if (clean.length < 3) throw new Error("Escribe el motivo de la anulación");
-  if (clean.length > 180) throw new Error("El motivo es demasiado largo (máximo 180 caracteres)");
-  return clean;
-}
+// Los pagos y gastos de una orden nunca se borran, se anulan (ver lib/void.ts).
+export type { VoidInfo };
 
 export type PurchaseExpenseRow = {
   id: number;

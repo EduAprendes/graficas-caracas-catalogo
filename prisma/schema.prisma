@@ -216,6 +216,12 @@ model SalesOrderPayment {
   userId    Int
   user      User       @relation(fields: [userId], references: [id])
   createdAt DateTime   @default(now())
+  /// Un abono nunca se borra: se anula y queda la huella (cuándo, quién y por qué).
+  /// Los abonos anulados no cuentan en el saldo.
+  voidedAt     DateTime?
+  voidedById   Int?
+  voidedByName String?
+  voidReason   String?
 
   @@index([orderId])
   @@map("sales_order_payments")

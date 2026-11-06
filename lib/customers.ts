@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { lineTotal } from "@/lib/pricing";
 import { summarizeCustomerOrders } from "@/lib/accounts";
+import { activePaymentsTotal } from "@/lib/void";
 
 function orderTotal(
   items: { unitPrice: unknown; quantity: number; discountPercent?: unknown }[]
@@ -8,8 +9,8 @@ function orderTotal(
   return items.reduce((sum, item) => sum + lineTotal(item), 0);
 }
 
-function orderPaid(payments: { amount: unknown }[]): number {
-  return payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+function orderPaid(payments: { amount: unknown; voidedAt?: Date | null }[]): number {
+  return activePaymentsTotal(payments);
 }
 
 export type CustomerListItem = {

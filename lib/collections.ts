@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { lineTotal } from "@/lib/pricing";
+import { activePaymentsTotal } from "@/lib/void";
 import { isMailConfigured, sendMail } from "@/lib/mailer";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -134,7 +135,7 @@ export async function sendCollectionReminders(now = new Date()): Promise<Collect
   for (const order of orders) {
     if (!order.customer) continue;
     const total = round2(order.items.reduce((sum, item) => sum + lineTotal(item), 0));
-    const paid = round2(order.payments.reduce((sum, p) => sum + Number(p.amount), 0));
+    const paid = round2(activePaymentsTotal(order.payments));
     const balance = round2(total - paid);
     if (balance <= 0) continue;
 

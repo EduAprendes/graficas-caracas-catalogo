@@ -7,6 +7,7 @@ import {
   addSalesOrderPayment as addSalesOrderPaymentData,
   cancelSalesOrder as cancelSalesOrderData,
   createSalesOrder as createSalesOrderData,
+  voidSalesOrderPayment as voidSalesOrderPaymentData,
   type SalesOrderItemInput,
 } from "@/lib/orders";
 import { sendSalesOrderEmail, type OrderEmailStatus } from "@/lib/order-email";
@@ -118,6 +119,28 @@ export async function addSalesOrderPaymentAction(
     return { ok: true };
   } catch (err) {
     return { error: err instanceof Error ? err.message : "No se pudo registrar el abono" };
+  }
+}
+
+// Los abonos no se borran: se anulan con motivo y queda la huella.
+export async function voidSalesOrderPaymentAction(
+  orderId: number,
+  paymentId: number,
+  reason: string
+): Promise<{ ok: true } | { error: string }> {
+  try {
+    const user = await requireAdmin();
+    await voidSalesOrderPaymentData(orderId, paymentId, { id: user.id, name: user.name }, reason);
+
+    revalidatePath(`/admin/pedidos/${orderId}`);
+    revalidatePath("/admin/pedidos");
+    revalidatePath("/admin/clientes", "layout");
+    revalidatePath("/admin/cuentas");
+    revalidatePath("/admin");
+
+    return { ok: true };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "No se pudo anular el abono" };
   }
 }
 

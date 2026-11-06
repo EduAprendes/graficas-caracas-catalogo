@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { lineTotal } from "@/lib/pricing";
+import { activePaymentsTotal } from "@/lib/void";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -55,16 +56,16 @@ type RawOrder = {
   status: string;
   paymentType: string;
   items: { unitPrice: unknown; quantity: number; discountPercent: unknown }[];
-  payments: { amount: unknown; createdAt: Date }[];
+  payments: { amount: unknown; createdAt: Date; voidedAt?: Date | null }[];
 };
 
 function withMoney(order: RawOrder): OrderWithMoney {
   const total = round2(order.items.reduce((sum, item) => sum + lineTotal(item), 0));
   const credit = order.paymentType === "CREDITO";
-  const paid = credit
-    ? round2(order.payments.reduce((sum, p) => sum + Number(p.amount), 0))
-    : total;
-  const lastPaymentAt = order.payments.reduce<Date | null>(
+  // Los abonos anulados no cuentan (ni en lo pagado ni en la fecha del último abono).
+  const livePayments = order.payments.filter((p) => !p.voidedAt);
+  const paid = credit ? round2(activePaymentsTotal(livePayments)) : total;
+  const lastPaymentAt = livePayments.reduce<Date | null>(
     (latest, p) => (latest == null || p.createdAt > latest ? p.createdAt : latest),
     null
   );
@@ -337,15 +338,23 @@ export async function getCustomerStatement(customerId: number): Promise<Customer
 
     if (credit) {
       for (const payment of raw.payments) {
+        // Un abono anulado queda a la vista (con su motivo) pero no reduce la deuda.
+        const voided = payment.voidedAt != null;
         events.push({
           key: `p${payment.id}`,
           date: payment.createdAt,
           kind: "ABONO",
           orderId: raw.id,
-          concept: `Abono a orden #${raw.id}`,
-          detail: payment.notes,
+          concept: voided
+            ? `Abono a orden #${raw.id} (ANULADO ${round2(Number(payment.amount)).toFixed(2)})`
+            : `Abono a orden #${raw.id}`,
+          detail: voided
+            ? `Anulado${payment.voidedByName ? ` por ${payment.voidedByName}` : ""}${
+                payment.voidReason ? ` · motivo: ${payment.voidReason}` : ""
+              }`
+            : payment.notes,
           charge: 0,
-          payment: round2(Number(payment.amount)),
+          payment: voided ? 0 : round2(Number(payment.amount)),
           order: raw.id,
         });
       }

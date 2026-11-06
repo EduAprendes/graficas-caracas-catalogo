@@ -10,6 +10,7 @@ import AdminNav from "@/components/admin/AdminNav";
 import PrintButton from "@/components/admin/PrintButton";
 import ConfirmActionButton from "@/components/admin/ConfirmActionButton";
 import AddPaymentForm from "@/components/admin/AddPaymentForm";
+import VoidButton from "@/components/admin/VoidButton";
 import { logoutAction } from "@/app/admin/actions";
 import ResendOrderEmailButton, {
   EMAIL_STATUS_MESSAGES,
@@ -19,6 +20,7 @@ import {
   cancelSalesOrderAction,
   saveDeliveryDataAction,
   resendSalesOrderEmailAction,
+  voidSalesOrderPaymentAction,
 } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -232,15 +234,37 @@ export default async function SalesOrderDetailPage({
                     <th className="num">Monto</th>
                     <th>Notas</th>
                     <th>Usuario</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {order.payments.map((payment) => (
-                    <tr key={payment.id}>
+                    <tr key={payment.id} className={payment.void ? "row-voided" : undefined}>
                       <td data-label="Fecha">{formatDateTime(payment.createdAt)}</td>
-                      <td className="num" data-label="Monto">{payment.amount.toFixed(2)}</td>
-                      <td data-label="Notas">{payment.notes ?? "—"}</td>
+                      <td className="num" data-label="Monto">
+                        <span className={payment.void ? "voided-amount" : undefined}>
+                          {payment.amount.toFixed(2)}
+                        </span>
+                      </td>
+                      <td data-label="Notas" className={payment.notes || payment.void ? undefined : "card-hide"}>
+                        {payment.notes ?? "—"}
+                        {payment.void ? (
+                          <span className="void-note">
+                            ANULADO el {formatDateTime(payment.void.voidedAt)}
+                            {payment.void.voidedByName ? ` por ${payment.void.voidedByName}` : ""}
+                            {payment.void.voidReason ? ` · motivo: ${payment.void.voidReason}` : ""}
+                          </span>
+                        ) : null}
+                      </td>
                       <td data-label="Usuario">{payment.userName}</td>
+                      <td>
+                        {payment.void ? null : (
+                          <VoidButton
+                            what="abono"
+                            onVoid={voidSalesOrderPaymentAction.bind(null, order.id, payment.id)}
+                          />
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
