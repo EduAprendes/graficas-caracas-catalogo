@@ -1644,10 +1644,25 @@ footer.foot {
   background: var(--surface-2);
 }
 
+/* Lista de recepción para almacén (orden de compra sin precios) */
+.warehouse-table td { height: 2.4rem; vertical-align: middle; }
+.warehouse-table .warehouse-check { width: 4rem; text-align: center; }
+.warehouse-table .warehouse-received { width: 8rem; border-left: 1px solid var(--line, #999); }
+.warehouse-box {
+  display: inline-block;
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
 @media print {
   .no-print { display: none !important; }
   body { background: #fff; }
   .admin-page { max-width: none; padding: 0; margin: 0; }
+  .warehouse-table th, .warehouse-table td { border: 1px solid #000; }
+  .warehouse-table tr { break-inside: avoid; }
   .order-ticket { border: none; padding: 0; }
   .admin-table-wrap { border: none; overflow: visible; }
 }

@@ -327,6 +327,11 @@ export default async function PurchaseOrderDetailPage({
       <div className="order-form-actions no-print">
         <PrintButton />
         {order.status !== "ANULADA" ? (
+          <Link href={`/admin/compras/${order.id}/almacen`} className="admin-edit-btn">
+            Lista para almacén (sin precios)
+          </Link>
+        ) : null}
+        {order.status !== "ANULADA" ? (
           <Link href={`/admin/compras/${order.id}/editar`} className="admin-edit-btn">
             Editar
           </Link>
