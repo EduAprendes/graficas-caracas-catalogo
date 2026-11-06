@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { getReceivables } from "@/lib/accounts";
 import { getDashboardStats } from "@/lib/dashboard";
 import { formatDate } from "@/lib/format";
-import { getPurchaseOrders, getSalesOrders, getSalesSummary } from "@/lib/orders";
+import { getSalesOrders, getSalesSummary } from "@/lib/orders";
 import AdminNav from "@/components/admin/AdminNav";
 import { logoutAction } from "@/app/admin/actions";
 
@@ -14,10 +14,9 @@ const money = (n: number) =>
 
 export default async function DashboardPage() {
   const session = await auth();
-  const [summary, salesOrders, purchaseOrders, receivables, stats] = await Promise.all([
+  const [summary, salesOrders, receivables, stats] = await Promise.all([
     getSalesSummary(),
     getSalesOrders(),
-    getPurchaseOrders(),
     getReceivables(),
     getDashboardStats(),
   ]);
@@ -32,7 +31,6 @@ export default async function DashboardPage() {
     )
     .reduce((sum, o) => sum + o.totalAmount, 0);
 
-  const inTransit = purchaseOrders.filter((o) => o.status === "PENDIENTE");
   const recentSales = salesOrders.slice(0, 5);
   const debtors = receivables.rows
     .filter((r) => r.balance > 0 && !r.cancelled)
@@ -59,12 +57,6 @@ export default async function DashboardPage() {
         <Link href="/admin/pedidos/nueva" className="admin-save-btn admin-add-link">
           + Nueva orden de venta
         </Link>
-        <Link href="/admin/compras/nueva" className="admin-cancel-btn admin-add-link">
-          + Nueva orden de compra
-        </Link>
-        <Link href="/admin/clientes" className="admin-cancel-btn admin-add-link">
-          Clientes
-        </Link>
       </div>
 
       <div className="admin-summary-row">
@@ -87,33 +79,6 @@ export default async function DashboardPage() {
       </div>
 
       <div className="dash-grid">
-        <section className="dash-panel">
-          <header className="dash-panel-head">
-            <h2>Mercancía en tránsito</h2>
-            <Link href="/admin/compras" className="dash-link">Ver compras</Link>
-          </header>
-          {inTransit.length === 0 ? (
-            <p className="dash-empty">No hay órdenes de compra pendientes.</p>
-          ) : (
-            <ul className="dash-list">
-              {inTransit.map((o) => (
-                <li key={o.id}>
-                  <Link href={`/admin/compras/${o.id}`} className="dash-row">
-                    <span>
-                      <strong>#{o.id}</strong> {o.supplierName}
-                      <small>{formatDate(o.createdAt)}</small>
-                    </span>
-                    <span className="dash-row-end">
-                      <span className="status-badge status-pendiente">Pendiente</span>
-                      <small>{o.totalQuantity.toLocaleString("en-US")} uds</small>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
         <section className="dash-panel">
           <header className="dash-panel-head">
             <h2>Mayores saldos por cobrar</h2>
