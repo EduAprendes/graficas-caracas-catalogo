@@ -15,8 +15,7 @@ Fecha: 2026-09-30 (último despliegue: commit `255292a`, todas las migraciones a
 - [ ] **Datos del emisor** para la orden de entrega, en `.env` y en Vercel (Production):
       `COMPANY_NAME`, `COMPANY_RIF`, `COMPANY_ADDRESS` (`COMPANY_PHONE` opcional). Idénticos
       al RIF. Después, redeploy (las variables solo se leen en un despliegue nuevo).
-- [ ] **`MAIL_ADMIN_COPY`** (correo del administrador para la copia interna de cada orden,
-      con vendedor y comisión): está vacía en `.env` y no existe en Vercel.
+- [x] **`MAIL_ADMIN_COPY`** puesta el 2026-11-07 (`.env` y Vercel). Se lee solo en despliegues nuevos.
 - [ ] **RIF / C.I. de los clientes** a los que se les despacha mercancía (Clientes → Editar).
 - [ ] Opcional: `PROMO_MAX_DIARIO` en Vercel (por defecto 300 correos de promoción por día).
 
@@ -30,6 +29,8 @@ Fecha: 2026-09-30 (último despliegue: commit `255292a`, todas las migraciones a
 - [ ] **Orden de entrega**: orden Despachado → cargar chofer/placa → "Ver / imprimir".
 - [ ] **Promociones**: mandar primero una prueba a tu correo; empezar con listas de 30–50
       clientes la primera semana (IP de correo compartida con otros dominios).
+- [ ] **Alertas de stock bajo**: verificar el cálculo y el correo de las 8:00 a. m.; ver
+      `docs/ALERTAS-STOCK-BAJO.md` (la prueba manual del cron ya funcionó el 2026-11-07).
 - [ ] **Cobranza**: después de la primera corrida, revisar el resultado en el detalle de las
       órdenes ("Recordatorio de cobranza enviado el …").
 
@@ -87,6 +88,7 @@ Fecha: 2026-09-30 (último despliegue: commit `255292a`, todas las migraciones a
 - `docs/SESION-2026-11-04.md` — órdenes de compra (costos, pagos, numeración), Balance y lo
   pendiente para la siguiente sesión (**leer primero**).
 - `docs/CORREO-ORDENES.md` — correo de órdenes, copia al administrador, cobranza y promociones.
+- `docs/ALERTAS-STOCK-BAJO.md` — regla del 20 %, pantallas, correo diario y cómo probarlo.
 - `docs/PANEL-VENDEDORA.md` — roles, permisos y cómo crear el acceso.
 - `docs/ORDEN-DE-ENTREGA-SENIAT.md` — orden de entrega y lista de verificación legal.
 - `docs/MYSQL-REMOTO-VPN.md`, `docs/PRISMA-SHADOW-DB-P3014.md` — base de datos.
