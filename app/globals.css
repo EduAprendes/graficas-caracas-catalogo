@@ -2751,3 +2751,65 @@ a.aging-card-active { box-shadow: 0 0 0 2px var(--ink), var(--sh-1); }
 }
 :root[data-theme="dark"] { --nv-ganancias: #bef264; --nv-ganancias-bg: #1a2410; --nv-ganancias-line: #3f5a1a; }
 .admin-nav-link[data-tone="ganancias"] { --t: var(--nv-ganancias); --t-bg: var(--nv-ganancias-bg); --t-line: var(--nv-ganancias-line); }
+
+/* ---------- Salud del negocio (graficos) ----------
+   Dos series categoricas (azul y naranja) validadas en claro y oscuro con el validador de paleta;
+   la antiguedad usa una rampa de un solo tono (pasos 250-550) que cumple 2:1 en ambos modos. */
+.viz {
+  --viz-1: #2a78d6;
+  --viz-2: #eb6834;
+  --viz-seq-1: #86b6ef;
+  --viz-seq-2: #5598e7;
+  --viz-seq-3: #2a78d6;
+  --viz-seq-4: #1c5cab;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .viz {
+    --viz-1: #3987e5;
+    --viz-2: #d95926;
+  }
+}
+:root[data-theme="dark"] .viz {
+  --viz-1: #3987e5;
+  --viz-2: #d95926;
+}
+.viz-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+  margin: 8px 0 var(--sp-5);
+}
+.viz-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.viz-grid { stroke: var(--line); stroke-width: 1; }
+.viz-axis { stroke: var(--line-strong); stroke-width: 1; }
+.viz-tick { fill: var(--ink-muted); font-size: 12px; }
+.viz-value { fill: var(--ink); font-size: 12px; font-weight: 600; }
+.viz-net { fill: var(--ink-soft); font-size: 12px; font-weight: 600; }
+.viz-label-strong { fill: var(--ink); font-size: 13px; font-weight: 600; }
+.viz-left { text-anchor: start; }
+.viz-hit { fill: transparent; }
+.viz-hit:hover { fill: var(--surface-2); opacity: 0.6; }
+.viz-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; list-style: none; padding: 0; margin: 0 0 var(--sp-3); font-size: var(--fs-sm); color: var(--ink-soft); }
+.viz-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.viz-swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.viz-note { font-size: var(--fs-sm); color: var(--ink-muted); margin: var(--sp-3) 0 0; }
+.viz-warning {
+  margin: var(--sp-4) 0 0;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--warn-line);
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+}
+.viz-table { margin-top: var(--sp-3); font-size: var(--fs-sm); }
+.viz-table summary { cursor: pointer; color: var(--info); }
+.viz-table-scroll { overflow-x: auto; margin-top: var(--sp-2); }
+.viz-table table { width: 100%; border-collapse: collapse; }
+.viz-table th, .viz-table td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.viz-table th.num, .viz-table td.num { text-align: right; }
+.admin-summary-sub { display: block; margin-top: 4px; font-size: var(--fs-xs); color: var(--ink-muted); }
+@media (forced-colors: active) {
+  .viz-svg path { stroke: CanvasText; stroke-width: 1px; }
+}

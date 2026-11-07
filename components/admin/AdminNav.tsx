@@ -85,6 +85,13 @@ const TABS = [
     icon: icon(<><path d="M3 17l6-6 4 4 8-8" /><path d="M15 7h6v6" /></>),
   },
   {
+    href: "/admin/salud",
+    tone: "ganancias",
+    label: "Salud",
+    group: "finanzas",
+    icon: icon(<path d="M3 12h4l2-6 4 12 2-6h6" />),
+  },
+  {
     href: "/admin/promociones",
     tone: "promociones",
     label: "Promociones",
