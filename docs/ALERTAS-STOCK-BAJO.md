@@ -1,6 +1,6 @@
 # Alertas de stock bajo
 
-Fecha: 2026-11-07 (commit `4166167`; el aviso solo de nuevos requiere la migración). Solo las ve el rol **ADMIN**.
+Fecha: 2026-11-07 (commits `4166167` y `3f15e73`, en producción; migración `20261107120000` aplicada). Solo las ve el rol **ADMIN**.
 
 ## Regla
 
@@ -55,7 +55,10 @@ recibido.
 
 - [ ] Comprobar a mano 2–3 productos: última orden recibida × 20 % frente a lo que muestra la pantalla.
 - [ ] Casos límite: justo 20 % (alerta), 21 % (no), agotado, varias compras del mismo producto.
+- [x] Flujo "solo nuevos" probado el 2026-11-07 (sábado): `?modo=semanal` → 16 alertas, 16 nuevas, correo
+      enviado y 16 filas en `stock_alert_notices`; llamada normal → `nothing_new`, sin correo.
+- [ ] Reposición: tras recibir una compra de un producto avisado, su marca debe borrarse; si vuelve a
+      caer, debe avisarse como nuevo.
+- [ ] Primer lunes (2026-11-09, 8:00 a. m. VET): debe llegar la lista completa con los nuevos marcados.
 - [ ] Confirmar que el correo automático llega a las 8:00 a. m. (primer envío programado).
 - [ ] Efecto lateral: `MAIL_ADMIN_COPY` también recibe ahora la copia interna de cada orden.
-- [ ] Probar el flujo nuevo: primera llamada con `?modo=semanal` (manda todo y marca avisados);
-      segunda llamada normal en día que no sea lunes → debe responder `nothing_new`.
