@@ -2815,3 +2815,5 @@ a.aging-card-active { box-shadow: 0 0 0 2px var(--ink), var(--sh-1); }
 @media (forced-colors: active) {
   .viz-svg path { stroke: CanvasText; stroke-width: 1px; }
 }
+.viz-summary { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 0 0 var(--sp-3); font-size: var(--fs-sm); color: var(--ink-soft); }
+.viz-summary strong { color: var(--ink); }

@@ -1,4 +1,4 @@
-import type { PayableRow, CashFlowMonth } from "@/lib/health";
+import type { PayableRow, CashFlowMonth, DailySalesDay } from "@/lib/health";
 import type { AgingBuckets } from "@/lib/accounts";
 
 // Gráficos en SVG, renderizados en el servidor (sin librerías). Colores: ver `.viz` en globals.css.
@@ -305,6 +305,114 @@ export function AgingChart({ aging }: { aging: AgingBuckets }) {
         })}
       </svg>
       {total === 0 ? <p className="viz-note">No hay deudas de clientes pendientes.</p> : null}
+    </div>
+  );
+}
+
+// ---------- 4. Ventas diarias ----------
+
+export function DailySalesChart({ days }: { days: DailySalesDay[] }) {
+  const W = 680;
+  const H = 250;
+  const m = { left: 52, right: 12, top: 20, bottom: 30 };
+  const plotW = W - m.left - m.right;
+  const plotH = H - m.top - m.bottom;
+
+  const maxTotal = Math.max(0, ...days.map((d) => d.total));
+  const { top, step } = niceScale(maxTotal);
+  const y = (v: number) => m.top + plotH - (v / top) * plotH;
+  const slot = plotW / days.length;
+  const barW = Math.max(4, Math.min(16, slot * 0.62));
+  const ticks = [0, 1, 2, 3, 4].map((i) => i * step);
+
+  const total = days.reduce((sum, d) => sum + d.total, 0);
+  const orders = days.reduce((sum, d) => sum + d.orders, 0);
+  const best = days.reduce((a, b) => (b.total > a.total ? b : a), days[0]);
+  const withSales = days.filter((d) => d.orders > 0);
+  const last = days.length - 1;
+
+  return (
+    <div className="viz-card">
+      <p className="viz-summary">
+        <span>
+          <strong>{money(total)}</strong> en {days.length} días ({orders} {orders === 1 ? "orden" : "órdenes"})
+        </span>
+        <span>
+          Promedio: <strong>{money(total / days.length)}</strong> por día
+        </span>
+        {best.total > 0 ? (
+          <span>
+            Mejor día: <strong>{best.label}</strong> ({money(best.total)})
+          </span>
+        ) : null}
+      </p>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="viz-svg"
+        role="img"
+        aria-label={`Ventas por día, últimos ${days.length} días`}
+      >
+        {ticks.map((t) => (
+          <g key={t}>
+            <line x1={m.left} x2={W - m.right} y1={y(t)} y2={y(t)} className={t === 0 ? "viz-axis" : "viz-grid"} />
+            <text x={m.left - 8} y={y(t) + 4} textAnchor="end" className="viz-tick">
+              {compact(t)}
+            </text>
+          </g>
+        ))}
+        {days.map((d, i) => {
+          const cx = m.left + slot * i + slot / 2;
+          const h = (d.total / top) * plotH;
+          const showLabel = i === 0 || i === last || i % 5 === 0;
+          return (
+            <g key={d.date}>
+              <title>{`${d.label}: ${money(d.total)} · ${d.orders} ${d.orders === 1 ? "orden" : "órdenes"}`}</title>
+              <rect x={m.left + slot * i} y={m.top} width={slot} height={plotH} className="viz-hit" />
+              <path d={columnPath(cx - barW / 2, y(d.total), barW, h)} fill="var(--viz-1)" />
+              {d.total > 0 && d.total === best.total ? (
+                <text x={cx} y={y(d.total) - 5} textAnchor="middle" className="viz-value">
+                  {compact(d.total)}
+                </text>
+              ) : null}
+              {showLabel && (i === 0 || last - i > 2 || i === last) ? (
+                <text x={cx} y={H - 10} textAnchor="middle" className="viz-tick">
+                  {d.label}
+                </text>
+              ) : null}
+            </g>
+          );
+        })}
+      </svg>
+      {total === 0 ? <p className="viz-note">No hay ventas en los últimos {days.length} días.</p> : null}
+      <details className="viz-table">
+        <summary>Ver tabla (solo días con ventas)</summary>
+        <div className="viz-table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Día</th>
+                <th className="num">Órdenes</th>
+                <th className="num">Ventas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {withSales.length === 0 ? (
+                <tr>
+                  <td colSpan={3}>Sin ventas en el período.</td>
+                </tr>
+              ) : (
+                [...withSales].reverse().map((d) => (
+                  <tr key={d.date}>
+                    <td>{d.label}</td>
+                    <td className="num">{d.orders}</td>
+                    <td className="num">{money(d.total)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </details>
     </div>
   );
 }

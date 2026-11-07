@@ -5,7 +5,9 @@ import { getDashboardStats } from "@/lib/dashboard";
 import { formatDate } from "@/lib/format";
 import { getSalesOrders, getSalesSummary } from "@/lib/orders";
 import { getStockAlerts } from "@/lib/stock-alerts";
+import { getDailySales } from "@/lib/health";
 import AdminNav from "@/components/admin/AdminNav";
+import { DailySalesChart } from "@/components/admin/HealthCharts";
 import { logoutAction } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
@@ -15,12 +17,13 @@ const money = (n: number) =>
 
 export default async function DashboardPage() {
   const session = await auth();
-  const [summary, salesOrders, receivables, stats, stock] = await Promise.all([
+  const [summary, salesOrders, receivables, stats, stock, dailySales] = await Promise.all([
     getSalesSummary(),
     getSalesOrders(),
     getReceivables(),
     getDashboardStats(),
     getStockAlerts(),
+    getDailySales(30),
   ]);
   const lowStock = stock.alerts.slice(0, 6);
 
@@ -79,6 +82,11 @@ export default async function DashboardPage() {
           <span className="admin-summary-label">Total vendido</span>
           <span className="admin-summary-value">{money(summary.totalSold)}</span>
         </div>
+      </div>
+
+      <div className="viz">
+        <h2 className="statement-heading">Ventas diarias · últimos 30 días</h2>
+        <DailySalesChart days={dailySales} />
       </div>
 
       <div className="dash-grid">

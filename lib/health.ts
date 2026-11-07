@@ -226,3 +226,49 @@ export async function getHealthSummary(
     ordersWithIncompleteCost: payables.rows.filter((r) => r.incompleteCost).length,
   };
 }
+
+// ---------- Ventas diarias ----------
+
+export type DailySalesDay = {
+  /** AAAA-MM-DD (hora de Caracas). */
+  date: string;
+  /** Día y mes cortos: "7 nov". */
+  label: string;
+  total: number;
+  orders: number;
+};
+
+const CARACAS_DAY = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Caracas" });
+
+// Ventas confirmadas por día de los últimos `days` días (incluye hoy). Una venta cuenta el día en
+// que se creó la orden, sea de contado o a crédito (mismo criterio que "Ventas del mes").
+export async function getDailySales(days = 30): Promise<DailySalesDay[]> {
+  const today = CARACAS_DAY.format(new Date()); // AAAA-MM-DD
+  const [y, m, d] = today.split("-").map(Number);
+  const list: DailySalesDay[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const day = new Date(Date.UTC(y, m - 1, d - i, 12));
+    list.push({
+      date: day.toISOString().slice(0, 10),
+      label: `${day.getUTCDate()} ${MONTH_SHORT[day.getUTCMonth()]}`,
+      total: 0,
+      orders: 0,
+    });
+  }
+
+  const from = new Date(`${list[0].date}T00:00:00-04:00`);
+  const orders = await prisma.salesOrder.findMany({
+    where: { status: "CONFIRMADA", createdAt: { gte: from } },
+    include: { items: true },
+  });
+
+  const byDate = new Map(list.map((row) => [row.date, row]));
+  for (const order of orders) {
+    const row = byDate.get(CARACAS_DAY.format(order.createdAt));
+    if (!row) continue;
+    row.total += order.items.reduce((sum, item) => sum + lineTotal(item), 0);
+    row.orders += 1;
+  }
+  for (const row of list) row.total = round2(row.total);
+  return list;
+}
