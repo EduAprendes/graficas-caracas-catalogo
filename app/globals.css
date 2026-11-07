@@ -2247,6 +2247,67 @@ footer.foot {
   .admin-category-page .admin-category-head > .admin-row-actions { display: flex; }
 }
 
+/* ---- Admin: alertas de stock bajo ---- */
+
+.admin-nav-bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  border-radius: var(--r-pill);
+  color: var(--ink-muted);
+  flex-shrink: 0;
+}
+.admin-nav-bell:hover { background: var(--surface-3); color: var(--ink); }
+.admin-nav-bell.has-alerts { color: var(--danger); }
+.admin-nav-bell-count {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+.dash-count-badge {
+  display: inline-block;
+  margin-left: 8px;
+  min-width: 22px;
+  padding: 0 7px;
+  border-radius: var(--r-pill);
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-line);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  vertical-align: middle;
+}
+.inv-alert-banner {
+  display: block;
+  margin-top: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-line);
+  border-radius: var(--r-md);
+  color: var(--danger);
+  text-decoration: none;
+  font-size: var(--fs-sm);
+}
+.inv-alert-banner:hover { border-color: var(--danger); }
+.row-low-stock td { background: var(--danger-bg); }
+.low-stock-note { display: block; margin-top: 2px; font-size: var(--fs-xs); color: var(--danger); }
+
 /* ---- Admin: buscador de inventario ---- */
 
 .inventory-search {

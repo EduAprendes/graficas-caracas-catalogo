@@ -11,6 +11,7 @@ export default function CategoryCard({
   imagePath,
   productCount,
   outOfStock,
+  lowStock = 0,
   value,
   searchTexts,
 }: {
@@ -20,6 +21,8 @@ export default function CategoryCard({
   imagePath: string | null;
   productCount: number;
   outOfStock: number;
+  /** Productos por debajo del 20 % de su última recepción (incluye los agotados con referencia). */
+  lowStock?: number;
   value: string;
   /** Texto buscable de cada producto de la categoría. */
   searchTexts: string[];
@@ -52,6 +55,11 @@ export default function CategoryCard({
           {query ? (
             <span className="inv-card-badge inv-card-badge-hit">
               {matches} {matches === 1 ? "coincidencia" : "coincidencias"}
+            </span>
+          ) : null}
+          {lowStock > 0 ? (
+            <span className="inv-card-badge inv-card-badge-warn">
+              {lowStock} con stock bajo
             </span>
           ) : null}
           {outOfStock > 0 ? (

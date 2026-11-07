@@ -4,6 +4,7 @@ import { getReceivables } from "@/lib/accounts";
 import { getDashboardStats } from "@/lib/dashboard";
 import { formatDate } from "@/lib/format";
 import { getSalesOrders, getSalesSummary } from "@/lib/orders";
+import { getStockAlerts } from "@/lib/stock-alerts";
 import AdminNav from "@/components/admin/AdminNav";
 import { logoutAction } from "@/app/admin/actions";
 
@@ -14,12 +15,14 @@ const money = (n: number) =>
 
 export default async function DashboardPage() {
   const session = await auth();
-  const [summary, salesOrders, receivables, stats] = await Promise.all([
+  const [summary, salesOrders, receivables, stats, stock] = await Promise.all([
     getSalesSummary(),
     getSalesOrders(),
     getReceivables(),
     getDashboardStats(),
+    getStockAlerts(),
   ]);
+  const lowStock = stock.alerts.slice(0, 6);
 
   const now = new Date();
   const monthSales = salesOrders
@@ -79,6 +82,42 @@ export default async function DashboardPage() {
       </div>
 
       <div className="dash-grid">
+        <section className="dash-panel">
+          <header className="dash-panel-head">
+            <h2>
+              Stock bajo
+              {stock.alerts.length > 0 ? (
+                <span className="dash-count-badge">{stock.alerts.length}</span>
+              ) : null}
+            </h2>
+            <Link href="/admin/inventario/stock-bajo" className="dash-link">Ver todos</Link>
+          </header>
+          {lowStock.length === 0 ? (
+            <p className="dash-empty">Ningún producto está por debajo del 20 % de su última recepción.</p>
+          ) : (
+            <ul className="dash-list">
+              {lowStock.map((a) => (
+                <li key={a.productId}>
+                  <Link href={`/admin/inventario/${a.categoryId}`} className="dash-row">
+                    <span>
+                      <strong>{a.code}</strong> {a.description}
+                      <small>
+                        {a.categoryTitle} · llegaron {a.reference} en la orden #{a.referenceOrderId}
+                      </small>
+                    </span>
+                    <span className="dash-row-end">
+                      <span className={`stock-badge${a.stock <= 0 ? " stock-zero" : ""}`}>
+                        {a.stock <= 0 ? "Agotado" : `${a.stock} uds`}
+                      </span>
+                      <small>{a.percent} %</small>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
         <section className="dash-panel">
           <header className="dash-panel-head">
             <h2>Mayores saldos por cobrar</h2>

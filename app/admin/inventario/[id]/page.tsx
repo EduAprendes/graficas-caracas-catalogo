@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getInventoryCategory } from "@/lib/inventory";
+import { getStockAlerts } from "@/lib/stock-alerts";
 import {
   createProduct,
   deleteProduct,
@@ -36,8 +37,9 @@ export default async function InventoryCategoryPage({
   if (!Number.isInteger(categoryId)) notFound();
 
   const session = await auth();
-  const category = await getInventoryCategory(categoryId);
+  const [category, stock] = await Promise.all([getInventoryCategory(categoryId), getStockAlerts()]);
   if (!category) notFound();
+  const alertByProduct = new Map(stock.alerts.map((a) => [a.productId, a]));
 
   return (
     <div className="admin-page">
@@ -103,6 +105,14 @@ export default async function InventoryCategoryPage({
                   <ProductRow
                     key={product.id}
                     product={product}
+                    lowStock={
+                      alertByProduct.has(product.id)
+                        ? {
+                            percent: alertByProduct.get(product.id)!.percent,
+                            reference: alertByProduct.get(product.id)!.reference,
+                          }
+                        : null
+                    }
                     onUploadImage={setProductImage.bind(null, product.id)}
                     onRemoveImage={removeProductImage.bind(null, product.id)}
                     onUpdate={updateProduct.bind(null, product.id)}

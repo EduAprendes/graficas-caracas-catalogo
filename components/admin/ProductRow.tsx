@@ -17,12 +17,15 @@ export type ProductRowData = {
 
 export default function ProductRow({
   product,
+  lowStock = null,
   onUploadImage,
   onRemoveImage,
   onUpdate,
   onDelete,
 }: {
   product: ProductRowData;
+  /** Si el stock está en 20 % o menos de la última recepción: cantidad recibida y % que queda. */
+  lowStock?: { percent: number; reference: number } | null;
   onUploadImage: (image: { url: string; publicId: string }) => void | Promise<void>;
   onRemoveImage: () => void | Promise<void>;
   onUpdate: (formData: FormData) => void | Promise<void>;
@@ -117,7 +120,7 @@ export default function ProductRow({
   }
 
   return (
-    <tr>
+    <tr className={lowStock ? "row-low-stock" : undefined}>
       <td data-label="Foto">
         <ImageUploadControl
           label={product.description}
@@ -133,9 +136,17 @@ export default function ProductRow({
       </td>
       <td data-label="Descripción">{product.description}</td>
       <td className="num" data-label="Stock">
-        <span className={`stock-badge${product.stock === 0 ? " stock-zero" : ""}`}>
+        <span className={`stock-badge${product.stock === 0 || lowStock ? " stock-zero" : ""}`}>
           {product.stock}
         </span>
+        {lowStock ? (
+          <small
+            className="low-stock-note"
+            title={`Última recepción: ${lowStock.reference} unidades`}
+          >
+            {lowStock.percent} % de {lowStock.reference}
+          </small>
+        ) : null}
       </td>
       <td className="num" data-label="Precio">{product.price.toFixed(2)}</td>
       <td className="num" data-label="Valor">{(product.stock * product.price).toFixed(2)}</td>

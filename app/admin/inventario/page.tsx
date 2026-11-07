@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { getInventory } from "@/lib/inventory";
 import { getSalesSummary } from "@/lib/orders";
+import { getStockAlerts } from "@/lib/stock-alerts";
 import { createCategory, logoutAction } from "../actions";
 import AdminNav from "@/components/admin/AdminNav";
 import CategoryCard from "@/components/admin/CategoryCard";
@@ -15,7 +17,15 @@ const productText = (p: { code: string; description: string; dimension: string }
 
 export default async function AdminPage() {
   const session = await auth();
-  const [categories, summary] = await Promise.all([getInventory(), getSalesSummary()]);
+  const [categories, summary, stock] = await Promise.all([
+    getInventory(),
+    getSalesSummary(),
+    getStockAlerts(),
+  ]);
+  const lowByCategory = new Map<number, number>();
+  for (const alert of stock.alerts) {
+    lowByCategory.set(alert.categoryId, (lowByCategory.get(alert.categoryId) ?? 0) + 1);
+  }
   const allTexts = categories.flatMap((c) => c.products.map(productText));
 
   return (
@@ -62,6 +72,15 @@ export default async function AdminPage() {
       </div>
 
       <InventorySearch texts={allTexts}>
+        {stock.alerts.length > 0 ? (
+          <Link href="/admin/inventario/stock-bajo" className="inv-alert-banner">
+            <strong>
+              {stock.alerts.length} {stock.alerts.length === 1 ? "producto" : "productos"} con stock
+              bajo
+            </strong>{" "}
+            (20 % o menos de lo que llegó en su última compra). Ver la lista ›
+          </Link>
+        ) : null}
         <div className="inv-grid">
           {categories.map((category) => (
             <CategoryCard
@@ -72,6 +91,7 @@ export default async function AdminPage() {
               imagePath={category.imagePath}
               productCount={category.products.length}
               outOfStock={category.products.filter((p) => p.stock <= 0).length}
+              lowStock={lowByCategory.get(category.id) ?? 0}
               value={category.inventoryValue.toFixed(2)}
               searchTexts={category.products.map(productText)}
             />

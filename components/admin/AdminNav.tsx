@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { auth } from "@/auth";
+import { getStockAlerts } from "@/lib/stock-alerts";
 
 const icon = (paths: ReactNode) => (
   <svg
@@ -103,6 +104,16 @@ export default async function AdminNav({ current }: { current: (typeof TABS)[num
     isSeller ? SELLER_TABS.includes(tab.href) : tab.href !== "/admin/catalogo"
   );
 
+  // Campana de stock bajo (solo administrador). Si el cálculo falla, el menú se ve igual.
+  let lowStockCount = 0;
+  if (!isSeller) {
+    try {
+      lowStockCount = (await getStockAlerts()).alerts.length;
+    } catch (err) {
+      console.error("No se pudo calcular el stock bajo para el menú:", err);
+    }
+  }
+
   return (
     <nav className="admin-nav" aria-label="Secciones del panel">
       {tabs.map((tab, i) => (
@@ -121,6 +132,36 @@ export default async function AdminNav({ current }: { current: (typeof TABS)[num
           </Link>
         </span>
       ))}
+      {!isSeller ? (
+        <Link
+          href="/admin/inventario/stock-bajo"
+          className={`admin-nav-bell${lowStockCount > 0 ? " has-alerts" : ""}`}
+          aria-label={
+            lowStockCount > 0
+              ? `Stock bajo: ${lowStockCount} ${lowStockCount === 1 ? "producto" : "productos"} en alerta`
+              : "Stock bajo: sin alertas"
+          }
+          title={lowStockCount > 0 ? `${lowStockCount} en stock bajo` : "Sin alertas de stock"}
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9Z" />
+            <path d="M10 20a2 2 0 0 0 4 0" />
+          </svg>
+          {lowStockCount > 0 ? (
+            <span className="admin-nav-bell-count">{lowStockCount > 99 ? "99+" : lowStockCount}</span>
+          ) : null}
+        </Link>
+      ) : null}
     </nav>
   );
 }
