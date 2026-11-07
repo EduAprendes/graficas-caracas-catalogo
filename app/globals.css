@@ -2780,7 +2780,9 @@ a.aging-card-active { box-shadow: 0 0 0 2px var(--ink), var(--sh-1); }
   padding: var(--sp-4);
   margin: 8px 0 var(--sp-5);
 }
-.viz-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.viz-card { overflow-x: auto; }
+/* Ancho mínimo: en el celular el gráfico se desplaza en vez de encogerse hasta que el texto no se lea. */
+.viz-svg { width: 100%; min-width: 580px; max-width: 920px; height: auto; display: block; overflow: visible; }
 .viz-grid { stroke: var(--line); stroke-width: 1; }
 .viz-axis { stroke: var(--line-strong); stroke-width: 1; }
 .viz-tick { fill: var(--ink-muted); font-size: 12px; }

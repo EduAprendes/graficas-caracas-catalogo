@@ -89,6 +89,7 @@ Fecha: 2026-09-30 (último despliegue: commit `255292a`, todas las migraciones a
 
 - `docs/SESION-2026-11-04.md` — órdenes de compra (costos, pagos, numeración), Balance y lo
   pendiente para la siguiente sesión (**leer primero**).
+- `docs/SALUD-DEL-NEGOCIO.md` — página de gráficos /admin/salud: qué muestra y sus límites.
 - `docs/CORREO-ORDENES.md` — correo de órdenes, copia al administrador, cobranza y promociones.
 - `docs/ALERTAS-STOCK-BAJO.md` — regla del 20 %, pantallas, correo diario y cómo probarlo.
 - `docs/PANEL-VENDEDORA.md` — roles, permisos y cómo crear el acceso.
