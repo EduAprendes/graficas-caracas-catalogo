@@ -88,3 +88,9 @@ La orden #2 era una prueba (1 unidad en 51 productos). Se **anuló** el 2026-11-
 sus 51 líneas como ejemplo, el stock que sumó se revirtió (40 movimientos `ANULACION_COMPRA`) y deja
 de contar como referencia. Anular una orden grande falló al principio por el límite de 5 s de las
 transacciones de Prisma (P2028); se corrigió en `lib/orders.ts` (commit `6aabda7`).
+
+**Actualización:** la orden anulada pasó del id 2 al **id 0** (`UPDATE purchase_orders SET id=0 WHERE id=2`,
+las líneas la siguieron por `ON UPDATE CASCADE`) para que quede como ejemplo "Inventario inicial" fuera
+de la numeración normal: `/admin/compras/0`. Para deshacerlo: `UPDATE purchase_orders SET id=2 WHERE id=0`.
+Ojo: una restauración de respaldo que no use `NO_AUTO_VALUE_ON_ZERO` puede convertir ese 0 en un id nuevo;
+si pasa, buscar la orden "Inventario inicial" en el listado.
