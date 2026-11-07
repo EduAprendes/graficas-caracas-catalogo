@@ -82,7 +82,7 @@ export default async function HealthPage() {
         </p>
       ) : null}
 
-      <h2 className="statement-heading">¿Me alcanza la plata? Cobrado y pagado por mes</h2>
+      <h2 className="statement-heading">Cobrado y pagado por mes</h2>
       <p className="statement-note">
         Cobrado: ventas de contado y abonos de clientes. Pagado: pagos a proveedores, gastos operativos y comisiones.
         Debajo de cada mes, el saldo (cobrado menos pagado). Los pagos a proveedores cuentan en la fecha del pago.
