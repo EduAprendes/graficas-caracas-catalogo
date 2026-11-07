@@ -62,3 +62,29 @@ recibido.
 - [ ] Primer lunes (2026-11-09, 8:00 a. m. VET): debe llegar la lista completa con los nuevos marcados.
 - [ ] Confirmar que el correo automático llega a las 8:00 a. m. (primer envío programado).
 - [ ] Efecto lateral: `MAIL_ADMIN_COPY` también recibe ahora la copia interna de cada orden.
+
+## Carga provisional de la orden #1 (2026-11-07)
+
+La orden de compra #1 (junio) se registró **sin mover stock** (ver encabezado de
+`scripts/cargar-contenedor-junio-2026.ts`), y 9 productos quedaron en 0 aunque la orden dice que
+llegaron: `LAPICEROS-BASICOS` (100000), `LAPICEROS-VARIOS` (20000), `P-CARTEL` (500),
+`SAV1,37 B/M` (500), `SAV1,37MB` (200), `OJETES-MILLAR` (200), `HOJILLAS-GRA-MILLAR` (100),
+`CONTROL-INSECTOS` (10), `HOJILLAS-PEQ-MILLAR` (2). Eso daba 9 alertas falsas.
+
+- Se cargó en stock la cantidad de la orden #1 para esos 9 con `scripts/cargar-stock-orden1.ts`
+  (movimiento `COMPRA` ligado a la línea; no repite si ya se cargó). Alertas: 0.
+- **Es provisional.** Son las cantidades de la orden, no lo contado en el almacén. Efectos hasta
+  corregirlo: el valor del inventario sube ~$120.000 y esos productos aparecen con stock en el
+  catálogo público.
+- **Pendiente: hacer el inventario real y editar la orden #1** (`/admin/compras/1` → Editar) con las
+  cantidades reales: el sistema ajusta el stock por la diferencia. Si alguna cantidad de la orden
+  estaba mal (p. ej. los 100000 lapiceros), corregirla ahí; ojo, cambia también el costo en Ganancias.
+- No se cargó el resto de líneas de la orden #1 (`CLEAR-*`, `BAN-*`, `MICRO-137`...): su stock ya
+  estaba contado y se habría duplicado.
+
+## Orden de prueba #2
+
+La orden #2 era una prueba (1 unidad en 51 productos). Se **anuló** el 2026-11-07: se conserva con
+sus 51 líneas como ejemplo, el stock que sumó se revirtió (40 movimientos `ANULACION_COMPRA`) y deja
+de contar como referencia. Anular una orden grande falló al principio por el límite de 5 s de las
+transacciones de Prisma (P2028); se corrigió en `lib/orders.ts` (commit `6aabda7`).
