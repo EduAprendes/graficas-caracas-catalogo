@@ -91,6 +91,28 @@ transacciones de Prisma (P2028); se corrigió en `lib/orders.ts` (commit `6aabda
 
 **Actualización:** la orden anulada pasó del id 2 al **id 0** (`UPDATE purchase_orders SET id=0 WHERE id=2`,
 las líneas la siguieron por `ON UPDATE CASCADE`) para que quede como ejemplo "Inventario inicial" fuera
-de la numeración normal: `/admin/compras/0`. Para deshacerlo: `UPDATE purchase_orders SET id=2 WHERE id=0`.
+de la numeración normal: `/admin/compras/0`. (Ya no se puede deshacer volviendo al 2: ver la renumeración de abajo.)
 Ojo: una restauración de respaldo que no use `NO_AUTO_VALUE_ON_ZERO` puede convertir ese 0 en un id nuevo;
 si pasa, buscar la orden "Inventario inicial" en el listado.
+
+## Renumeración de órdenes de compra (2026-11-07)
+
+Al pasar la orden de prueba al id 0 quedó un hueco en el 2, así que se corrieron las demás para que
+la numeración sea continua (`UPDATE purchase_orders SET id=...` en orden ascendente; líneas, gastos y
+pagos las siguieron por `ON UPDATE CASCADE`; `AUTO_INCREMENT=6`):
+
+| Antes | Ahora | Orden |
+|---|---|---|
+| #0 (era #2) | #0 | Inventario inicial (anulada, ejemplo) |
+| #1 | #1 | Contenedor junio 2026 |
+| #3 | **#2** | Contenedor llegada 2026-10-26 |
+| #4 | **#3** | En tránsito (reporte 2026-10-28) |
+| #5 | **#4** | Contenedor 2026TF0298 · Lista 3 |
+| #6 | **#5** | Lista 4 · llegada 2027-01-05 |
+
+- `docs/SESION-2026-11-04.md` y los commits anteriores usan los números **viejos** (#3 a #6).
+- Los scripts ya aplicados tienen ids fijos de antes (`cargar-contenedor-2026TF0298.ts` usa 4,
+  `cargar-lista4-2027-01-05.ts` usa 5, `costos-contenedor-2026TF0298.ts` usa `ORDER_ID = 4`,
+  `cargar-transito-2026-10-28.ts` usa 3): **no volver a correrlos sin ajustar el número** (el de
+  costos fallaría por su guarda al no ser la orden del contenedor 2026TF0298).
+- Documentos ya impresos o enviados (p. ej. la hoja de recepción para almacén) pueden mostrar el número viejo.
