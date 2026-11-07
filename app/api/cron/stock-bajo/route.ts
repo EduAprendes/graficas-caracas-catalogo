@@ -9,6 +9,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const result = await sendStockAlertDigest();
+  // ?modo=semanal fuerza la lista completa (para pruebas); por defecto los lunes va completa y
+  // el resto de los días solo los productos nuevos.
+  const forceWeekly = new URL(request.url).searchParams.get("modo") === "semanal";
+  const result = await sendStockAlertDigest({ forceWeekly });
   return NextResponse.json(result);
 }

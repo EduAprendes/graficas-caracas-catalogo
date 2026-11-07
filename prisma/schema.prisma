@@ -41,6 +41,7 @@ model Product {
   movements          StockMovement[]
   salesOrderItems    SalesOrderItem[]
   purchaseOrderItems PurchaseOrderItem[]
+  stockAlertNotice   StockAlertNotice?
 
   @@index([categoryId])
   @@map("products")
@@ -341,4 +342,14 @@ model PurchaseOrderItem {
   @@index([orderId])
   @@index([productId])
   @@map("purchase_order_items")
+}
+
+// Productos de los que ya se aviso por correo que tienen el stock bajo. La fila se borra cuando
+// el producto sale de la alerta, para volver a avisar si cae otra vez.
+model StockAlertNotice {
+  productId  Int      @id
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  notifiedAt DateTime @default(now())
+
+  @@map("stock_alert_notices")
 }

@@ -1,6 +1,6 @@
 # Alertas de stock bajo
 
-Fecha: 2026-11-07 (commit `4166167`, en producción). Solo las ve el rol **ADMIN**.
+Fecha: 2026-11-07 (commit `4166167`; el aviso solo de nuevos requiere la migración). Solo las ve el rol **ADMIN**.
 
 ## Regla
 
@@ -21,15 +21,25 @@ creación si falta; empate → la orden de mayor id).
 - Menú del admin: campana con el número de alertas (si el cálculo falla, el menú se ve igual).
 - Inventario: indicadores en las tarjetas de categoría, en las filas de producto y en el detalle.
 
-## Correo diario
+## Correo (diario solo con lo nuevo + lista completa los lunes)
 
 - Cron `/api/cron/stock-bajo`, definido en `vercel.json`: todos los días **12:00 UTC (8:00 a. m.
   VET)**. Exige `Authorization: Bearer $CRON_SECRET`; sin él responde 401.
 - Va a `MAIL_ADMIN_COPY` (varios correos separados por coma), la misma variable de la copia
   interna de las órdenes. Hoy: `eurorondon03@gmail.com`, en `.env` y en Vercel (Production).
-- Solo se envía si hay alertas. La tabla muestra hasta 60 productos y dice cuántos más hay.
-- Respuesta del cron (JSON): `{"alerts":N,"sent":true}`, o `sent:false` con `reason`:
-  `no_alerts`, `mail_not_configured`, `no_recipient`, `send_failed`.
+- **Lunes** (día UTC; coincide con Venezuela a esa hora): correo "Resumen semanal" con la lista
+  completa, marcando "nuevo" los que entraron desde el último aviso.
+- **Resto de días**: correo "Nuevos con stock bajo" solo con los productos que entraron en alerta
+  desde el último aviso. Si no hay nuevos no se envía nada.
+- La tabla `stock_alert_notices` (modelo `StockAlertNotice`, migración
+  `20261107120000_add_stock_alert_notices`) guarda a quién ya se avisó. La fila se borra cuando el
+  producto sale de la alerta (se repuso), así que si vuelve a caer se avisa otra vez. Las marcas se
+  guardan **después** de enviar: si el correo falla, al día siguiente se reintenta.
+- La tabla del correo muestra hasta 60 productos y dice cuántos más hay.
+- Respuesta del cron (JSON): `{"alerts":N,"newAlerts":N,"mode":"nuevos|semanal","sent":true}`, o
+  `sent:false` con `reason`: `no_alerts`, `nothing_new`, `mail_not_configured`, `no_recipient`,
+  `send_failed`.
+- Para forzar la lista completa en una prueba: añadir `?modo=semanal` a la URL.
 
 ## Probarlo a mano
 
@@ -47,3 +57,5 @@ recibido.
 - [ ] Casos límite: justo 20 % (alerta), 21 % (no), agotado, varias compras del mismo producto.
 - [ ] Confirmar que el correo automático llega a las 8:00 a. m. (primer envío programado).
 - [ ] Efecto lateral: `MAIL_ADMIN_COPY` también recibe ahora la copia interna de cada orden.
+- [ ] Probar el flujo nuevo: primera llamada con `?modo=semanal` (manda todo y marca avisados);
+      segunda llamada normal en día que no sea lunes → debe responder `nothing_new`.
