@@ -694,7 +694,7 @@ export async function updatePurchaseOrder(
         },
       },
     });
-  });
+  }, { maxWait: 15000, timeout: 60000 });
 }
 
 export async function receivePurchaseOrder(orderId: number, userId: number) {
@@ -728,7 +728,7 @@ export async function receivePurchaseOrder(orderId: number, userId: number) {
       where: { id: orderId },
       data: { status: "RECIBIDA", receivedAt: new Date() },
     });
-  });
+  }, { maxWait: 15000, timeout: 60000 });
 }
 
 export async function cancelPurchaseOrder(orderId: number, userId: number) {
@@ -762,5 +762,5 @@ export async function cancelPurchaseOrder(orderId: number, userId: number) {
     }
 
     await tx.purchaseOrder.update({ where: { id: orderId }, data: { status: "ANULADA" } });
-  });
+  }, { maxWait: 15000, timeout: 60000 });
 }
