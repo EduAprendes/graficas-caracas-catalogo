@@ -29,6 +29,8 @@ Fecha: 2026-09-30 (último despliegue: commit `255292a`, todas las migraciones a
 - [ ] **Orden de entrega**: orden Despachado → cargar chofer/placa → "Ver / imprimir".
 - [ ] **Promociones**: mandar primero una prueba a tu correo; empezar con listas de 30–50
       clientes la primera semana (IP de correo compartida con otros dominios).
+- [ ] **Inventario real** y edición de la orden de compra #1: el stock de 9 productos se cargó de forma
+      provisional (ver `docs/ALERTAS-STOCK-BAJO.md`).
 - [ ] **Alertas de stock bajo**: faltan el cálculo a mano de 2–3 productos y ver llegar los correos
       automáticos (domingo: ninguno; lunes 2026-11-09: lista completa). Ver `docs/ALERTAS-STOCK-BAJO.md`.
 - [ ] **Cobranza**: después de la primera corrida, revisar el resultado en el detalle de las
