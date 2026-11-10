@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function LowStockPage() {
   const access = await getAccessUser();
-  if (access?.role !== "ADMIN") notFound();
+  if ((!access || access.role === "VENDEDOR")) notFound();
 
   const session = await auth();
   const { alerts, withoutReference } = await getStockAlerts();

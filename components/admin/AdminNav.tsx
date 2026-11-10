@@ -103,12 +103,18 @@ const TABS = [
 // Una vendedora solo ve catálogo y órdenes de venta; el administrador ve todo salvo el
 // catálogo de solo lectura (ya tiene Inventario, que es la versión editable).
 const SELLER_TABS: string[] = ["/admin/catalogo", "/admin/pedidos"];
+// La administradora no ve compras, salud ni balance.
+const ADMINISTRADORA_HIDDEN: string[] = ["/admin/compras", "/admin/salud", "/admin/ganancias"];
 
 export default async function AdminNav({ current }: { current: (typeof TABS)[number]["href"] }) {
   const session = await auth();
   const isSeller = session?.user?.role === "VENDEDOR";
+  const isAdministradora = session?.user?.role === "ADMINISTRADORA";
   const tabs = TABS.filter((tab) =>
-    isSeller ? SELLER_TABS.includes(tab.href) : tab.href !== "/admin/catalogo"
+    isSeller
+      ? SELLER_TABS.includes(tab.href)
+      : tab.href !== "/admin/catalogo" &&
+        !(isAdministradora && ADMINISTRADORA_HIDDEN.includes(tab.href))
   );
 
   // Campana de stock bajo (solo administrador). Si el cálculo falla, el menú se ve igual.

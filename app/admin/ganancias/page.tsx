@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import { requireAdmin } from "@/lib/access";
+import { requireOwner } from "@/lib/access";
 import { getProfitReport, OPERATING_CATEGORIES } from "@/lib/finance";
 import { caracasYearMonth, formatDate } from "@/lib/format";
 import AdminNav from "@/components/admin/AdminNav";
@@ -28,7 +28,7 @@ export default async function ProfitPage({
 }: {
   searchParams: Promise<{ anio?: string; mes?: string }>;
 }) {
-  await requireAdmin();
+  await requireOwner();
   const { anio, mes } = await searchParams;
 
   // Por defecto: el mes en curso (hora de Caracas).

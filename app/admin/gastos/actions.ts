@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/access";
+import { requireOwner } from "@/lib/access";
 import {
   addOperatingExpense,
   addPurchaseExpense,
@@ -22,7 +22,7 @@ export async function addPurchaseExpenseAction(
   input: { concept: string; amount: number }
 ): Promise<Result> {
   try {
-    await requireAdmin();
+    await requireOwner();
     await addPurchaseExpense(orderId, input);
     revalidatePath(`/admin/compras/${orderId}`);
     revalidatePath("/admin/ganancias");
@@ -39,7 +39,7 @@ export async function voidPurchaseExpenseAction(
   reason: string
 ): Promise<Result> {
   try {
-    const user = await requireAdmin();
+    const user = await requireOwner();
     await voidPurchaseExpense(orderId, expenseId, { id: user.id, name: user.name }, reason);
     revalidatePath(`/admin/compras/${orderId}`);
     revalidatePath("/admin/compras");
@@ -56,7 +56,7 @@ export async function addPurchasePaymentAction(
   input: { amount: number; date: string; notes: string }
 ): Promise<Result> {
   try {
-    const user = await requireAdmin();
+    const user = await requireOwner();
     await addPurchasePayment(orderId, user.id, {
       amount: input.amount,
       date: input.date,
@@ -77,7 +77,7 @@ export async function voidPurchasePaymentAction(
   reason: string
 ): Promise<Result> {
   try {
-    const user = await requireAdmin();
+    const user = await requireOwner();
     await voidPurchasePayment(orderId, paymentId, { id: user.id, name: user.name }, reason);
     revalidatePath(`/admin/compras/${orderId}`);
     revalidatePath("/admin/compras");
@@ -94,7 +94,7 @@ export async function addOperatingExpenseAction(input: {
   notes: string;
 }): Promise<Result> {
   try {
-    const user = await requireAdmin();
+    const user = await requireOwner();
     await addOperatingExpense(user.id, { ...input, notes: input.notes || null });
     revalidatePath("/admin/ganancias");
     return { ok: true };
@@ -104,7 +104,7 @@ export async function addOperatingExpenseAction(input: {
 }
 
 export async function deleteOperatingExpenseAction(id: number) {
-  await requireAdmin();
+  await requireOwner();
   await deleteOperatingExpense(id);
   revalidatePath("/admin/ganancias");
 }

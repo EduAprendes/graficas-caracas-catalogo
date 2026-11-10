@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/access";
+import { requireOwner } from "@/lib/access";
 import {
   cancelPurchaseOrder as cancelPurchaseOrderData,
   createPurchaseOrder as createPurchaseOrderData,
@@ -11,7 +11,7 @@ import {
 } from "@/lib/orders";
 
 async function requireUserId() {
-  const user = await requireAdmin();
+  const user = await requireOwner();
   return user.id;
 }
 

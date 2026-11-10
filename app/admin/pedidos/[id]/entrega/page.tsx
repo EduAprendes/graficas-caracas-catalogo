@@ -32,7 +32,7 @@ export default async function DeliveryOrderPage({
   if (!Number.isInteger(orderId)) notFound();
 
   const access = await getAccessUser();
-  if (access?.role !== "ADMIN") notFound();
+  if ((!access || access.role === "VENDEDOR")) notFound();
 
   const session = await auth();
   const order = await getSalesOrder(orderId);

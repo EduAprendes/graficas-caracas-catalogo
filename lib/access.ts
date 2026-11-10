@@ -1,7 +1,9 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-export type Role = "ADMIN" | "VENDEDOR";
+// ADMIN: dueño, ve todo. ADMINISTRADORA: opera todo salvo compras, salud y balance.
+// VENDEDOR: solo catálogo y sus órdenes de venta.
+export type Role = "ADMIN" | "ADMINISTRADORA" | "VENDEDOR";
 
 export type AccessUser = {
   id: number;
@@ -42,7 +44,7 @@ export async function getAccessUser(): Promise<AccessUser | null> {
   return {
     id: user.id,
     name: user.name,
-    role: "ADMIN",
+    role: user.role === "ADMINISTRADORA" ? "ADMINISTRADORA" : "ADMIN",
     sellerId: null,
     sellerName: null,
     commissionPercent: null,
@@ -55,7 +57,15 @@ export async function requireUser(): Promise<AccessUser> {
   return user;
 }
 
+// Cualquier usuario del panel completo (administrador o administradora).
 export async function requireAdmin(): Promise<AccessUser> {
+  const user = await requireUser();
+  if (user.role === "VENDEDOR") throw new Error("No autorizado");
+  return user;
+}
+
+// Solo el administrador principal (compras, salud del negocio, balance, gastos).
+export async function requireOwner(): Promise<AccessUser> {
   const user = await requireUser();
   if (user.role !== "ADMIN") throw new Error("No autorizado");
   return user;
