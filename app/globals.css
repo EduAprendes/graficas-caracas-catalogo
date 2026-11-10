@@ -2975,3 +2975,27 @@ a.aging-card-active { box-shadow: 0 0 0 2px var(--ink), var(--sh-1); }
   .access-badges, .access-actions { grid-column: 2; justify-content: flex-start; }
   .access-actions .admin-save-btn, .access-actions .admin-edit-btn { min-height: var(--tap); }
 }
+
+/* ---- Vendedores: lista con el mismo estilo que Accesos ---- */
+.access-badge-info { color: var(--info); background: var(--info-bg); border-color: var(--info-line); }
+.seller-row { grid-template-columns: auto minmax(0, 1.2fr) minmax(0, 2fr) auto auto; }
+.seller-link { text-decoration: none; }
+.seller-link:hover { text-decoration: underline; }
+.seller-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px 14px; margin: 0; }
+.seller-stats div { display: flex; flex-direction: column; min-width: 0; }
+.seller-stats dt { font-size: var(--fs-xs); color: var(--ink-muted); }
+.seller-stats dd { margin: 0; font-size: var(--fs-md); font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.seller-actions { gap: 6px; align-items: center; }
+.seller-row-editing { display: block; }
+.seller-form { display: flex; flex-direction: column; gap: 12px; flex: 1 1 100%; width: 100%; }
+.seller-form-new { padding: 16px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); }
+.seller-form-title { margin: 0; font-size: var(--fs-md); font-weight: 600; color: var(--ink); }
+.seller-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.seller-form .access-field .admin-input { min-height: var(--tap); font-size: var(--fs-md); }
+.access-head > .seller-form-new { flex: 1 1 100%; }
+
+@media (max-width: 900px) {
+  .seller-row { grid-template-columns: auto minmax(0, 1fr); }
+  .seller-stats { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 4px; }
+  .seller-row .access-badges, .seller-row .seller-actions { grid-column: 1 / -1; justify-content: flex-start; }
+}

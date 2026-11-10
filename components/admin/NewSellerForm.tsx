@@ -23,37 +23,61 @@ export default function NewSellerForm({
 
   if (!open) {
     return (
-      <button
-        type="button"
-        className="admin-add-btn admin-add-category-btn"
-        onClick={() => setOpen(true)}
-      >
+      <button type="button" className="admin-save-btn" onClick={() => setOpen(true)}>
         + Nuevo vendedor
       </button>
     );
   }
 
   return (
-    <form className="admin-form admin-new-category-form" onSubmit={handleSubmit}>
-      <input name="name" placeholder="Nombre del vendedor" required className="admin-input" />
-      <input name="phone" placeholder="Teléfono (opcional)" className="admin-input admin-input-sm" />
-      <input
-        name="commissionPercent"
-        type="number"
-        step="0.01"
-        min="0"
-        max="100"
-        defaultValue={5}
-        placeholder="Comisión %"
-        required
-        className="admin-input admin-input-sm"
-      />
-      <button type="submit" className="admin-save-btn" disabled={isPending}>
-        {isPending ? "Creando…" : "Crear vendedor"}
-      </button>
-      <button type="button" className="admin-cancel-btn" onClick={() => setOpen(false)}>
-        Cancelar
-      </button>
+    <form className="seller-form seller-form-new" onSubmit={handleSubmit}>
+      <h3 className="seller-form-title">Nuevo vendedor</h3>
+      <div className="seller-form-grid">
+        <div className="access-field">
+          <label htmlFor="new-seller-name">Nombre</label>
+          <input
+            id="new-seller-name"
+            name="name"
+            placeholder="Ej: Carla González"
+            required
+            className="admin-input"
+            autoComplete="off"
+          />
+        </div>
+        <div className="access-field">
+          <label htmlFor="new-seller-phone">Teléfono</label>
+          <input
+            id="new-seller-phone"
+            name="phone"
+            placeholder="Opcional"
+            className="admin-input"
+            autoComplete="off"
+          />
+        </div>
+        <div className="access-field">
+          <label htmlFor="new-seller-comm">Comisión %</label>
+          <input
+            id="new-seller-comm"
+            name="commissionPercent"
+            type="number"
+            step="0.01"
+            min="0"
+            max="100"
+            defaultValue={5}
+            required
+            className="admin-input"
+          />
+        </div>
+      </div>
+      <p className="access-field-hint">Después de crearlo, dale acceso al panel en la sección Accesos.</p>
+      <div className="access-form-actions">
+        <button type="button" className="admin-cancel-btn" onClick={() => setOpen(false)}>
+          Cancelar
+        </button>
+        <button type="submit" className="admin-save-btn" disabled={isPending}>
+          {isPending ? "Creando…" : "Crear vendedor"}
+        </button>
+      </div>
     </form>
   );
 }

@@ -18,6 +18,9 @@ import SellerRow from "@/components/admin/SellerRow";
 
 export const dynamic = "force-dynamic";
 
+const money = (n: number) =>
+  `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
 export default async function SellersPage() {
   const session = await auth();
   const sellers = await getSellers();
@@ -79,11 +82,11 @@ export default async function SellersPage() {
       <div className="admin-summary-row">
         <div className="admin-summary-card">
           <span className="admin-summary-label">Vendido por vendedores</span>
-          <span className="admin-summary-value">{totalSold.toFixed(2)}</span>
+          <span className="admin-summary-value">{money(totalSold)}</span>
         </div>
         <div className="admin-summary-card">
           <span className="admin-summary-label">Comisiones ganadas</span>
-          <span className="admin-summary-value">{totalCommission.toFixed(2)}</span>
+          <span className="admin-summary-value">{money(totalCommission)}</span>
         </div>
       </div>
 
@@ -95,43 +98,35 @@ export default async function SellersPage() {
         />
       ) : null}
 
-      <NewSellerForm onCreate={createSeller} />
+      <section className="access-card" aria-labelledby="sellers-title">
+        <header className="access-head">
+          <div>
+            <h2 id="sellers-title" className="access-title">
+              Vendedores
+            </h2>
+            <p className="access-sub">Ventas, comisión y estado de cada vendedor.</p>
+          </div>
+          <NewSellerForm onCreate={createSeller} />
+        </header>
 
-      <div className="admin-table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Vendedor</th>
-              <th>Teléfono</th>
-              <th className="num">Comisión</th>
-              <th className="num">Órdenes</th>
-              <th className="num">Total vendido</th>
-              <th className="num">Comisión ganada</th>
-              <th>Acceso al panel</th>
-              <th className="num">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sellers.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="ledger-empty">
-                  Todavía no hay vendedores. Creá el primero con &quot;+ Nuevo vendedor&quot;.
-                </td>
-              </tr>
-            ) : (
-              sellers.map((seller) => (
-                <SellerRow
-                  key={seller.id}
-                  seller={seller}
-                  onUpdate={updateSeller.bind(null, seller.id)}
-                  onCancel={cancelSeller.bind(null, seller.id)}
-                  onReactivate={reactivateSeller.bind(null, seller.id)}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+        {sellers.length === 0 ? (
+          <div className="access-empty">
+            <p>Todavía no hay vendedores. Crea el primero con &quot;+ Nuevo vendedor&quot;.</p>
+          </div>
+        ) : (
+          <ul className="access-list">
+            {sellers.map((seller) => (
+              <SellerRow
+                key={seller.id}
+                seller={seller}
+                onUpdate={updateSeller.bind(null, seller.id)}
+                onCancel={cancelSeller.bind(null, seller.id)}
+                onReactivate={reactivateSeller.bind(null, seller.id)}
+              />
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
