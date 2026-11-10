@@ -28,3 +28,10 @@ npx tsx prisma/create-user.ts <usuario> <clave> <nombre> --rol=administradora
 
 Contra producción se corre con el túnel SSH (ver `docs/SESION-2026-11-04.md`). Volver a correr el comando con el
 mismo usuario cambia la clave.
+
+## Crear o cambiar la cuenta desde el panel
+
+En **Vendedores** (solo el administrador principal) hay una sección "Acceso de administradora": ahí se crea la
+cuenta y se cambia el usuario o la clave (clave vacía = no cambiarla). No hace falta terminal ni túnel.
+La acción es `saveAdministradoraAccess` (`requireOwner()`), valida que el usuario no esté repetido y guarda la
+clave con bcrypt.

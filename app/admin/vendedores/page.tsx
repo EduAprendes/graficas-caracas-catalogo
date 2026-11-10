@@ -1,14 +1,18 @@
 import { auth } from "@/auth";
+import { getAccessUser } from "@/lib/access";
+import { prisma } from "@/lib/prisma";
 import { getSellers } from "@/lib/sellers";
 import {
   cancelSeller,
   createSeller,
   reactivateSeller,
+  saveAdministradoraAccess,
   saveSellerAccess,
   updateSeller,
 } from "./actions";
 import { logoutAction } from "@/app/admin/actions";
 import AdminNav from "@/components/admin/AdminNav";
+import AdminAccessSection from "@/components/admin/AdminAccessSection";
 import NewSellerForm from "@/components/admin/NewSellerForm";
 import SellerRow from "@/components/admin/SellerRow";
 
@@ -17,6 +21,15 @@ export const dynamic = "force-dynamic";
 export default async function SellersPage() {
   const session = await auth();
   const sellers = await getSellers();
+  const access = await getAccessUser();
+  const adminAccounts =
+    access?.role === "ADMIN"
+      ? await prisma.user.findMany({
+          where: { role: "ADMINISTRADORA" },
+          select: { id: true, username: true, name: true },
+          orderBy: { id: "asc" },
+        })
+      : null;
 
   const totalSold = sellers.reduce((sum, seller) => sum + seller.totalSold, 0);
   const totalCommission = sellers.reduce((sum, seller) => sum + seller.commissionEarned, 0);
@@ -52,6 +65,10 @@ export default async function SellersPage() {
           <span className="admin-summary-value">{totalCommission.toFixed(2)}</span>
         </div>
       </div>
+
+      {adminAccounts ? (
+        <AdminAccessSection accounts={adminAccounts} onSave={saveAdministradoraAccess} />
+      ) : null}
 
       <NewSellerForm onCreate={createSeller} />
 

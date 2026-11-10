@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
-import { requireAdmin } from "@/lib/access";
+import { requireAdmin, requireOwner } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 import {
   addSellerPayment as addSellerPaymentData,
@@ -88,7 +88,7 @@ export async function saveSellerAccess(
       await prisma.user.update({ where: { id: seller.user.id }, data: { passwordHash } });
     } else {
       const taken = await prisma.user.findUnique({ where: { username } });
-      if (taken) return { error: "Ese usuario ya existe; elegí otro." };
+      if (taken) return { error: "Ese usuario ya existe; elige otro." };
       await prisma.user.create({
         data: { username, passwordHash, name: seller.name, role: "VENDEDOR", sellerId },
       });
@@ -120,5 +120,63 @@ export async function addSellerPaymentAction(
     return { ok: true };
   } catch (err) {
     return { error: err instanceof Error ? err.message : "No se pudo registrar el pago" };
+  }
+}
+
+// ---------- Accesos de administradora (solo el administrador principal) ----------
+
+const USERNAME_RE = /^[a-z0-9._-]{3,30}$/;
+
+// Crea una cuenta de administradora o, si se pasa userId, cambia su usuario y/o su clave.
+export async function saveAdministradoraAccess(
+  userId: number | null,
+  formData: FormData
+): Promise<{ ok: true } | { error: string }> {
+  try {
+    await requireOwner();
+
+    const username = String(formData.get("username") || "").trim().toLowerCase();
+    const password = String(formData.get("password") || "");
+    const name = String(formData.get("name") || "").trim();
+
+    if (!USERNAME_RE.test(username)) {
+      return { error: "El usuario debe tener 3 a 30 caracteres: letras, números, punto, guion." };
+    }
+    if (userId == null && password.length < 8) {
+      return { error: "La clave debe tener al menos 8 caracteres." };
+    }
+    if (password && password.length < 8) {
+      return { error: "La clave debe tener al menos 8 caracteres." };
+    }
+
+    const taken = await prisma.user.findUnique({ where: { username } });
+    if (taken && taken.id !== userId) return { error: "Ese usuario ya existe; elige otro." };
+
+    if (userId == null) {
+      await prisma.user.create({
+        data: {
+          username,
+          passwordHash: await bcrypt.hash(password, 12),
+          name: name || "Administradora",
+          role: "ADMINISTRADORA",
+        },
+      });
+    } else {
+      const current = await prisma.user.findUnique({ where: { id: userId } });
+      if (!current || current.role !== "ADMINISTRADORA") return { error: "Cuenta no encontrada" };
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          username,
+          ...(name ? { name } : {}),
+          ...(password ? { passwordHash: await bcrypt.hash(password, 12) } : {}),
+        },
+      });
+    }
+
+    revalidatePath("/admin/vendedores");
+    return { ok: true };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "No se pudo guardar el acceso" };
   }
 }
