@@ -41,6 +41,9 @@ export async function getAccessUser(): Promise<AccessUser | null> {
     };
   }
 
+  // Una administradora cancelada ya no puede operar.
+  if (user.role === "ADMINISTRADORA" && user.cancelledAt) return null;
+
   return {
     id: user.id,
     name: user.name,

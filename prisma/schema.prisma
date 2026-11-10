@@ -66,6 +66,8 @@ model User {
   role               String              @default("ADMIN")
   sellerId           Int?                @unique
   seller             Seller?             @relation(fields: [sellerId], references: [id])
+  /// Cuenta cancelada (administradora): no puede entrar; se reactiva quitando la fecha
+  cancelledAt        DateTime?
 
   @@map("users")
 }

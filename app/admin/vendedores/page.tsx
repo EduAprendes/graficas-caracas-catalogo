@@ -8,6 +8,7 @@ import {
   reactivateSeller,
   saveAdministradoraAccess,
   saveSellerAccess,
+  setAdministradoraActive,
   updateSeller,
 } from "./actions";
 import { logoutAction } from "@/app/admin/actions";
@@ -29,7 +30,7 @@ export default async function SellersPage() {
     access?.role === "ADMIN"
       ? await prisma.user.findMany({
           where: { role: "ADMINISTRADORA" },
-          select: { id: true, username: true, name: true },
+          select: { id: true, username: true, name: true, cancelledAt: true },
           orderBy: { id: "asc" },
         })
       : null;
@@ -42,7 +43,7 @@ export default async function SellersPage() {
           id: a.id,
           name: a.name,
           username: a.username,
-          cancelled: false,
+          cancelled: a.cancelledAt != null,
         })),
         ...sellers.map((s) => ({
           key: `seller-${s.id}`,
@@ -95,6 +96,7 @@ export default async function SellersPage() {
           accounts={accessAccounts}
           saveAdministradora={saveAdministradoraAccess}
           saveVendedora={saveSellerAccess}
+          setAdministradoraActive={setAdministradoraActive}
         />
       ) : null}
 

@@ -48,6 +48,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        // Una administradora cancelada tampoco puede entrar.
+        if (user.role === "ADMINISTRADORA" && user.cancelledAt) return null;
+
         return { id: String(user.id), name: user.name, username: user.username, role: user.role };
       },
     }),

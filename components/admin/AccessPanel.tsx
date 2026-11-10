@@ -36,13 +36,35 @@ export default function AccessPanel({
   accounts,
   saveAdministradora,
   saveVendedora,
+  setAdministradoraActive,
 }: {
   accounts: AccessAccount[];
+  setAdministradoraActive: (userId: number, active: boolean) => Promise<SaveResult>;
   saveAdministradora: Save;
   saveVendedora: (id: number, formData: FormData) => Promise<SaveResult>;
 }) {
   const [target, setTarget] = useState<Target | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
+  const [isToggling, startToggle] = useTransition();
+
+  function toggleActive(account: AccessAccount, active: boolean) {
+    if (
+      !active &&
+      !window.confirm(
+        `¿Cancelar la cuenta de ${account.name}? No se borra: deja de poder entrar al panel y puedes reactivarla cuando quieras.`
+      )
+    ) {
+      return;
+    }
+    setNotice(null);
+    setProblem(null);
+    startToggle(async () => {
+      const result = await setAdministradoraActive(account.id, active);
+      if ("error" in result) setProblem(result.error);
+      else setNotice(active ? `Cuenta de ${account.name} reactivada.` : `Cuenta de ${account.name} cancelada.`);
+    });
+  }
 
   const admins = accounts.filter((a) => a.kind === "ADMINISTRADORA");
   const sellers = accounts.filter((a) => a.kind === "VENDEDORA");
@@ -78,8 +100,16 @@ export default function AccessPanel({
         </div>
         <div className="access-actions">
           {account.cancelled ? (
-            <span className="access-hint">Reactívala para gestionar su acceso</span>
+            <>
+              <span className="access-hint">Reactívala para gestionar su acceso</span>
+              {account.kind === "ADMINISTRADORA" ? (
+                <button type="button" className="admin-edit-btn" disabled={isToggling} onClick={() => toggleActive(account, true)}>
+                  Reactivar
+                </button>
+              ) : null}
+            </>
           ) : (
+            <>
             <button
               type="button"
               className={hasAccess ? "admin-edit-btn" : "admin-save-btn"}
@@ -91,6 +121,22 @@ export default function AccessPanel({
             >
               {hasAccess ? "Editar acceso" : "Crear acceso"}
             </button>
+            {account.kind === "ADMINISTRADORA" ? (
+              <button
+                type="button"
+                className="admin-icon-btn admin-icon-btn-delete"
+                disabled={isToggling}
+                onClick={() => toggleActive(account, false)}
+                aria-label={`Cancelar la cuenta de ${account.name}`}
+                title="Cancelar cuenta"
+              >
+                <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden="true">
+                  <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.3" />
+                  <path d="m5.5 14.5 9-9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                </svg>
+              </button>
+            ) : null}
+            </>
           )}
         </div>
       </li>
@@ -121,6 +167,12 @@ export default function AccessPanel({
       {notice ? (
         <p className="access-notice" role="status">
           {notice}
+        </p>
+      ) : null}
+
+      {problem ? (
+        <p className="access-error" role="alert">
+          {problem}
         </p>
       ) : null}
 

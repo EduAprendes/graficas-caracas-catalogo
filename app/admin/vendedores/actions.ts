@@ -180,3 +180,20 @@ export async function saveAdministradoraAccess(
     return { error: err instanceof Error ? err.message : "No se pudo guardar el acceso" };
   }
 }
+
+// Cancela o reactiva una cuenta de administradora (no se borra: se conserva el historial).
+export async function setAdministradoraActive(
+  userId: number,
+  active: boolean
+): Promise<{ ok: true } | { error: string }> {
+  try {
+    await requireOwner();
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || user.role !== "ADMINISTRADORA") return { error: "Cuenta no encontrada" };
+    await prisma.user.update({ where: { id: userId }, data: { cancelledAt: active ? null : new Date() } });
+    revalidatePath("/admin/vendedores");
+    return { ok: true };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "No se pudo actualizar la cuenta" };
+  }
+}
