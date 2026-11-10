@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import SellerAccessCell from "@/components/admin/SellerAccessCell";
 
 export type SellerRowData = {
   id: number;
@@ -21,13 +20,11 @@ export default function SellerRow({
   onUpdate,
   onCancel,
   onReactivate,
-  onSaveAccess,
 }: {
   seller: SellerRowData;
   onUpdate: (formData: FormData) => void | Promise<void>;
   onCancel: () => void | Promise<void>;
   onReactivate: () => void | Promise<void>;
-  onSaveAccess: (formData: FormData) => Promise<{ ok: true } | { error: string }>;
 }) {
   const [editing, setEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -43,7 +40,7 @@ export default function SellerRow({
 
   function handleCancel() {
     const ok = window.confirm(
-      `¿Cancelar al vendedor "${seller.name}"? No se borra: conserva su historial de ventas y comisiones, pero deja de aparecer al crear órdenes nuevas. Podés reactivarlo cuando quieras.`
+      `¿Cancelar al vendedor "${seller.name}"? No se borra: conserva su historial de ventas y comisiones, pero deja de aparecer al crear órdenes nuevas. Puedes reactivarlo cuando quieras.`
     );
     if (!ok) return;
     startTransition(() => {
@@ -109,11 +106,17 @@ export default function SellerRow({
       <td className="num" data-label="Total vendido">{seller.totalSold.toFixed(2)}</td>
       <td className="num" data-label="Comisión ganada">{seller.commissionEarned.toFixed(2)}</td>
       <td data-label="Acceso al panel">
-        <SellerAccessCell
-          username={seller.username}
-          disabled={seller.cancelled}
-          onSave={onSaveAccess}
-        />
+        {seller.cancelled ? (
+          <span className="access-badge access-badge-off">Cancelada</span>
+        ) : seller.username ? (
+          <a href="#accesos" className="access-badge access-badge-ok access-badge-link" title="Gestionar en Accesos al panel">
+            Acceso activo
+          </a>
+        ) : (
+          <a href="#accesos" className="access-badge access-badge-none access-badge-link" title="Crear acceso en Accesos al panel">
+            Sin acceso
+          </a>
+        )}
       </td>
       <td className="num" data-label="Acciones">
         <div className="admin-row-actions">

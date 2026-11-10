@@ -12,7 +12,7 @@ import {
 } from "./actions";
 import { logoutAction } from "@/app/admin/actions";
 import AdminNav from "@/components/admin/AdminNav";
-import AdminAccessSection from "@/components/admin/AdminAccessSection";
+import AccessPanel, { type AccessAccount } from "@/components/admin/AccessPanel";
 import NewSellerForm from "@/components/admin/NewSellerForm";
 import SellerRow from "@/components/admin/SellerRow";
 
@@ -30,6 +30,27 @@ export default async function SellersPage() {
           orderBy: { id: "asc" },
         })
       : null;
+
+  const accessAccounts: AccessAccount[] | null = adminAccounts
+    ? [
+        ...adminAccounts.map((a) => ({
+          key: `admin-${a.id}`,
+          kind: "ADMINISTRADORA" as const,
+          id: a.id,
+          name: a.name,
+          username: a.username,
+          cancelled: false,
+        })),
+        ...sellers.map((s) => ({
+          key: `seller-${s.id}`,
+          kind: "VENDEDORA" as const,
+          id: s.id,
+          name: s.name,
+          username: s.username,
+          cancelled: s.cancelled,
+        })),
+      ]
+    : null;
 
   const totalSold = sellers.reduce((sum, seller) => sum + seller.totalSold, 0);
   const totalCommission = sellers.reduce((sum, seller) => sum + seller.commissionEarned, 0);
@@ -66,8 +87,12 @@ export default async function SellersPage() {
         </div>
       </div>
 
-      {adminAccounts ? (
-        <AdminAccessSection accounts={adminAccounts} onSave={saveAdministradoraAccess} />
+      {accessAccounts ? (
+        <AccessPanel
+          accounts={accessAccounts}
+          saveAdministradora={saveAdministradoraAccess}
+          saveVendedora={saveSellerAccess}
+        />
       ) : null}
 
       <NewSellerForm onCreate={createSeller} />
@@ -101,7 +126,6 @@ export default async function SellersPage() {
                   onUpdate={updateSeller.bind(null, seller.id)}
                   onCancel={cancelSeller.bind(null, seller.id)}
                   onReactivate={reactivateSeller.bind(null, seller.id)}
-                  onSaveAccess={saveSellerAccess.bind(null, seller.id)}
                 />
               ))
             )}

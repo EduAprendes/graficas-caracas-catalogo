@@ -2817,3 +2817,161 @@ a.aging-card-active { box-shadow: 0 0 0 2px var(--ink), var(--sh-1); }
 }
 .viz-summary { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 0 0 var(--sp-3); font-size: var(--fs-sm); color: var(--ink-soft); }
 .viz-summary strong { color: var(--ink); }
+
+/* ---- Accesos al panel (Vendedores) ---- */
+.access-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-1);
+  padding: 18px 20px;
+  margin: 0 0 24px;
+  scroll-margin-top: 16px;
+}
+.access-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.access-title { margin: 0; font-size: var(--fs-lg); font-weight: 600; color: var(--ink); }
+.access-sub { margin: 2px 0 0; font-size: var(--fs-sm); color: var(--ink-muted); }
+.access-notice {
+  margin: 0 0 14px;
+  padding: 9px 12px;
+  font-size: var(--fs-sm);
+  color: var(--ok);
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-line);
+  border-radius: var(--r-sm);
+}
+.access-group + .access-group { margin-top: 18px; }
+.access-group-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  margin: 0 0 8px;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--ink);
+}
+.access-group-note { font-size: var(--fs-xs); font-weight: 400; color: var(--ink-muted); }
+.access-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+.access-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 12px 14px;
+  background: var(--surface);
+}
+.access-row + .access-row { border-top: 1px solid var(--line); }
+.access-row.is-cancelled { opacity: 0.7; }
+.access-avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  background: var(--info-bg);
+  color: var(--info);
+  border: 1px solid var(--info-line);
+}
+.access-avatar-vendedora { background: var(--warn-bg); color: var(--warn); border-color: var(--warn-line); }
+.access-main { display: flex; flex-direction: column; min-width: 0; }
+.access-name { font-size: var(--fs-md); font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.access-user { font-size: var(--fs-sm); color: var(--ink-muted); overflow-wrap: anywhere; }
+.access-user code { font-family: var(--font-mono), monospace; color: var(--ink-soft); }
+.access-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.access-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  line-height: 1.5;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  background: var(--surface-2);
+  white-space: nowrap;
+  text-decoration: none;
+}
+.access-badge-administradora { color: var(--info); background: var(--info-bg); border-color: var(--info-line); }
+.access-badge-vendedora { color: var(--warn); background: var(--warn-bg); border-color: var(--warn-line); }
+.access-badge-ok { color: var(--ok); background: var(--ok-bg); border-color: var(--ok-line); }
+.access-badge-none { color: var(--ink-muted); background: var(--surface-2); border-color: var(--line-strong); }
+.access-badge-off { color: var(--danger); background: var(--danger-bg); border-color: var(--danger-line); }
+.access-badge-link:hover { filter: brightness(0.96); }
+.access-badge-link:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.access-actions { display: flex; justify-content: flex-end; }
+.access-hint { font-size: var(--fs-xs); color: var(--ink-muted); }
+.access-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  flex-wrap: wrap;
+  padding: 14px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-md);
+  color: var(--ink-muted);
+  font-size: var(--fs-sm);
+}
+.access-empty p { margin: 0; }
+
+.access-dialog {
+  width: min(440px, calc(100vw - 32px));
+  padding: 0;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+}
+.access-dialog::backdrop { background: rgba(10, 11, 10, 0.5); }
+.access-form { display: flex; flex-direction: column; gap: 14px; padding: 20px; }
+.access-form-title { margin: 0; font-size: var(--fs-lg); font-weight: 600; }
+.access-field { display: flex; flex-direction: column; gap: 5px; }
+.access-field label { font-size: var(--fs-sm); font-weight: 600; color: var(--ink); }
+.access-field .admin-input { width: 100%; flex: none; min-height: var(--tap); font-size: var(--fs-md); }
+.access-field .admin-input[readonly] { color: var(--ink-muted); cursor: not-allowed; }
+.access-field-hint { font-size: var(--fs-xs); color: var(--ink-muted); }
+.access-password { display: flex; gap: 8px; }
+.access-password .admin-input { flex: 1 1 auto; }
+.access-toggle {
+  min-height: var(--tap);
+  padding: 0 14px;
+  font: inherit;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.access-toggle:hover { border-color: var(--ink-muted); }
+.access-toggle:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.access-error {
+  margin: 0;
+  padding: 9px 12px;
+  font-size: var(--fs-sm);
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-line);
+  border-radius: var(--r-sm);
+}
+.access-form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; }
+.access-form-actions .admin-save-btn,
+.access-form-actions .admin-cancel-btn { min-height: var(--tap); padding: 0 18px; }
+
+@media (max-width: 640px) {
+  .access-card { padding: 14px; }
+  .access-row { grid-template-columns: auto minmax(0, 1fr); }
+  .access-badges, .access-actions { grid-column: 2; justify-content: flex-start; }
+  .access-actions .admin-save-btn, .access-actions .admin-edit-btn { min-height: var(--tap); }
+}
