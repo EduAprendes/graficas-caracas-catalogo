@@ -142,7 +142,7 @@ export default async function MySalesPage({
             <span className="admin-summary-value">{detail.commissionEarned.toFixed(2)}</span>
           </div>
           <div className="admin-summary-card dash-card-ok">
-            <span className="admin-summary-label">Ya te pagaron</span>
+            <span className="admin-summary-label">Pagos recibidos</span>
             <span className="admin-summary-value">{periodPaid.toFixed(2)}</span>
           </div>
           <div className="admin-summary-card dash-card-warn">
