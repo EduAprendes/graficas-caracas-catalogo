@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 
 // Lo único del admin que puede ver una vendedora: catálogo y órdenes de venta.
 // (Además, cada acción del servidor valida el rol; esto es la primera barrera.)
-const SELLER_ALLOWED = ["/admin/pedidos", "/admin/catalogo"];
+const SELLER_ALLOWED = ["/admin/pedidos", "/admin/catalogo", "/admin/mis-ventas"];
 
 // La administradora ve todo el panel menos lo financiero y las compras.
 const ADMINISTRADORA_BLOCKED = ["/admin/compras", "/admin/salud", "/admin/ganancias"];

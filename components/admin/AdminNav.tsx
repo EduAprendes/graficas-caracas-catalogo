@@ -50,6 +50,13 @@ const TABS = [
     icon: icon(<><path d="M6 3h12l2 4v14H4V7l2-4Z" /><path d="M4 7h16M9 11a3 3 0 0 0 6 0" /></>),
   },
   {
+    href: "/admin/mis-ventas",
+    tone: "ganancias",
+    label: "Mis comisiones",
+    group: "operacion",
+    icon: icon(<><path d="M3 17l6-6 4 4 8-8" /><path d="M15 7h6v6" /></>),
+  },
+  {
     href: "/admin/compras",
     tone: "compras",
     label: "Órdenes de compra",
@@ -102,7 +109,7 @@ const TABS = [
 
 // Una vendedora solo ve catálogo y órdenes de venta; el administrador ve todo salvo el
 // catálogo de solo lectura (ya tiene Inventario, que es la versión editable).
-const SELLER_TABS: string[] = ["/admin/catalogo", "/admin/pedidos"];
+const SELLER_TABS: string[] = ["/admin/catalogo", "/admin/pedidos", "/admin/mis-ventas"];
 // La administradora no ve compras, salud ni balance.
 const ADMINISTRADORA_HIDDEN: string[] = ["/admin/compras", "/admin/salud", "/admin/ganancias"];
 
@@ -114,6 +121,7 @@ export default async function AdminNav({ current }: { current: (typeof TABS)[num
     isSeller
       ? SELLER_TABS.includes(tab.href)
       : tab.href !== "/admin/catalogo" &&
+        tab.href !== "/admin/mis-ventas" &&
         !(isAdministradora && ADMINISTRADORA_HIDDEN.includes(tab.href))
   );
 

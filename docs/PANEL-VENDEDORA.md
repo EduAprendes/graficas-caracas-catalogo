@@ -36,3 +36,10 @@ listado (columna Vendedor con su %) y en el detalle de la orden (con el monto de
 
 Si se **cancela** a la vendedora, deja de poder entrar y de operar de inmediato, aunque tenga
 la sesión abierta. Al reactivarla recupera el acceso con la misma clave.
+
+## Mis comisiones (`/admin/mis-ventas`)
+
+La vendedora ve sus propias órdenes del período (filtro por año y mes), el total vendido, la comisión ganada, lo
+que ya se le pagó y lo pendiente, y la lista de pagos recibidos. Es solo lectura: no puede registrar pagos. La
+página toma la vendedora de su sesión (nunca de la dirección), así que no puede ver a otras. Para el administrador
+la pestaña no aparece y la ruta devuelve 404.
