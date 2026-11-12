@@ -92,6 +92,8 @@ Fecha: 2026-09-30 (último despliegue: commit `255292a`, todas las migraciones a
 - `docs/SALUD-DEL-NEGOCIO.md` — página de gráficos /admin/salud: qué muestra y sus límites.
 - `docs/CORREO-ORDENES.md` — correo de órdenes, copia al administrador, cobranza y promociones.
 - `docs/ALERTAS-STOCK-BAJO.md` — regla del 20 %, pantallas, correo diario y cómo probarlo.
-- `docs/PANEL-VENDEDORA.md` — roles, permisos y cómo crear el acceso.
+- `docs/PANEL-VENDEDORA.md` — roles, permisos, cómo crear el acceso y la página Mis comisiones.
+- `docs/PANEL-ADMINISTRADORA.md` — rol de administradora (sin compras, salud ni balance), panel de accesos, cancelar y reactivar.
+- `docs/REINICIO-VENTAS-2026-11-11.md` — borrado de las ventas de prueba, respaldo y consecuencias.
 - `docs/ORDEN-DE-ENTREGA-SENIAT.md` — orden de entrega y lista de verificación legal.
 - `docs/MYSQL-REMOTO-VPN.md`, `docs/PRISMA-SHADOW-DB-P3014.md` — base de datos.
